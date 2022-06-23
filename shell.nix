@@ -9,6 +9,8 @@ pkgs.mkShell {
     # Nix stuff
     nixpkgs-fmt
     rnix-lsp
+    comma
+    nix-index
 
     # Python stuff
     python3
@@ -23,6 +25,7 @@ pkgs.mkShell {
     # Infra
     ansible
     kubernetes-helm-wrapped
+    helmfile
     kubectl
   ];
 }
