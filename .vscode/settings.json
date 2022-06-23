@@ -1,0 +1,6 @@
+{
+    "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
+    "dotfiles.repository": "reisub0/dot-devcontainer",
+    "dotfiles.targetPath": "~/.dot",
+    "dotfiles.installCommand": "~/.dot/install.sh"
+}
