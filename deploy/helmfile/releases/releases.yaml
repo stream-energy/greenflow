@@ -6,10 +6,10 @@ bases:
 releases:
   - name: "scaphandre-{{ .Environment.Name }}"
     namespace: "monitoring"
-    chart: "scaphandre/scaphandre"
+    chart: "scaphandre-git/scaphandre"
     labels:
-      chart: "scaphandre/scaphandre"
-      repo: "scaphandre"
+      chart: "scaphandre-git/scaphandre"
+      repo: "scaphandre-git"
       namespace: "monitoring"
     version: 0.1.0
     values:

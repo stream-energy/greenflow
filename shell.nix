@@ -1,5 +1,10 @@
 { pkgs ? import <nixpkgs> { } }:
-
+let
+  # my-python = pkgs.python3;
+  # python-with-pkgs = my-python.withPackages (p: with p; [
+  #   enoslib
+  # ]);
+in
 pkgs.mkShell {
   # nativeBuildInputs is usually what you want -- tools you need to run
   nativeBuildInputs = with pkgs; [
@@ -13,7 +18,8 @@ pkgs.mkShell {
     nix-index
 
     # Python stuff
-    python3
+    # python-with-pkgs
+    python39
     poetry
 
     # QoL

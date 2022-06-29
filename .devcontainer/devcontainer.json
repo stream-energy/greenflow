@@ -16,17 +16,20 @@
 		"label=disable"
 	],
 	"containerEnv": {
-		"PRELOAD_EXTENSIONS": "arrterian.nix-env-selector"
+		"PRELOAD_EXTENSIONS": "arrterian.nix-env-selector",
+		"KUBECONFIG": "${containerWorkspaceFolder}/kubeconfig"
 	},
 	"mounts": [
 		"source=nix-cache,target=/nix,type=volume,consistency=cached",
-		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+		"source=/home/g/.ssh,target=/home/code/.ssh,type=bind",
+		"source=/home/g/.kube,target=/home/code/.kube,type=bind"
 	],
 	"userEnvProbe": "loginShell",
 	"overrideCommand": false,
 	"updateRemoteUserUID": false,
 	// build development environment on creation
-	"onCreateCommand": "nix-shell --command 'echo done building nix dev environment'",
+	"onCreateCommand": "nix-shell --command 'sh .devcontainer/onCreate.sh'",
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		// select nix environment
