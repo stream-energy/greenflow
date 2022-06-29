@@ -4,12 +4,12 @@
 	"name": "nix-devcontainer-greenflow",
 	"dockerFile": "Dockerfile",
 	"context": "${localWorkspaceFolder}",
-	"build": {
-		"args": {
-			"USER_UID": "1000",
-			"USER_GID": "1000"
-		}
-	},
+	// "build": {
+	// 	"args": {
+	// 		"USER_UID": "1000",
+	// 		"USER_GID": "1000"
+	// 	}
+	// },
 	"runArgs": [
 		"--network=host",
 		"--security-opt",
@@ -22,14 +22,15 @@
 	"mounts": [
 		"source=nix-cache,target=/nix,type=volume,consistency=cached",
 		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
-		"source=/home/g/.ssh,target=/home/code/.ssh,type=bind",
-		"source=/home/g/.kube,target=/home/code/.kube,type=bind"
+		"source=/home/g/.ssh,target=/home/g/.ssh,type=bind",
+		"source=/home/g/.kube,target=/home/g/.kube,type=bind",
+		"source=pacman-cache,target=/var/cache/pacman/pkg,type=volume,consistency=cached"
 	],
 	"userEnvProbe": "loginShell",
 	"overrideCommand": false,
 	"updateRemoteUserUID": false,
 	// build development environment on creation
-	"onCreateCommand": "nix-shell --command 'sh .devcontainer/onCreate.sh'",
+	// "onCreateCommand": "nix-shell --command 'sh .devcontainer/onCreate.sh'",
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		// select nix environment
@@ -44,6 +45,14 @@
 		"VisualStudioExptTeam.vscodeintellicode",
 		"Rubymaniac.vscode-direnv"
 	],
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "fish",
+		"terminal.integrated.profiles.linux": {
+			"fish": {
+				"path": "fish"
+			},
+		}
+	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": []
 	// Use 'postCreateCommand' to run commands after the container is created.
