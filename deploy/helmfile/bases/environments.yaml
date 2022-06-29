@@ -1,0 +1,6 @@
+---
+environments:
+  exp:
+    values:
+      - autoscaler:
+          enabled: false

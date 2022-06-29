@@ -19,7 +19,8 @@
 		"PRELOAD_EXTENSIONS": "arrterian.nix-env-selector"
 	},
 	"mounts": [
-		"source=nix-cache,target=/nix,type=volume,consistency=cached"
+		"source=nix-cache,target=/nix,type=volume,consistency=cached",
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
 	],
 	"userEnvProbe": "loginShell",
 	"overrideCommand": false,

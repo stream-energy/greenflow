@@ -24,8 +24,10 @@ pkgs.mkShell {
 
     # Infra
     ansible
-    kubernetes-helm-wrapped
+    kubernetes-helm
     helmfile
     kubectl
+    kube3d
+    docker
   ];
 }

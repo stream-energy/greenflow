@@ -2,5 +2,11 @@
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
     "dotfiles.repository": "reisub0/dot-devcontainer",
     "dotfiles.targetPath": "~/.dot",
-    "dotfiles.installCommand": "~/.dot/install.sh"
+    "dotfiles.installCommand": "~/.dot/install.sh",
+    "yaml.schemas": {
+        "https://json.schemastore.org/chart.json": [
+            "file:///workspaces/greenflow/deploy/greenflow/templates/deployment.yaml"
+        ],
+        "https://json.schemastore.org/helmfile.json": "file:///workspaces/greenflow/deploy/helmfile-example/releases/releases.yaml"
+    }
 }

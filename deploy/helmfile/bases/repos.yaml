@@ -1,0 +1,6 @@
+---
+repositories:
+  - name: scaphandre-git
+    url: git+https://github.com/hubblo-org/scaphandre@helm/scaphandre?ref=main
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
