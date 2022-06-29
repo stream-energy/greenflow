@@ -4,6 +4,7 @@
 	"name": "nix-devcontainer-greenflow",
 	"dockerFile": "Dockerfile",
 	"context": "${localWorkspaceFolder}",
+	// "updateContentCommand": "bash -li nix-env -i lorri",
 	// "build": {
 	// 	"args": {
 	// 		"USER_UID": "1000",

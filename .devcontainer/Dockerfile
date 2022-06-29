@@ -40,12 +40,19 @@ RUN sudo -u ${USERNAME} mkdir -p /home/g/.config/direnv
 COPY .devcontainer/direnv.toml /home/g/.config/direnv/direnv.toml
 
 COPY .devcontainer/nix.conf /etc/nix/nix.conf
+COPY .devcontainer/envrc /etc/envrc
+COPY .devcontainer/bash.bashrc /etc/bash.bashrc
+ENV ENV="/etc/envrc" BASH_ENV="/etc/envrc"
+
+
 # RUN sudo usermod -a -G nix-users g
 # RUN sudo -u ${USERNAME} nix-channel --add https://nixos.org/channels/nixpkgs-unstable
 # RUN sudo -u ${USERNAME} nix-channel --update
 ARG NIX_INSTALL_SCRIPT=https://nixos.org/nix/install
 RUN curl -L ${NIX_INSTALL_SCRIPT} | sudo -u ${USERNAME} NIX_INSTALLER_NO_MODIFY_PROFILE=1 sh
 COPY .devcontainer/devcontainer.sh /etc/profile.d/devcontainer.sh
+
+# RUN sudo -HEu ${USERNAME} nix-env -if https://github.com/nix-community/lorri/archive/canon.tar.gz
 
 
 USER ${USER_UID}:${USER_GID}
