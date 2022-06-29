@@ -43,7 +43,7 @@
 		"ms-python.python",
 		"redhat.vscode-yaml",
 		"VisualStudioExptTeam.vscodeintellicode",
-		"Rubymaniac.vscode-direnv"
+		// "Rubymaniac.vscode-direnv"
 	],
 	"settings": {
 		"terminal.integrated.defaultProfile.linux": "fish",
