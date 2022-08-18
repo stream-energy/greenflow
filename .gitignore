@@ -2,6 +2,6 @@
 /.venv
 /.vscode/.poetry.cache
 /.vscode/*.log
-/deploy/enoslib/cachedir
+cachedir
 /kubeconfig
-/deploy/enoslib/inventory/g5k.ini
+inventory/g5k.ini
