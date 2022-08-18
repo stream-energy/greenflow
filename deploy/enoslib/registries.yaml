@@ -1,0 +1,9 @@
+mirrors:
+  docker.io:
+    endpoint:
+      - "http://docker-cache.grid5000.fr"
+      - "https://docker.io"
+      # - "http://***REMOVED***-vm.lille.grid5000.fr:5000"
+  # docker-cache.grid5000.fr:
+  #   endpoint:
+  #     - "http://docker-cache.grid5000.fr"

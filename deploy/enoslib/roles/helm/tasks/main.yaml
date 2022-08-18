@@ -1,0 +1,114 @@
+---
+# tasks file for helm
+
+- name: Timestamp logic
+  block:
+    - name: Clear Facts
+      meta: clear_facts
+
+    - name: Get Timestamp
+      environment:
+        TZ: Europe/Paris
+      shell: "date -R"
+      register: tstamp
+
+    - name: Set fact for timestamp
+      set_fact:
+        deployment_ts: "{{ tstamp.stdout }}"
+        cacheable: true
+  tags:
+    - redeploy
+    - never
+
+- name: Setup Helm plugins on host
+  block:
+    - name: Install Helm git plugin
+      kubernetes.core.helm_plugin:
+        plugin_path: https://github.com/aslafy-z/helm-git
+        state: present
+    - name: Install Helm git plugin
+      kubernetes.core.helm_plugin:
+        plugin_path: https://github.com/databus23/helm-diff
+        state: present
+    - name: Set fact for helm plugins setup
+      set_fact:
+        helm_plugins_setup: true
+        cacheable: true
+  when: "'helm_plugins_setup' not in ansible_facts"
+
+- name: Deploy NFS Storage provisioner
+  kubernetes.core.helm:
+    name: csi-driver-nfs
+    chart_ref: csi-driver-nfs
+    chart_version: 4.1.0
+    chart_repo_url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+    release_namespace: kube-system
+    # TODO: Add NodeSelector to ensure the monitoring stack is only on the control node
+    values:
+      controller:
+        # runOnControlPlane: true
+        nodeSelector:
+          node-role.kubernetes.io/control-plane: "true"
+
+- name: Deploy NFS Storage Class Manifest
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', 'nfs-sc.yaml.j2') | from_yaml }}"
+
+- name: Create the monitoring k8s namespace
+  kubernetes.core.k8s:
+    name: monitoring
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Deploy PVC for Grafana
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', 'grafana-pvc.yaml.j2') | from_yaml }}"
+
+- name: Deploy PVC for VictoriaMetrics
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', 'vm-pvc.yaml.j2') | from_yaml }}"
+
+- name: Deploy latest version of Prometheus Stack in monitoring namespace
+  kubernetes.core.helm:
+    name: kp
+    chart_ref: kube-prometheus-stack
+    chart_version: 36.2.0
+    chart_repo_url: https://prometheus-community.github.io/helm-charts
+    release_namespace: monitoring
+    # create_namespace: true
+    # force: true
+    # TODO: Add NodeSelector to ensure the monitoring stack is only on the control node
+    values: "{{ lookup('ansible.builtin.template', 'kube-prometheus-stack-values.yaml.j2') | from_yaml }}"
+
+- name: Deploy latest version of VictoriaMetrics chart for long term storage of experiment results
+  kubernetes.core.helm:
+    name: victoria-metrics-single
+    chart_ref: victoria-metrics-single
+    chart_version: 0.8.31
+    chart_repo_url: https://victoriametrics.github.io/helm-charts/
+    release_namespace: monitoring
+    create_namespace: true
+    # TODO: Add NodeSelector to ensure the monitoring stack is only on the control node
+    values:
+      server:
+        retentionPeriod: 100y
+        persistentVolume:
+          existingClaim: vm-pvc
+
+- name: Deploy additional ServiceMonitor for Scaphandre
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', 'scaph-ServiceMonitor.yaml.j2') | from_yaml }}"
+
+- name: Deploy Scaphandre for Power Metrics monitoring
+  kubernetes.core.helm:
+    name: scaph
+    chart_ref: scaphandre
+    chart_version: 0.1.0
+    chart_repo_url: git+https://github.com/hubblo-org/scaphandre@helm/scaphandre?ref=main
+    release_namespace: monitoring
+    create_namespace: true

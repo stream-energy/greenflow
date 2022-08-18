@@ -25,11 +25,17 @@
 		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
 		"source=/home/g/.ssh,target=/home/g/.ssh,type=bind",
 		"source=/home/g/.kube,target=/home/g/.kube,type=bind",
-		"source=pacman-cache,target=/var/cache/pacman/pkg,type=volume,consistency=cached"
+		// "source=${localWorkspaceFolder}/.vscode/.pyenv-cache,target=/usr/local/share/app-scripts,type=bind,consistency=cached",
+		"source=pacman-cache,target=/var/cache/pacman/pkg,type=volume,consistency=cached",
+		"source=pyenv-cache,target=/home/g/.pyenv,type=volume,consistency=cached",
+		"source=poetry-cache,target=/workspaces/greenflow/.vscode/.poetry.cache,type=volume,consistency=cached",
+		"source=venv-cache,target=/workspaces/greenflow/.venv,type=volume,consistency=cached",
+		"source=local-cache,target=/home/g/.local/share,type=volume,consistency=cached"
 	],
 	"userEnvProbe": "loginShell",
 	"overrideCommand": false,
 	"updateRemoteUserUID": false,
+	"onCreateCommand": "bash ${containerWorkspaceFolder}/.devcontainer/onCreate.sh",
 	// build development environment on creation
 	// "onCreateCommand": "nix-shell --command 'sh .devcontainer/onCreate.sh'",
 	// Add the IDs of extensions you want installed when the container is created.
@@ -39,21 +45,22 @@
 		// nix formatting and dev support
 		"jnoortheen.nix-ide",
 		// run command on save (needed to reload nix environment)
-		"fsevenm.run-it-on",
+		// "fsevenm.run-it-on",
 		// python support
 		"ms-python.python",
 		"redhat.vscode-yaml",
 		"VisualStudioExptTeam.vscodeintellicode",
+		"eamodio.gitlens"
 		// "Rubymaniac.vscode-direnv"
 	],
-	"settings": {
-		"terminal.integrated.defaultProfile.linux": "fish",
-		"terminal.integrated.profiles.linux": {
-			"fish": {
-				"path": "fish"
-			},
-		}
-	},
+	// "settings": {
+	// 	"terminal.integrated.defaultProfile.linux": "fish",
+	// 	"terminal.integrated.profiles.linux": {
+	// 		"fish": {
+	// 			"path": "fish"
+	// 		},
+	// 	}
+	// },
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": []
 	// Use 'postCreateCommand' to run commands after the container is created.

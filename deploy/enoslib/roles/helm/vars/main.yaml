@@ -1,0 +1,5 @@
+---
+# vars file for helm
+storage_class_name: nfs-csi
+nfs_server_address: procyon.lyon.grid5000.fr
+nfs_server_share: /export/home/***REMOVED***/k8s

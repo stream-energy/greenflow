@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sysbench-prepare
+spec:
+  template:
+    metadata:
+      name: sysbench-prepare
+    spec:
+      containers:
+        - name: sysbench-prepare
+          image: severalnines/sysbench
+          command:
+            - sysbench
+            - --threads=24
+            - cpu
+            - run
+      restartPolicy: Never
