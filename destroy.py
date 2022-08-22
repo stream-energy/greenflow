@@ -28,7 +28,15 @@ def main():
         .finalize()
     )
     provider = en.G5k(conf)
+    kubectl(split("delete -n monitoring statefulsets victoria-metrics-single-server"))
+    sleep(5)
     provider.destroy()
+    sleep(5)
+    ssh(
+        split(
+            "h-0 rsync -aAXvPh --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 lyon.grid5000.fr:/home/***REMOVED***/k8s /home/g/"
+        )
+    )
 
 
 if __name__ == "__main__":
