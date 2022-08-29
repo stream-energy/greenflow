@@ -58,7 +58,7 @@
     - tags: [always]
       ansible.builtin.fetch:
         src: /etc/rancher/k3s/k3s.yaml
-        dest: ../../kubeconfig
+        dest: kubeconfig
         flat: true
 
 - name: Setup Workers
@@ -87,19 +87,19 @@
   tasks:
     - name: Patch kubeconfig
       ansible.builtin.lineinfile:
-        path: ../../kubeconfig
+        path: kubeconfig
         regexp: 127.0.0.1:6443
         line: "    server: https://{{ hostvars['CONTROLLER_DETAILS']['controller_ip'] }}:6443"
 
     - name: Patch kubeconfig
       ansible.builtin.replace:
-        path: ../../kubeconfig
+        path: kubeconfig
         regexp: default
         replace: exp
 
     - name: Set correct chmod on kubeconfig
       ansible.builtin.file:
-        path: ../../kubeconfig
+        path: kubeconfig
         mode: "0600"
 
     - name: Wait for all k3s nodes to be ready
