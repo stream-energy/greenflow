@@ -9,7 +9,7 @@
     - name: Get Timestamp
       environment:
         TZ: Europe/Paris
-      shell: "date -R"
+      shell: "date -Iseconds"
       register: tstamp
 
     - name: Set fact for timestamp
@@ -79,7 +79,7 @@
   kubernetes.core.helm:
     name: kp
     chart_ref: kube-prometheus-stack
-    chart_version: 36.2.0
+    chart_version: 39.9.0
     chart_repo_url: https://prometheus-community.github.io/helm-charts
     release_namespace: monitoring
     # create_namespace: true
@@ -91,7 +91,7 @@
   kubernetes.core.helm:
     name: victoria-metrics-single
     chart_ref: victoria-metrics-single
-    chart_version: 0.8.31
+    chart_version: 0.8.34
     chart_repo_url: https://victoriametrics.github.io/helm-charts/
     release_namespace: monitoring
     create_namespace: true
