@@ -1,6 +1,6 @@
 default: deploy
 	@echo "No targets specified. Assuming deploy"
 deploy:
-	./deploy.py
+	python -m greenflow deploy
 destroy:
-	./destroy.py
+	python -m greenflow destroy
