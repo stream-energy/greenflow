@@ -30,6 +30,8 @@ kube-state-metrics:
   nodeSelector: 
     node-role.kubernetes.io/control-plane: "true"
 grafana:
+  # Grafana is Disabled now as metrics are stored on another analysis server
+  enabled: false
   grafana.ini:
     auth.anonymous:
       enabled: true
