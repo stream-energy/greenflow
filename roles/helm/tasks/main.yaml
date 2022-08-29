@@ -49,6 +49,9 @@
         # runOnControlPlane: true
         nodeSelector:
           node-role.kubernetes.io/control-plane: "true"
+      node:
+        nodeSelector:
+          node-role.kubernetes.io/control-plane: "true"
 
 - name: Deploy NFS Storage Class Manifest
   kubernetes.core.k8s:

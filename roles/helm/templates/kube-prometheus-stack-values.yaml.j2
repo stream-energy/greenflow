@@ -17,6 +17,18 @@ prometheus:
           endpoints:
             - port: metrics
               interval: 5s
+    nodeSelector: 
+      node-role.kubernetes.io/control-plane: "true"
+prometheusOperator:
+  nodeSelector: 
+    node-role.kubernetes.io/control-plane: "true"
+alertmanager:
+  alertmanagerSpec:
+    nodeSelector:
+      node-role.kubernetes.io/control-plane: "true"
+kube-state-metrics:
+  nodeSelector: 
+    node-role.kubernetes.io/control-plane: "true"
 grafana:
   grafana.ini:
     auth.anonymous:
