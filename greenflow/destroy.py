@@ -40,7 +40,7 @@ def main():
     sleep(5)
     ssh(
         split(
-            "h-0 rsync -aAXvPh --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 lyon.grid5000.fr:/home/***REMOVED***/k8s /home/g/"
+            "h-0 rsync -rvPh --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 lyon.grid5000.fr:/home/***REMOVED***/k8s /home/g/"
         )
     )
     # import ansible_runner

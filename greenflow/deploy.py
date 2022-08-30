@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 from shlex import split
+from multiprocessing import Process
 
 import enoslib as en
-
 import gin
 import pendulum
 import requests
+import yaml
 from bpdb import set_trace
 from sh import ansible_playbook, helm, kubectl
 
@@ -42,6 +43,24 @@ def gen_g5k_config(
     return conf
 
 
+def enable_g5k_nfs_access(*, provider):
+    g5kcreds = {}
+    with open(".python-grid5000.yaml") as f:
+        g5kcreds = yaml.safe_load(f)
+
+    jobs = provider.driver.get_jobs()
+
+    job_id = jobs[0].uid
+    job_site = jobs[0].site
+    uri = f"https://api.grid5000.fr/3.0/sites/{job_site}/storage/home/{g5kcreds['username']}/access"
+
+    requests.post(
+        uri,
+        json={"termination": {"job": job_id, "site": job_site}},
+        auth=(g5kcreds["username"], g5kcreds["password"]),
+    )
+
+
 @gin.configurable
 def deploy_exp_on_g5k(
     *,
@@ -49,16 +68,15 @@ def deploy_exp_on_g5k(
 ):
     provider = en.G5k(g5k_config)
     roles, networks = provider.init()
-    jobs = provider.driver.get_jobs()
-    job_id = jobs[0].uid
-    job_site = jobs[0].site
-    uri = f"https://api.grid5000.fr/3.0/sites/{job_site}/storage/home/***REMOVED***/access"
-    requests.post(
-        uri,
-        json={"termination": {"job": job_id, "site": job_site}},
-        auth=("***REMOVED***", "***REMOVED***"),
-    )
+    p = Process(target=enable_g5k_nfs_access, kwargs={"provider": provider})
+    p.start()
     en.run_ansible(["gen-inventory.yaml"], roles=roles)
+    ansible_playbook(split("k3s-setup.yaml -i inventory/g5k.ini"), _fg=True)
+    p.join()
+    ansible_playbook(
+        split("helm-setup.yaml -i inventory/g5k.ini -t redeploy"), _fg=True
+    )
+    ansible_playbook(split("helm-setup.yaml -i inventory/g5k.ini"), _fg=True)
 
 
 def main():
@@ -67,11 +85,6 @@ def main():
     gin.parse_config_file("params/default.gin")
     deploy_exp_on_g5k()
 
-    ansible_playbook(split("k3s-setup.yaml -i inventory/g5k.ini"), _fg=True)
-    ansible_playbook(
-        split("helm-setup.yaml -i inventory/g5k.ini -t redeploy"), _fg=True
-    )
-    ansible_playbook(split("helm-setup.yaml -i inventory/g5k.ini"), _fg=True)
     try:
         port_forward_process = kubectl(
             split(
