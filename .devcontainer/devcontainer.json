@@ -53,7 +53,10 @@
 		"eamodio.gitlens"
 		// "Rubymaniac.vscode-direnv"
 	],
-	// "settings": {
+	"settings": {
+		"python.formatting.blackPath": "/home/g/.pyenv/versions/mambaforge/envs/greenflow/bin/black",
+		"python.sortImports.path": "/home/g/.pyenv/versions/mambaforge/envs/greenflow/bin/isort"
+	},
 	// 	"terminal.integrated.defaultProfile.linux": "fish",
 	// 	"terminal.integrated.profiles.linux": {
 	// 		"fish": {
