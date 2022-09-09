@@ -6,5 +6,5 @@
     - name: Update Ansible inventory file
       ansible.builtin.template:
         src: ansible-hosts.j2
-        dest: inventory/g5k.ini
+        dest: "{{ ansible_inventory_file_path }}"
       delegate_to: localhost

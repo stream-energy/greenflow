@@ -1,15 +1,21 @@
+import enoslib as en
 import fire
+import gin
+from icecream import install
 
 from . import deploy, destroy
 
 
-class Run(object):
+class RUN:
     def deploy(self):
-        return deploy.main()
+        return deploy.deploy()
 
     def destroy(self):
-        return destroy.main()
+        return destroy.destroy()
 
 
 if __name__ == "__main__":
-    fire.Fire(Run)
+    _ = en.init_logging()
+    install()
+    gin.parse_config_file("params/default.gin")
+    fire.Fire(RUN)
