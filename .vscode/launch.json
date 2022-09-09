@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Deploy",
+            "type": "python",
+            "request": "launch",
+            "module": "greenflow",
+            "justMyCode": true,
+            "args": [
+                "deploy"
+            ]
+        },
+    ]
+}
