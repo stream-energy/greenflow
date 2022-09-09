@@ -6,4 +6,5 @@ cachedir
 /kubeconfig
 inventory/g5k.ini
 *.pyc
-artifacts/*
+/artifacts
+/.trash
