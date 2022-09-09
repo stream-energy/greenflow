@@ -43,7 +43,6 @@
     chart_version: 4.1.0
     chart_repo_url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
     release_namespace: kube-system
-    # TODO: Add NodeSelector to ensure the monitoring stack is only on the control node
     values:
       controller:
         # runOnControlPlane: true
@@ -84,7 +83,6 @@
     release_namespace: monitoring
     # create_namespace: true
     # force: true
-    # TODO: Add NodeSelector to ensure the monitoring stack is only on the control node
     values: "{{ lookup('ansible.builtin.template', 'kube-prometheus-stack-values.yaml.j2') | from_yaml }}"
 
 - name: Deploy latest version of VictoriaMetrics chart for long term storage of experiment results
@@ -95,12 +93,13 @@
     chart_repo_url: https://victoriametrics.github.io/helm-charts/
     release_namespace: monitoring
     create_namespace: true
-    # TODO: Add NodeSelector to ensure the monitoring stack is only on the control node
     values:
       server:
         retentionPeriod: 100y
         persistentVolume:
           existingClaim: vm-pvc
+        nodeSelector:
+          node-role.kubernetes.io/control-plane: "true"
 
 - name: Deploy additional ServiceMonitor for Scaphandre
   kubernetes.core.k8s:
@@ -115,3 +114,26 @@
     chart_repo_url: git+https://github.com/hubblo-org/scaphandre@helm/scaphandre?ref=main
     release_namespace: monitoring
     create_namespace: true
+
+- name: Deploy Theodolite
+  kubernetes.core.helm:
+    name: theodolite
+    chart_ref: theodolite
+    chart_version: 0.8.0
+    chart_repo_url: https://www.theodolite.rocks
+    release_namespace: default
+    values: "{{ lookup('ansible.builtin.template', 'theodolite-values.yaml.j2') | from_yaml }}"
+
+- name: Deploy Theodolite Configmap
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', 'theodolite-cm.yaml.j2') | from_yaml }}"
+
+- name: Deploy Theodolite benchmark
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', 'theodolite-bench.yaml.j2') | from_yaml }}"
+# - name: Deploy Theodolite execution
+#   kubernetes.core.k8s:
+#     state: present
+#     definition: "{{ lookup('ansible.builtin.template', 'theodolite-exec.yaml.j2') | from_yaml }}"
