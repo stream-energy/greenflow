@@ -66,8 +66,8 @@ WORKDIR /home/${USERNAME}
 RUN sudo -u ${USERNAME} git clone https://aur.archlinux.org/yay-bin
 WORKDIR /home/${USERNAME}/yay-bin
 
-RUN --mount=type=cache,target=/home/${USERNAME}/.pyenv sudo -u ${USERNAME} pyenv install 3.10.6
-RUN --mount=type=cache,target=/home/${USERNAME}/.pyenv sudo -u ${USERNAME} pyenv global 3.10.6
+# RUN --mount=type=cache,target=/home/${USERNAME}/.pyenv sudo -u ${USERNAME} pyenv install 3.10.6
+# RUN --mount=type=cache,target=/home/${USERNAME}/.pyenv sudo -u ${USERNAME} pyenv global 3.10.6
 
 USER ${USER_UID}:${DOCKER_GID}
 RUN makepkg -si --noconfirm

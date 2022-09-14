@@ -1,6 +1,8 @@
 default: deploy
 	@echo "No targets specified. Assuming deploy"
-deploy:
+debug:
 	python -m pdb -c continue -m greenflow deploy
+deploy:
+	python -m greenflow deploy
 destroy:
-	python -m pdb -c continue -m greenflow destroy
+	python -m greenflow destroy
