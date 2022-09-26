@@ -8,3 +8,4 @@ inventory/g5k.ini
 *.pyc
 /artifacts
 /.trash
+/storage
