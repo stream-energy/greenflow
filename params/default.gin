@@ -1,5 +1,3 @@
-greenflow.platform.Platform.ansible_inventory_file_path = "/tmp/inventory.ini"
-
 greenflow.deploy.deploy.platform = @greenflow.g5k.G5KPlatform
 greenflow.destroy.destroy.platform = @greenflow.g5k.G5KPlatform
 
@@ -7,3 +5,5 @@ greenflow.g5k.G5KPlatform.site = "lyon"
 greenflow.g5k.G5KPlatform.cluster = "nova"
 greenflow.g5k.G5KPlatform.num_control = 1
 greenflow.g5k.G5KPlatform.num_worker = 1
+greenflow.g5k.G5KPlatform.queue = "besteffort"
+greenflow.g5k.G5KPlatform.walltime = "1:00:00"
