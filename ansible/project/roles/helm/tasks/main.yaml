@@ -1,32 +1,15 @@
 ---
 # tasks file for helm
 
-- name: Timestamp logic
-  block:
-    - name: Clear Facts
-      meta: clear_facts
-
-    - name: Get Timestamp
-      environment:
-        TZ: Europe/Paris
-      shell: "date -Iseconds"
-      register: tstamp
-
-    - name: Set fact for timestamp
-      set_fact:
-        deployment_ts: "{{ tstamp.stdout }}"
-        cacheable: true
-  tags:
-    - redeploy
-    - never
-
 - name: Setup Helm plugins on host
+  delegate_to: localhost
+  run_once: true
   block:
     - name: Install Helm git plugin
       kubernetes.core.helm_plugin:
         plugin_path: https://github.com/aslafy-z/helm-git
         state: present
-    - name: Install Helm git plugin
+    - name: Install Helm diff plugin
       kubernetes.core.helm_plugin:
         plugin_path: https://github.com/databus23/helm-diff
         state: present
@@ -37,6 +20,8 @@
   when: "'helm_plugins_setup' not in ansible_facts"
 
 - name: Deploy NFS Storage provisioner
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.helm:
     name: csi-driver-nfs
     chart_ref: csi-driver-nfs
@@ -53,28 +38,36 @@
           node-role.kubernetes.io/control-plane: "true"
 
 - name: Deploy NFS Storage Class Manifest
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('ansible.builtin.template', 'nfs-sc.yaml.j2') | from_yaml }}"
 
 - name: Create the monitoring k8s namespace
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.k8s:
     name: monitoring
     api_version: v1
     kind: Namespace
     state: present
 
-- name: Deploy PVC for Grafana
-  kubernetes.core.k8s:
-    state: present
-    definition: "{{ lookup('ansible.builtin.template', 'grafana-pvc.yaml.j2') | from_yaml }}"
+# - name: Deploy PVC for Grafana
+#   kubernetes.core.k8s:
+#     state: present
+#     definition: "{{ lookup('ansible.builtin.template', 'grafana-pvc.yaml.j2') | from_yaml }}"
 
 - name: Deploy PVC for VictoriaMetrics
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('ansible.builtin.template', 'vm-pvc.yaml.j2') | from_yaml }}"
 
 - name: Deploy latest version of Prometheus Stack in monitoring namespace
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.helm:
     name: kp
     chart_ref: kube-prometheus-stack
@@ -86,6 +79,8 @@
     values: "{{ lookup('ansible.builtin.template', 'kube-prometheus-stack-values.yaml.j2') | from_yaml }}"
 
 - name: Deploy latest version of VictoriaMetrics chart for long term storage of experiment results
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.helm:
     name: victoria-metrics-single
     chart_ref: victoria-metrics-single
@@ -102,11 +97,15 @@
           node-role.kubernetes.io/control-plane: "true"
 
 - name: Deploy additional ServiceMonitor for Scaphandre
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('ansible.builtin.template', 'scaph-ServiceMonitor.yaml.j2') | from_yaml }}"
 
 - name: Deploy Scaphandre for Power Metrics monitoring
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.helm:
     name: scaph
     chart_ref: scaphandre
@@ -116,20 +115,27 @@
     create_namespace: true
 
 - name: Deploy Theodolite
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.helm:
     name: theodolite
     chart_ref: theodolite
     chart_version: 0.8.0
+    wait: true
     chart_repo_url: https://www.theodolite.rocks
     release_namespace: default
     values: "{{ lookup('ansible.builtin.template', 'theodolite-values.yaml.j2') | from_yaml }}"
 
 - name: Deploy Theodolite Configmap
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('ansible.builtin.template', 'theodolite-cm.yaml.j2') | from_yaml }}"
 
 - name: Deploy Theodolite benchmark
+  delegate_to: localhost
+  run_once: true
   kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('ansible.builtin.template', 'theodolite-bench.yaml.j2') | from_yaml }}"
@@ -137,3 +143,9 @@
 #   kubernetes.core.k8s:
 #     state: present
 #     definition: "{{ lookup('ansible.builtin.template', 'theodolite-exec.yaml.j2') | from_yaml }}"
+
+- name: Wait for Theodolite to be ready
+  delegate_to: localhost
+  run_once: true
+  shell: kubectl wait kafka theodolite-kafka --for=condition=Ready --timeout=300s
+  register: kafka_ready

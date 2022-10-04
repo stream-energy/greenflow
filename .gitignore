@@ -2,10 +2,11 @@
 /.venv
 /.vscode/.poetry.cache
 /.vscode/*.log
-cachedir
 /kubeconfig
 inventory/g5k.ini
 *.pyc
-/artifacts
 /.trash
 /storage
+/ansible/artifacts
+/ansible/cachedir
+/ansible/env
