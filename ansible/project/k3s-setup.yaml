@@ -71,7 +71,7 @@
 
     - ansible.builtin.fetch:
         src: /etc/rancher/k3s/k3s.yaml
-        path: "{{ kubeconfig_path }}"
+        dest: "{{ kubeconfig_path }}"
         flat: true
 
 - name: Setup Workers
