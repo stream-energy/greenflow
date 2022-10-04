@@ -3,20 +3,21 @@ import gin
 import bpdb
 
 
-@gin.configurable
 class Platform:
-    @gin.configurable
-    def __init__(self, *, ansible_inventory_file_path=gin.REQUIRED):
+    def __init__(self, *, ansible_inventory_file_path="/tmp/inventory.ini"):
         self.ansible_inventory_file_path = ansible_inventory_file_path
 
     def pre_deploy(self):
-        pass
+        raise NotImplementedError()
 
     def post_deploy(self):
-        pass
+        raise NotImplementedError()
 
     def pre_destroy(self):
-        pass
+        raise NotImplementedError()
 
     def post_destroy(self):
-        pass
+        raise NotImplementedError()
+
+    def get_platform_metadata(self) -> dict:
+        raise NotImplementedError()
