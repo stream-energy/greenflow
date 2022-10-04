@@ -10,3 +10,4 @@ inventory/g5k.ini
 /ansible/artifacts
 /ansible/cachedir
 /ansible/env
+/ansible/inventory
