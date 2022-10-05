@@ -11,3 +11,4 @@ inventory/g5k.ini
 /ansible/cachedir
 /ansible/env
 /ansible/inventory
+/cachedir
