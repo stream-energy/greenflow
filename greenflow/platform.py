@@ -1,12 +1,9 @@
-import gin
-
 import bpdb
+from sh import kubectl, k3d
+from shlex import split
 
 
 class Platform:
-    def __init__(self, *, ansible_inventory_file_path="/tmp/inventory.ini"):
-        self.ansible_inventory_file_path = ansible_inventory_file_path
-
     def pre_deploy(self):
         raise NotImplementedError()
 
@@ -21,3 +18,21 @@ class Platform:
 
     def get_platform_metadata(self) -> dict:
         raise NotImplementedError()
+
+
+class MockPlatform:
+    def pre_deploy(self):
+        k3d(split("cluster delete"))
+        pass
+
+    def post_deploy(self):
+        kubectl(split("config set-context k3d-k3s-default"))
+
+    def pre_destroy(self):
+        pass
+
+    def post_destroy(self):
+        pass
+
+    def get_platform_metadata(self) -> dict:
+        pass
