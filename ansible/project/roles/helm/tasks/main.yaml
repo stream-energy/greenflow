@@ -139,13 +139,14 @@
   kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('ansible.builtin.template', 'theodolite-bench.yaml.j2') | from_yaml }}"
-# - name: Deploy Theodolite execution
-#   kubernetes.core.k8s:
-#     state: present
-#     definition: "{{ lookup('ansible.builtin.template', 'theodolite-exec.yaml.j2') | from_yaml }}"
 
 - name: Wait for Theodolite to be ready
   delegate_to: localhost
   run_once: true
   shell: kubectl wait kafka theodolite-kafka --for=condition=Ready --timeout=300s
   register: kafka_ready
+
+- name: Deploy Theodolite execution
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', 'theodolite-exec.yaml.j2') | from_yaml }}"
