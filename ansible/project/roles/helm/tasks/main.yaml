@@ -150,3 +150,9 @@
   kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('ansible.builtin.template', 'theodolite-exec.yaml.j2') | from_yaml }}"
+
+- name: Wait for execution to finish
+  delegate_to: localhost
+  run_once: true
+  shell: kubectl wait execution
+  register: kafka_ready
