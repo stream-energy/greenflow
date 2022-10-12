@@ -13,6 +13,10 @@ class RUN:
     def destroy(self):
         return destroy.destroy()
 
+    def run(self):
+        deploy.deploy()
+        destroy.destroy()
+
 
 if __name__ == "__main__":
     _ = en.init_logging()
