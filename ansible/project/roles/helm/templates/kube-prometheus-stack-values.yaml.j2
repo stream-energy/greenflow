@@ -17,18 +17,109 @@ prometheus:
           endpoints:
             - port: metrics
               interval: 5s
-    nodeSelector: 
+    nodeSelector:
       node-role.kubernetes.io/control-plane: "true"
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
 prometheusOperator:
-  nodeSelector: 
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+  nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
+kubeApiServer:
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+kubelet:
+  serviceMonitor:
+    relabelings:
+      - sourceLabels: [__metrics_path__]
+        targetLabel: metrics_path
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+kubeControllerManager:
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+coreDns:
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+kubeDns:
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+kubeEtcd:
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+kubeScheduler:
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+kubeProxy:
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+kube-state-metrics:
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: "true"
+  prometheus:
+    monitor:
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: instance
+prometheus-node-exporter:
+  prometheus:
+    monitor:
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: instance
 alertmanager:
   alertmanagerSpec:
     nodeSelector:
       node-role.kubernetes.io/control-plane: "true"
-kube-state-metrics:
-  nodeSelector: 
-    node-role.kubernetes.io/control-plane: "true"
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
 grafana:
   # Grafana is Disabled now as metrics are stored on another analysis server
   enabled: false
