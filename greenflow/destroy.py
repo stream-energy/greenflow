@@ -7,6 +7,7 @@ from sh import kubectl, ssh
 
 from .g5k import G5KPlatform
 from .platform import Platform
+from . import g
 
 
 def pre_destroy():
@@ -35,6 +36,10 @@ def destroy(*, platform=gin.REQUIRED):
     p: Platform = platform()
     match p:
         case G5KPlatform():
+            try:
+                print(f"Destroying deployment: {g.deployment_start}")
+            except:
+                pass
             pre_destroy()
             p.destroy()
             post_destroy()
