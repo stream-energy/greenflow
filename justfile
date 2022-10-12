@@ -6,3 +6,5 @@ deploy:
 	python -m greenflow deploy
 destroy:
 	python -m greenflow destroy
+run:
+	python -m greenflow run
