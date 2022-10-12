@@ -140,11 +140,10 @@
     state: present
     definition: "{{ lookup('ansible.builtin.template', 'theodolite-bench.yaml.j2') | from_yaml }}"
 
-- name: Wait for Theodolite to be ready
+- name: Wait for Theodolite's Kafka to be deployed
   delegate_to: localhost
   run_once: true
-  shell: kubectl wait kafka theodolite-kafka --for=condition=Ready --timeout=300s
-  register: kafka_ready
+  shell: kubectl wait kafka theodolite-kafka --for=condition=Ready --timeout=600s
 
 - name: Deploy Theodolite execution
   kubernetes.core.k8s:
@@ -154,5 +153,4 @@
 - name: Wait for execution to finish
   delegate_to: localhost
   run_once: true
-  shell: kubectl wait execution
-  register: kafka_ready
+  shell: kubectl wait execution experiment --for=jsonpath='{.status.executionState}'=Finished --timeout=1h
