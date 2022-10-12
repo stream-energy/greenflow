@@ -1,7 +1,7 @@
 apiVersion: theodolite.rocks/v1beta1
 kind: benchmark
 metadata:
-  name: example-benchmark
+  name: experiment-benchmark
   namespace: default
 spec:
   sut:
@@ -35,14 +35,18 @@ spec:
           properties:
             loadGenMaxRecords: "150000"
   slos:
-    - name: "lag trend"
-      sloType: "lag trend"
-      prometheusUrl: "http://prometheus-operated:9090"
+    - name: "Dummy SLO"
+      sloType: "generic"
+      prometheusUrl: "http://prometheus-operated.monitoring.svc.cluster.local:9090"
       offset: 0
       properties:
-        threshold: 3000
-        externalSloUrl: "http://localhost:80/evaluate-slope"
+        externalSloUrl: "http://localhost:8082"
+        promQLQuery: "sum by(instance) (up)"
         warmup: 60 # in seconds
+        queryAggregation: count
+        repetitionAggregation: sum
+        operator: gte
+        threshold: 0
   kafkaConfig:
     bootstrapServer: "theodolite-kafka-kafka-bootstrap:9092"
     topics:
