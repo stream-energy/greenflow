@@ -29,7 +29,6 @@ def post_deploy(platform: Platform):
 @gin.configurable
 def deploy(*, platform: type[Platform] = gin.REQUIRED):
     p: Platform = platform()
-    g.deployment_start = pendulum.now()
     match p:
         case G5KPlatform():
             pre_deploy(p)
