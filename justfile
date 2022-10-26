@@ -1,10 +1,12 @@
-default: deploy
+default: run
 	@echo "No targets specified. Assuming deploy"
 debug:
-	python -m pdb -c continue -m greenflow deploy
+	python -m pdb -c continue -m greenflow run
 deploy:
-	python -m greenflow deploy
+	time python -m greenflow deploy
 destroy:
-	python -m greenflow destroy
+	time python -m greenflow destroy
 run:
-	python -m greenflow run
+	time python -m greenflow run
+mock:
+	time python -m greenflow mock
