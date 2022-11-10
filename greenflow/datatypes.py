@@ -3,6 +3,9 @@ import pendulum
 
 from pendulum import DateTime
 
+# FIXME: Rethink whether we want pydantic validation for inputs and outputs
+# Probably not for this iteration.
+
 
 class PlatformMetadata(BaseModel):
     pass
@@ -15,16 +18,13 @@ class G5KMetadata(PlatformMetadata):
 class Metadata(BaseModel):
     deployment_ts: DateTime
     platform_metadata: PlatformMetadata
-    # TODO: Add deployment ts and g5k metadata like job id
 
 
 class Input(BaseModel):
-    # TODO: Add g5k checks stuff, number of workers, etc
     pass
 
 
 class Output(BaseModel):
-    # TODO: Auto generated dashboards for that experiment run?
     pass
 
 

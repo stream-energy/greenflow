@@ -7,41 +7,53 @@ from sh import kubectl, ssh
 
 from .g5k import G5KPlatform
 from .platform import Platform
-from . import g
+from .g import g
 
 
 def pre_destroy():
     try:
-        p = kubectl(
-            split("delete -n monitoring statefulsets victoria-metrics-single-server"),
-            _bg=True,
-        )
-        p.wait(timeout=2)
+        g.storage.wrap_up_exp()
     except:
         pass
-    sleep(5)
+
+    p = kubectl(
+        "port-forward -n monitoring svc/victoria-metrics-single-server 8428:8429".split(
+            " "
+        ),
+        _bg=True,
+    )
+    try:
+        p = kubectl(
+            split(
+                "delete --wait=true --timeout=10s -n monitoring statefulsets victoria-metrics-single-server"
+            ),
+            # _bg=True,
+        )
+        p.wait(timeout=10)
+    except:
+        pass
 
 
 def post_destroy():
-    ssh(
-        split(
-            "h-0 sudo rsync -aXxvPh --exclude '*cache*' --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 lyon.grid5000.fr:/home/***REMOVED***/k8s /root/"
-        )
-    )
-    ssh(split("h-0 docker restart vm"))
+    pass
+    # ssh(
+    #     split(
+    #         "h-0 sudo rsync -aXxvPh --exclude '*cache*' --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 lyon.grid5000.fr:/home/***REMOVED***/k8s /root/"
+    #     )
+    # )
+    # ssh(split("h-0 docker restart vm"))
 
 
 @gin.configurable
 def destroy(*, platform=gin.REQUIRED):
     p: Platform = platform()
+    # pre_destroy()
+    # p.teardown()
+    # post_destroy()
     match p:
         case G5KPlatform():
-            try:
-                print(f"Destroying deployment: {g.deployment_start}")
-            except:
-                pass
             pre_destroy()
-            p.destroy()
+            p.teardown()
             post_destroy()
 
 

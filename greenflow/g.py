@@ -1,7 +1,26 @@
 import pendulum
-from .storage import ExpStorage
+
+from functools import cached_property
 
 from .datatypes import DateTime
 
-deployment_start: DateTime = pendulum.now()
-storage: ExpStorage = ExpStorage()
+
+class _g:
+    # __slots__ = ["deployment_end"]
+
+    @cached_property
+    def deployment_start(self) -> DateTime:
+        return pendulum.now()
+
+    @cached_property
+    def deployment_end(self) -> DateTime:
+        return pendulum.now()
+
+    @cached_property
+    def storage(self):
+        from .storage import ExpStorage
+
+        return ExpStorage()
+
+
+g: _g = _g()

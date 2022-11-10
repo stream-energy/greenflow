@@ -1,4 +1,4 @@
-include 'default.gin'
+include 'params/default.gin'
 
 greenflow.deploy.deploy.platform = @greenflow.platform.MockPlatform
 greenflow.destroy.destroy.platform = @greenflow.platform.MockPlatform

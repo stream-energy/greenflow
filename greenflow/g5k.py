@@ -1,7 +1,6 @@
 from multiprocessing import Process
 
 import ansible_runner
-import enoslib as en
 import gin
 import requests
 import yaml
@@ -9,7 +8,12 @@ from icecream import ic
 
 from .platform import Platform
 
-from . import g
+from .g import g
+from shlex import split
+from time import sleep
+
+import gin
+from sh import kubectl, ssh
 
 
 @gin.register(denylist=["job_name"])
@@ -26,8 +30,10 @@ class G5KPlatform(Platform):
         walltime: str = gin.REQUIRED,
         queue: str = gin.REQUIRED,
     ):
+        import enoslib as en
 
         super().__init__()
+        _ = en.init_logging()
         network = en.G5kNetworkConf(type="prod", roles=["my_network"], site=site)
         conf = (
             en.G5kConf.from_settings(
@@ -55,7 +61,8 @@ class G5KPlatform(Platform):
         self.provider = en.G5k(self.conf)
 
     @gin.register
-    def deploy(self):
+    def setup(self):
+        self.pre_setup()
         roles, networks = self.provider.init()
         # en.run_ansible(
         #     ["gen-inventory.yaml"],
@@ -74,12 +81,13 @@ class G5KPlatform(Platform):
             for host in hostset:
                 inv["all"]["children"][grp]["hosts"][host.alias] = None
 
+        self.post_setup()
         return inv
 
-    def pre_deploy(self):
+    def pre_setup(self):
         pass
 
-    def post_deploy(self):
+    def post_setup(self):
         jobs = self.provider.driver.get_jobs()
 
         self.job_id = jobs[0].uid
@@ -93,7 +101,8 @@ class G5KPlatform(Platform):
         with open(expanduser("~") + "/.python-grid5000.yaml") as f:
             g5kcreds = yaml.safe_load(f)
 
-        uri = f"https://api.grid5000.fr/3.0/sites/{self.job_site}/storage/home/{g5kcreds['username']}/access"
+        # home_uri = f"https://api.grid5000.fr/3.0/sites/{self.job_site}/storage/home/{g5kcreds['username']}/access"
+        uri = f"https://api.grid5000.fr/stable/sites/lyon/storage/storage1/energystream1/access"
 
         requests.post(
             uri,
@@ -104,13 +113,18 @@ class G5KPlatform(Platform):
     def get_platform_metadata(self) -> dict[str, str]:
         return dict(job_id=self.job_id)
 
-    def pre_destroy(self):
-        pass
+    def pre_teardown(self):
+        ssh(
+            split(
+                "h-0 sudo rsync -aXxvPh --exclude '*cache*' --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 /mnt/ /root/k8s-pvs"
+            )
+        )
+        ssh(split("h-0 docker restart vm"))
 
-    def destroy(self):
-        self.pre_destroy()
+    def teardown(self):
+        self.pre_teardown()
         self.provider.destroy()
-        self.post_destroy()
+        self.post_teardown()
 
-    def post_destroy(self):
+    def post_teardown(self):
         pass

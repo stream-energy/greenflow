@@ -12,5 +12,8 @@
             "file:///workspaces/greenflow/deploy/enoslib/k3s-setup.yaml",
             "file:///workspaces/greenflow/deploy/enoslib/helm-setup.yaml"
         ]
-    }
+    },
+    "python.analysis.typeCheckingMode": "off",
+    "python.linting.enabled": false,
+    "todo-tree.tree.showBadges": true
 }

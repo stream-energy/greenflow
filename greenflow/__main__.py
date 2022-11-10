@@ -1,9 +1,8 @@
-import enoslib as en
 import fire
 import gin
 from icecream import install
 
-from . import deploy, destroy
+from . import deploy, destroy, platform
 
 
 class RUN:
@@ -17,10 +16,17 @@ class RUN:
         deploy.deploy()
         destroy.destroy()
 
+    def mock(self):
+        gin.parse_config_file("params/mock.gin")
+        deploy.deploy()
+        destroy.destroy()
+
+    def mdeploy(self):
+        gin.parse_config_file("params/mock.gin")
+        deploy.deploy()
+
 
 if __name__ == "__main__":
-    _ = en.init_logging()
     install()
     gin.parse_config_file("params/default.gin")
-    # TODO: Add support for MockProvider
     fire.Fire(RUN)

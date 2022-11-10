@@ -2,6 +2,7 @@ import yaml
 import json
 
 import pendulum
+import gin
 
 from tinydb import Storage
 from tinydb_serialization import Serializer
@@ -74,3 +75,11 @@ class DateTimeSerializer(Serializer):
 
     def decode(self, s):
         return pendulum.parse(s, strict=False)
+
+
+def generate_grafana_dashboard_url(
+    base_url: str = "http://h-0:3000/d/Bg3f4zPGz/kubernetes-power-usage-using-scaphandre?",
+) -> str:
+    from .g import g
+
+    return f"{base_url}from={int(g.deployment_start.float_timestamp*1000)}&to={int(g.deployment_end.float_timestamp*1000)}"

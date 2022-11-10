@@ -1,8 +1,9 @@
 prometheus:
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
     externalLabels:
-      deployment_ts: "{{ deployment_ts }}"
+      deployment_start_ts: "{{ deployment_start_ts }}"
     remoteWrite:
       - url: http://victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/write
     additionalServiceMonitors:
