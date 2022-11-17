@@ -46,7 +46,7 @@ class MockPlatform:
     def setup(self):
         k3d(
             split(
-                "cluster create --registry-config ansible/project/registries.yaml --k3s-arg '--disable=traefik@server:0'"
+                "cluster create -i 'docker.io/rancher/k3s:v1.24.7-k3s1' --k3s-arg '--disable=traefik@server:0'"
             )
         )
 

@@ -16,12 +16,12 @@ def pre_destroy():
     except:
         pass
 
-    p = kubectl(
-        "port-forward -n monitoring svc/victoria-metrics-single-server 8428:8429".split(
-            " "
-        ),
-        _bg=True,
-    )
+    # p = kubectl(
+    #     "port-forward -n monitoring svc/victoria-metrics-single-server 8428:8429".split(
+    #         " "
+    #     ),
+    #     _bg=True,
+    # )
     try:
         p = kubectl(
             split(

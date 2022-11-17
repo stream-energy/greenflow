@@ -80,15 +80,15 @@ def deploy(*, platform: type[Platform] = gin.REQUIRED):
             #     extravars={"deployment_ts": g.deployment_start.to_iso8601_string()},
             #     rotate_artifacts=5,
             # )
-    run = ansible_runner.run(
-        # role="helm",
-        # inventory=p.ansible_inventory_file_path,
-        playbook="helm.yaml",
-        private_data_dir="./ansible",
-        # TODO: Rename all instances of deployment_ts to deployment_start_ts
-        extravars={"deployment_start_ts": g.deployment_start.to_iso8601_string()},
-        # rotate_artifacts=5,
-    )
+    # run = ansible_runner.run(
+    #     # role="helm",
+    #     # inventory=p.ansible_inventory_file_path,
+    #     playbook="base.yaml",
+    #     private_data_dir="./ansible",
+    #     # TODO: Rename all instances of deployment_ts to deployment_start_ts
+    #     extravars={"deployment_start_ts": g.deployment_start.to_iso8601_string()},
+    #     # rotate_artifacts=5,
+    # )
 
     # run.get_fact_cache("nova-1.lyon.grid5000.fr")
     # ansible_playbook(

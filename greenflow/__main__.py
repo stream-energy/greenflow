@@ -2,7 +2,7 @@ import fire
 import gin
 from icecream import install
 
-from . import deploy, destroy, platform
+from . import deploy, destroy, run, platform
 
 
 class RUN:
@@ -13,7 +13,15 @@ class RUN:
         return destroy.destroy()
 
     def run(self):
+        run.run()
+        # destroy.destroy()
+
+    def mrun(self):
+        run.mrun()
+
+    def full(self):
         deploy.deploy()
+        run.run()
         destroy.destroy()
 
     def mock(self):
