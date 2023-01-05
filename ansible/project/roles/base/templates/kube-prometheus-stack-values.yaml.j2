@@ -122,8 +122,10 @@ alertmanager:
           - __meta_kubernetes_pod_node_name
         targetLabel: instance
 grafana:
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: "true"
   # Grafana is Disabled now as metrics are stored on another analysis server
-  enabled: false
+  enabled: true
   grafana.ini:
     auth.anonymous:
       enabled: true

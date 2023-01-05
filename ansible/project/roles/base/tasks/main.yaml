@@ -55,10 +55,10 @@
     kind: Namespace
     state: present
 
-# - name: Deploy PVC for Grafana
-#   kubernetes.core.k8s:
-#     state: present
-#     definition: "{{ lookup('ansible.builtin.template', 'grafana-pvc.yaml.j2') | from_yaml }}"
+- name: Deploy PVC for Grafana
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', 'grafana-pvc.yaml.j2') | from_yaml }}"
 
 - name: Deploy PVC for VictoriaMetrics
   delegate_to: localhost
@@ -124,7 +124,7 @@
   kubernetes.core.helm:
     name: theodolite
     chart_ref: theodolite
-    chart_version: 0.8.0
+    chart_version: 0.8.2
     wait: true
     chart_repo_url: https://www.theodolite.rocks
     release_namespace: default

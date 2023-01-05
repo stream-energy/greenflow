@@ -4,7 +4,7 @@ metadata:
   name: experiment
   namespace: default
 spec:
-  benchmark: "experiment-benchmark"
+  benchmark: "uc1-flink"
   load:
     loadType: "NumSensors"
     loadValues:
@@ -19,14 +19,14 @@ spec:
       restrictions:
         - "LowerBound"
       searchStrategy: "FullSearch"
-    duration: 60 # in seconds
+    duration: 300 # in seconds
     repetitions: 1
     loadGenerationDelay: 30 # in seconds
   configOverrides: []
   slos:
     - name: "Dummy SLO"
       properties:
-        externalslourl: "http://localhost:8082"
+        externalslourl: "http://kp-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
         promqlquery: "sum by(instance) (up)"
         warmup: 60 # in seconds
         queryaggregation: count

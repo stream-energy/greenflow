@@ -114,12 +114,13 @@ class G5KPlatform(Platform):
         return dict(job_id=self.job_id)
 
     def pre_teardown(self):
-        ssh(
-            split(
-                "h-0 sudo rsync -aXxvPh --exclude '*cache*' --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 /mnt/ /root/k8s-pvs"
-            )
-        )
-        ssh(split("h-0 docker restart vm"))
+        pass
+        # ssh(
+        #     split(
+        #         "h-0 sudo rsync -aXxvPh --exclude '*cache*' --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 /mnt/energystream1 /root/k8s-pvs"
+        #     )
+        # )
+        # ssh(split("h-0 docker restart vm"))
 
     def teardown(self):
         self.pre_teardown()

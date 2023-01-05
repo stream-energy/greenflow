@@ -3,4 +3,5 @@
   hosts: localhost
   gather_facts: false
   roles:
-    - base
+    # - base
+    - uc1-flink

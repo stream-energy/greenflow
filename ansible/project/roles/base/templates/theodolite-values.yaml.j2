@@ -6,7 +6,7 @@ grafana:
   enabled: false
 strimzi:
   kafka:
-    replicas: 1
+    replicas: 3
     kafkaExporter:
       template:
         pod:
@@ -43,7 +43,7 @@ strimzi:
                     values:
                     - "true"
   zookeeper:
-    replicas: 1
+    replicas: 3
     zooEntrance:
       enabled: false
       zookeeperClient:
@@ -81,9 +81,9 @@ operator:
     node-role.kubernetes.io/control-plane: "true"
   theodoliteBenchmarks:
     resourceConfigMaps:
-      uc1LoadGenerator: false
+      uc1LoadGenerator: true
       uc1Kstreams: false
-      uc1Flink: false
+      uc1Flink: true
       uc1BeamFlink: false
       uc1BeamSamza: false
       uc2LoadGenerator: false
@@ -103,7 +103,7 @@ operator:
       uc4BeamSamza: false
     benchmarks:
       uc1Kstreams: false
-      uc1Flink: false
+      uc1Flink: true
       uc1BeamFlink: false
       uc1BeamSamza: false
       uc2Kstreams: false
