@@ -12,3 +12,4 @@ inventory/g5k.ini
 /ansible/env
 /ansible/inventory
 /cachedir
+.python-grid5000.yaml
