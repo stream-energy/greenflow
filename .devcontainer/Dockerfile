@@ -10,7 +10,10 @@ FROM docker.io/library/archlinux:latest
 ENV USERNAME=g
 ENV USER_UID=1000
 ENV USER_GID=${USER_UID}
-ENV DOCKER_GID=959
+
+# This needs to match the DockerGID of the Host
+# FIXME: Automate this?
+ENV DOCKER_GID=131
 ENV TZ="Europe/Paris"
 
 RUN --mount=type=cache,target=/var/cache/pacman pacman-key --init
@@ -31,9 +34,9 @@ RUN groupadd -g ${USER_GID} ${USERNAME} && \
 
 WORKDIR /home/${USERNAME}
 
-RUN sudo usermod -a -G docker g
+RUN sudo usermod -a -G docker ${USERNAME}
 RUN groupadd -g ${DOCKER_GID} host_docker
-RUN sudo usermod -a -G ${DOCKER_GID} g
+RUN sudo usermod -a -G ${DOCKER_GID} ${USERNAME}
 
 COPY --from=ext-preloader /ext-preloader /usr/bin/ext-preloader
 
@@ -42,9 +45,9 @@ RUN chmod +x /docker-entrypoint.sh
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 
 COPY .devcontainer/direnv.toml /etc/
-RUN sudo -u ${USERNAME} mkdir -p /home/g/.config/direnv
-# ENV XDG_CONFIG_HOME=/home/g/.config
-COPY .devcontainer/direnv.toml /home/g/.config/direnv/direnv.toml
+RUN sudo -u ${USERNAME} mkdir -p /home/${USERNAME}/.config/direnv
+# ENV XDG_CONFIG_HOME=/home/${USERNAME}g/.config
+COPY .devcontainer/direnv.toml /home/${USERNAME}/.config/direnv/direnv.toml
 
 # COPY .devcontainer/nix.conf /etc/nix/nix.conf
 # COPY .devcontainer/envrc /etc/envrc
@@ -61,7 +64,7 @@ COPY .devcontainer/direnv.toml /home/g/.config/direnv/direnv.toml
 
 # RUN sudo -HEu ${USERNAME} nix-env -if https://github.com/nix-community/lorri/archive/canon.tar.gz
 
-RUN cut -f1 -d':' < /etc/group | xargs -l sudo gpasswd -a g
+RUN cut -f1 -d':' < /etc/group | xargs -l sudo gpasswd -a ${USERNAME}
 WORKDIR /home/${USERNAME}
 RUN sudo -u ${USERNAME} git clone https://aur.archlinux.org/yay-bin
 WORKDIR /home/${USERNAME}/yay-bin
