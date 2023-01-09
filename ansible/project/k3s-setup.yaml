@@ -21,8 +21,8 @@
   tasks:
     - name: Copy registries.yaml
       tags: [always]
-      ansible.builtin.copy:
-        src: registries.yaml
+      ansible.builtin.template:
+        src: registries.yaml.j2
         dest: /etc/rancher/k3s/
     - name: Disable node exporter
       tags: [always]
