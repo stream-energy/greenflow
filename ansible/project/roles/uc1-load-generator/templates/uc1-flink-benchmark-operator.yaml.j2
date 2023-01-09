@@ -1,5 +1,3 @@
----
-# vim: set ft=yaml
 apiVersion: theodolite.rocks/v1beta1
 kind: benchmark
 metadata:
@@ -10,20 +8,20 @@ spec:
       - configMap:
           name: "benchmark-resources-uc1-flink"
           files:
-            - "flink-configuration-configmap.yaml"
-            - "taskmanager-deployment.yaml"
-            - "taskmanager-service.yaml"
-            - "service-monitor.yaml"
-            - "jobmanager-service.yaml"
-            - "jobmanager-deployment.yaml"
+          - "flink-configuration-configmap.yaml"
+          - "taskmanager-deployment.yaml"
+          - "taskmanager-service.yaml"
+          - "service-monitor.yaml"
+          - "jobmanager-service.yaml"
+          - "jobmanager-deployment.yaml"
           #- "jobmanager-rest-service.yaml"
   loadGenerator:
     resources:
       - configMap:
           name: "benchmark-resources-uc1-load-generator"
           files:
-            - "uc1-load-generator-deployment.yaml"
-            - "uc1-load-generator-service.yaml"
+          - "uc1-load-generator-deployment.yaml"
+          - "uc1-load-generator-service.yaml"
   resourceTypes:
     - typeName: "Instances"
       patchers:

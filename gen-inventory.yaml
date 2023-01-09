@@ -1,3 +1,5 @@
+---
+# vim set ft=yaml:
 - hosts: control, worker
   become: true
   strategy: free

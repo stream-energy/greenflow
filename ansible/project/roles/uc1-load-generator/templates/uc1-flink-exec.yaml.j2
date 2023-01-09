@@ -1,12 +1,10 @@
----
-# vim: set ft=yaml
 apiVersion: theodolite.rocks/v1beta1
 kind: execution
 metadata:
   name: experiment
   namespace: default
 spec:
-  benchmark: "uc1-flink"
+  benchmark: "experiment-benchmark"
   load:
     loadType: "NumSensors"
     loadValues:
@@ -21,14 +19,14 @@ spec:
       restrictions:
         - "LowerBound"
       searchStrategy: "FullSearch"
-    duration: 300 # in seconds
+    duration: 60 # in seconds
     repetitions: 1
     loadGenerationDelay: 30 # in seconds
   configOverrides: []
   slos:
     - name: "Dummy SLO"
       properties:
-        externalslourl: "http://kp-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
+        externalslourl: "http://localhost:8082"
         promqlquery: "sum by(instance) (up)"
         warmup: 60 # in seconds
         queryaggregation: count

@@ -1,4 +1,5 @@
 ---
+# vim set ft=yaml:
 # - name: Common setup for both workers and controller
 #   hosts: control, worker
 #   become: true
@@ -19,11 +20,15 @@
   strategy: free
   gather_facts: true
   tasks:
+    - name: Create /etc/rancher/k3s
+      tags: [always]
+      shell:
+        cmd: mkdir -p /etc/rancher/k3s
     - name: Copy registries.yaml
       tags: [always]
       ansible.builtin.template:
         src: registries.yaml.j2
-        dest: /etc/rancher/k3s/
+        dest: /etc/rancher/k3s/registries.yaml
     - name: Disable node exporter
       tags: [always]
       ansible.builtin.service:
