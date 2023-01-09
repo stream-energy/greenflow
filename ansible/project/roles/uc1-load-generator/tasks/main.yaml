@@ -1,5 +1,5 @@
 ---
-# vim set ft=yaml:
+# vim: set ft=yaml:
 - name: Deploy Theodolite execution
   kubernetes.core.k8s:
     state: present

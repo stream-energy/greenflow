@@ -1,5 +1,5 @@
 ---
-# vim set ft=yaml:
+# vim: set ft=yaml:
 name: greenflow
 channels:
   - conda-forge

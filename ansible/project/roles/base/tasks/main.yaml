@@ -1,5 +1,5 @@
 ---
-# vim set ft=yaml:
+# vim: set ft=yaml:
 
 - name: Setup Helm plugins on host
   delegate_to: localhost

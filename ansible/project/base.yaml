@@ -1,5 +1,5 @@
 ---
-# vim set ft=yaml:
+# vim: set ft=yaml:
 - name: Deploy Helm Charts
   hosts: localhost
   gather_facts: false

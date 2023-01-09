@@ -1,5 +1,5 @@
 ---
-# vim set ft=yaml:
+# vim: set ft=yaml:
 # - name: Common setup for both workers and controller
 #   hosts: control, worker
 #   become: true
