@@ -13,3 +13,4 @@ inventory/g5k.ini
 /ansible/inventory
 /cachedir
 .python-grid5000.yaml
+.devcontainer/devcontainer.json
