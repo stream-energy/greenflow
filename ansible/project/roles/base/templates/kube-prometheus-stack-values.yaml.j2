@@ -127,7 +127,7 @@ grafana:
   nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
   # Grafana is Disabled now as metrics are stored on another analysis server
-  enabled: true
+  enabled: false
   grafana.ini:
     auth.anonymous:
       enabled: true
