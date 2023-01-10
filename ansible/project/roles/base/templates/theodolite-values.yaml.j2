@@ -2,7 +2,7 @@
 # vim: set ft=yaml:
 kafkaClient:
   enabled: true
-  nodeSelector: 
+  nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
 grafana:
   enabled: false
@@ -17,10 +17,10 @@ strimzi:
               requiredDuringSchedulingIgnoredDuringExecution:
                 nodeSelectorTerms:
                   - matchExpressions:
-                    - key: node-role.kubernetes.io/control-plane
-                      operator: In
-                      values:
-                      - "true"
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: In
+                        values:
+                          - "true"
     entityOperator:
       template:
         pod:
@@ -29,10 +29,10 @@ strimzi:
               requiredDuringSchedulingIgnoredDuringExecution:
                 nodeSelectorTerms:
                   - matchExpressions:
-                    - key: node-role.kubernetes.io/control-plane
-                      operator: In
-                      values:
-                      - "true"
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: In
+                        values:
+                          - "true"
     template:
       pod:
         affinity:
@@ -40,10 +40,10 @@ strimzi:
             requiredDuringSchedulingIgnoredDuringExecution:
               nodeSelectorTerms:
                 - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: In
-                    values:
-                    - "true"
+                    - key: node-role.kubernetes.io/control-plane
+                      operator: In
+                      values:
+                        - "true"
   zookeeper:
     replicas: 3
     zooEntrance:
@@ -53,12 +53,12 @@ strimzi:
           node-role.kubernetes.io/control-plane: "true"
     nodeselectorterms:
       - matchexpressions:
-        - key: node-role.kubernetes.io/control-plane
-          operator: In
-          values:
-          - "true"
+          - key: node-role.kubernetes.io/control-plane
+            operator: In
+            values:
+              - "true"
   schemaRegistry:
-    enabled: false
+    enabled: true
     nodeSelector:
       node-role.kubernetes.io/control-plane: "true"
 prometheus:
@@ -66,20 +66,20 @@ prometheus:
 kube-prometheus-stack:
   prometheusOperator:
     enabled: false
-    nodeSelector: 
+    nodeSelector:
       node-role.kubernetes.io/control-plane: "true"
 prometheusOperator:
-  nodeSelector: 
+  nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
 alertmanager:
   alertmanagerSpec:
     nodeSelector:
       node-role.kubernetes.io/control-plane: "true"
 kube-state-metrics:
-  nodeSelector: 
+  nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
 operator:
-  nodeSelector: 
+  nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
   theodoliteBenchmarks:
     resourceConfigMaps:
