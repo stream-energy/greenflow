@@ -36,11 +36,11 @@ def pre_destroy():
 
 def post_destroy():
     pass
-    # ssh(
-    #     split(
-    #         "h-0 sudo rsync -aXxvPh --exclude '*cache*' --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 lyon.grid5000.fr:/home/***REMOVED***/k8s /root/"
-    #     )
-    # )
+    ssh(
+        split(
+            "h-0 sudo rsync -aXxvPh --exclude '*cache*' --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 /mnt/energystream1/ /root/energystream1-mirror"
+        )
+    )
     # ssh(split("h-0 docker restart vm"))
 
 
