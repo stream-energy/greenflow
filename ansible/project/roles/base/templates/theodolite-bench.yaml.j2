@@ -9,14 +9,14 @@ spec:
   sut:
     resources:
       - configMap:
-         name: "example-configmap"
-         files:
-           - "uc1-kstreams-deployment.yaml"
+          name: "example-configmap"
+          files:
+            - "uc1-kstreams-deployment.yaml"
   loadGenerator:
     resources:
       - configMap:
-         name: "example-configmap"
-         files:
+          name: "example-configmap"
+          files:
             - uc1-load-generator-service.yaml
             - uc1-load-generator-deployment.yaml
   resourceTypes:
@@ -39,7 +39,7 @@ spec:
   slos:
     - name: "Dummy SLO"
       sloType: "generic"
-      prometheusUrl: "http://prometheus-operated.monitoring.svc.cluster.local:9090"
+      prometheusUrl: "http://prometheus-operated.default.svc.cluster.local:9090"
       offset: 0
       properties:
         externalSloUrl: "http://localhost:8082"

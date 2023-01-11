@@ -11,6 +11,8 @@ from .g import g
 from .g5k import G5KPlatform
 from .platform import MockPlatform, Platform
 
+from .factors import factors
+
 
 def pre_setup():
     # g.storage.create_new_exp()
@@ -42,7 +44,8 @@ def deploy(*, platform: type[Platform] = gin.REQUIRED):
                 playbook="k3s-setup.yaml",
                 # inventory=inv,
                 private_data_dir="./ansible",
-                extravars={"kubeconfig_path": "../../kubeconfig"},
+                extravars={"kubeconfig_path": "../../kubeconfig"} | factors(),
+                # settings={"kubeconfig_path": "../../kubeconfig"},
                 # verbosity=3,
             )
             # pre_setup(p)

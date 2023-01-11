@@ -25,7 +25,7 @@ def pre_destroy():
     try:
         p = kubectl(
             split(
-                "delete --wait=true --timeout=10s -n monitoring statefulsets victoria-metrics-single-server"
+                "delete --wait=true --timeout=10s statefulsets victoria-metrics-single-server"
             ),
             # _bg=True,
         )
