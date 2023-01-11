@@ -17,7 +17,7 @@
 - name: Common setup for both workers and controller
   hosts: control, worker
   become: true
-  strategy: free
+  # strategy: free
   gather_facts: true
   tasks:
     - name: Create /etc/rancher/k3s
@@ -69,7 +69,7 @@
     - name: Install k3s on controller
       environment:
         INSTALL_K3S_EXEC: --disable=traefik --disable=local-storage --docker
-        INSTALL_K3S_VERSION: v1.24.9+k3s2
+        INSTALL_K3S_VERSION: v1.24.8+k3s1
         # K3S_TOKEN: K10787911fcda12ddecf7e216979de14959f7d521e09045647400b6daf21d16bd8b::server:dd400bd9-93dd-4402-8512-4cec59e5cf24
       shell:
         cmd: "curl -sfL https://get.k3s.io | sh -s -"
@@ -105,7 +105,7 @@
         K3S_URL: https://{{ hostvars['CONTROLLER_DETAILS']['controller_ip'] }}:6443
         K3S_TOKEN: "{{ hostvars['CONTROLLER_DETAILS']['token'] }}"
         INSTALL_K3S_EXEC: --docker
-        INSTALL_K3S_VERSION: v1.24.9+k3s2
+        INSTALL_K3S_VERSION: v1.24.8+k3s1
       shell:
         cmd: curl -sfL https://get.k3s.io | sh -s -
 
