@@ -1,6 +1,6 @@
-[submodule "theodolite"]
-	path = theodolite
-	url = git@github.com:cau-se/theodolite
 [submodule "mitogen"]
 	path = mitogen
 	url = https://github.com/mitogen-hq/mitogen
+[submodule "charts/theodolite"]
+	path = charts/theodolite
+	url = https://github.com/cau-se/theodolite

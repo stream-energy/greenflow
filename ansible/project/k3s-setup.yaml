@@ -41,6 +41,11 @@
     - name: Install docker
       tags: [always]
       ansible.builtin.package:
+        name: python3-apt
+        state: present
+    - name: Install docker
+      tags: [always]
+      ansible.builtin.package:
         name: docker.io
         state: present
     - name: Disable node exporter
