@@ -4,3 +4,15 @@
 [submodule "charts/theodolite"]
 	path = charts/theodolite
 	url = https://github.com/cau-se/theodolite
+[submodule "charts/scaphandre"]
+	path = charts/scaphandre
+	url = https://github.com/hubblo-org/scaphandre
+[submodule "charts/victoriametrics"]
+	path = charts/victoriametrics
+	url = https://github.com/VictoriaMetrics/helm-charts
+[submodule "charts/prometheus-community"]
+	path = charts/prometheus-community
+	url = https://github.com/prometheus-community/helm-charts
+[submodule "charts/csi-driver-nfs"]
+	path = charts/csi-driver-nfs
+	url = https://github.com/kubernetes-csi/csi-driver-nfs
