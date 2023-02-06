@@ -16,3 +16,6 @@
 [submodule "charts/csi-driver-nfs"]
 	path = charts/csi-driver-nfs
 	url = https://github.com/kubernetes-csi/csi-driver-nfs
+[submodule "charts/strimzi-kafka-operator"]
+	path = charts/strimzi-kafka-operator
+	url = https://github.com/strimzi/strimzi-kafka-operator

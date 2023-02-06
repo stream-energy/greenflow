@@ -5,8 +5,10 @@ kafkaClient:
   nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
 strimzi:
+  # Disabling strimzi in favour of deploying chart manually
+  enabled: false
   kafka:
-    replicas: 3
+    replicas: 1
     kafkaExporter:
       template:
         pod:
@@ -19,8 +21,19 @@ strimzi:
                         operator: In
                         values:
                           - "true"
+    config:
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      default.replication.factor: 1
+      min.insync.replicas: 1
+      # inter.broker.protocol.version: "3.3"
     entityOperator:
       template:
+        topicOperatorContainer:
+          env:
+            - name: "STRIMZI_USE_ZOOKEEPER_TOPIC_STORE"
+              value: "true"
         pod:
           affinity:
             nodeAffinity:
@@ -43,7 +56,7 @@ strimzi:
                       values:
                         - "true"
   zookeeper:
-    replicas: 3
+    replicas: 1
     zooEntrance:
       enabled: false
       zookeeperClient:
