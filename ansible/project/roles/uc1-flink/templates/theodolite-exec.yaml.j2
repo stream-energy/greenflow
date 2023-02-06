@@ -3,18 +3,18 @@
 apiVersion: theodolite.rocks/v1beta1
 kind: execution
 metadata:
-  name: experiment
+  name: uc1-flink
   namespace: default
 spec:
   benchmark: "uc1-flink"
   load:
     loadType: "NumSensors"
     loadValues:
-      - "{{ uc1_flink_loadValue }}"
+      - {{ uc1_flink_loadValue }}
   resources:
     resourceType: "Instances"
     resourceValues:
-      - "{{ uc1_flink_resourceValue }}"
+      - {{ uc1_flink_resourceValue }}
   execution:
     strategy:
       name: "RestrictionSearch"

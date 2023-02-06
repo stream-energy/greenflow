@@ -236,6 +236,22 @@ data:
             app: flink
             component: taskmanager
         spec:
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                      - flink
+                    - key: component
+                      operator: In
+                      values:
+                      - taskmanager
+                  topologyKey: "kubernetes.io/hostname"
           terminationGracePeriodSeconds: 0
           containers:
             - name: taskmanager

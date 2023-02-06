@@ -1,0 +1,4 @@
+include 'params/default.gin'
+
+greenflow.factors.factors.uc1_flink_resourceValue = 3
+greenflow.factors.factors.uc1_flink_loadValue = 10000
