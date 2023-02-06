@@ -17,7 +17,6 @@
 - name: Common setup for both workers and controller
   hosts: control, worker
   become: true
-  # strategy: free
   gather_facts: true
   tasks:
     - name: Create /etc/rancher/k3s
@@ -38,11 +37,10 @@
       ansible.builtin.template:
         src: daemon.json.j2
         dest: /etc/docker/daemon.json
-    - name: Install docker
+    - name: Install python3-apt
       tags: [always]
-      ansible.builtin.package:
-        name: python3-apt
-        state: present
+      shell:
+        cmd: apt-get install -y python3-apt
     - name: Install docker
       tags: [always]
       ansible.builtin.package:

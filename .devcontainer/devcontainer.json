@@ -20,7 +20,7 @@
 		"PRELOAD_EXTENSIONS": "arrterian.nix-env-selector",
 		"KUBECONFIG": "${containerWorkspaceFolder}/kubeconfig",
 		"GRID5000_USERNAME": "***REMOVED***",
-		"GRID5000_PASSWORD": "hunter2"
+		"GRID5000_PASSWORD": "***REMOVED***"
 	},
 	"mounts": [
 		"source=nix-cache,target=/nix,type=volume,consistency=cached",
@@ -53,7 +53,8 @@
 		"ms-python.python",
 		"redhat.vscode-yaml",
 		"VisualStudioExptTeam.vscodeintellicode",
-		"eamodio.gitlens"
+		"eamodio.gitlens",
+		"chrislajoie.vscode-modelines",
 		// "Rubymaniac.vscode-direnv"
 	],
 	"settings": {

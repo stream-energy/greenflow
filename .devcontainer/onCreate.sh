@@ -24,3 +24,18 @@ sudo trust extract-compat
 sudo update-ca-trust
 
 sudo pacman -Sy --noconfirm rsync just
+
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+pushd /workspaces/greenflow
+    git submodule update --init --recursive
+popd
+
+pushd /workspaces/greenflow/charts/theodolite/helm
+    helm dep build
+popd
+pushd /workspaces/greenflow/charts/prometheus-community/charts/kube-prometheus-stack
+    helm dep build
+popd
