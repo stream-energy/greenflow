@@ -21,18 +21,18 @@ spec:
       restrictions:
         - "LowerBound"
       searchStrategy: "FullSearch"
-    duration: 120 # in seconds
+    duration: 30 # in seconds
     repetitions: 1
-    loadGenerationDelay: 30 # in seconds
+    loadGenerationDelay: 5 # in seconds
   configOverrides: []
   slos:
     - name: "Dummy SLO"
       properties:
-        externalslourl: "http://kp-kube-prometheus-stack-prometheus.default.svc.cluster.local:9090"
-        promqlquery: "sum by(instance) (up)"
+        externalSloUrl: "http://kp-kube-prometheus-stack-prometheus.default.svc.cluster.local:9090"
+        promQLQuery: "sum by(instance) (up)"
         warmup: 60 # in seconds
-        queryaggregation: count
-        repetitionaggregation: sum
+        queryAggregation: count
+        repetitionAggregation: sum
         operator: gte
         threshold: 0
   # - patcher:

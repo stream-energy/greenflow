@@ -107,6 +107,16 @@
     chart_repo_url: git+https://github.com/hubblo-org/scaphandre@helm/scaphandre?ref=main
     release_namespace: default
     create_namespace: true
+
+- name: Deploy Strimzi
+  delegate_to: localhost
+  kubernetes.core.helm:
+    name: strimzi
+    chart_ref: "{{ q('pipe', 'git rev-parse --show-toplevel')[0] }}/charts/strimzi-kafka-operator/helm-charts/helm3/strimzi-kafka-operator"
+    # chart_version: 0.8.2
+    wait: true
+    release_namespace: default
+    values: "{{ lookup('ansible.builtin.template', 'strimzi-values.yaml.j2') | from_yaml }}"
 # - name: Deploy Theodolite
 #   delegate_to: localhost
 #   kubernetes.core.helm:

@@ -54,13 +54,17 @@ spec:
             loadGenMaxRecords: "150000"
   slos:
     - name: "lag trend"
-      sloType: "lag trend"
+      sloType: "generic"
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
-        threshold: 2000
-        externalSloUrl: "http://localhost:80/evaluate-slope"
         warmup: 60 # in seconds
+        promQLQuery: "sum by(instance) (up)"
+        operator: gte
+        threshold: 0
+        externalSloUrl: "http://localhost:8082"
+        queryAggregation: count
+        repetitionAggregation: sum
   kafkaConfig:
     bootstrapServer: "theodolite-kafka-kafka-bootstrap:9092"
     topics:

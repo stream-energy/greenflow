@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import yaml
 from shlex import split
 
 import ansible_runner
@@ -36,8 +37,22 @@ def deploy(*, platform: type[Platform] = gin.REQUIRED):
             # inv = p.setup()
             # post_setup(p)
         case G5KPlatform():
-            with open("./ansible/inventory/hosts.json", "w") as f:
-                json.dump(inv, f, ensure_ascii=False, indent=4)
+            with open("./ansible/inventory/hosts.yaml", "w") as f:
+                # json.dump(inv, f, ensure_ascii=False, indent=4)
+                yaml.dump(inv, f)
+            # with open("./ansible/inventory/hosts.json", "w") as f:
+            #     json.dump(inv, f, ensure_ascii=False, indent=4)
+            # yaml.dump(inv, f)
+            # ansible_runner.run(
+            #     # host_pattern="control,worker",
+            #     # role="k3s-common",
+            #     playbook="k3s-setup.yaml",
+            #     # inventory=inv,
+            #     private_data_dir="./ansible",
+            #     extravars={"kubeconfig_path": "../../kubeconfig"} | factors(),
+            #     # settings={"kubeconfig_path": "../../kubeconfig"},
+            #     # verbosity=3,
+            # )
             ansible_runner.run(
                 # host_pattern="control,worker",
                 # role="k3s-common",

@@ -10,7 +10,6 @@
     wait: true
     release_namespace: default
     values: "{{ lookup('ansible.builtin.template', 'theodolite-values.yaml.j2') | from_yaml }}"
-
-- name: Wait for Theodolite's Kafka to be deployed
-  delegate_to: localhost
-  shell: kubectl wait kafka theodolite-kafka --for=condition=Ready --timeout=600s
+# - name: Wait for Theodolite's Kafka to be deployed
+#   delegate_to: localhost
+#   shell: kubectl wait kafka theodolite-kafka --for=condition=Ready --timeout=600s

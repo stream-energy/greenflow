@@ -79,7 +79,14 @@ class G5KPlatform(Platform):
             inv["all"]["children"][grp] = {}
             inv["all"]["children"][grp]["hosts"] = {}
             for host in hostset:
-                inv["all"]["children"][grp]["hosts"][host.alias] = None
+                if grp == "control":
+                    inv["all"]["children"][grp]["hosts"][host.alias] = {
+                        "kubernetes_role": "control_plane"
+                    }
+                elif grp == "worker":
+                    inv["all"]["children"][grp]["hosts"][host.alias] = {
+                        "kubernetes_role": "node"
+                    }
 
         self.post_setup()
         return inv

@@ -90,6 +90,15 @@ data:
             app: flink
             component: jobmanager
         spec:
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: NotIn
+                        values:
+                          - "true"
           terminationGracePeriodSeconds: 0
           containers:
             - name: jobmanager
@@ -237,6 +246,14 @@ data:
             component: taskmanager
         spec:
           affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: NotIn
+                        values:
+                          - "true"
             podAntiAffinity:
               preferredDuringSchedulingIgnoredDuringExecution:
               - weight: 100

@@ -26,9 +26,10 @@ class RUN:
     def full(self):
         deploy.deploy()
         run.base()
+        run.kafka()
         run.theo()
         run.exp()
-        destroy.destroy()
+        # destroy.destroy()
 
     def mock(self):
         gin.parse_config_file("params/mock.gin")
@@ -50,6 +51,9 @@ class RUN:
 
     def theo(self):
         run.theo()
+
+    def kafka(self):
+        run.kafka()
 
 
 if __name__ == "__main__":
