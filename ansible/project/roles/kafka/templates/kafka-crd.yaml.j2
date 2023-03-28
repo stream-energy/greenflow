@@ -1,0 +1,117 @@
+---
+# vim: set ft=yaml:
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: theodolite-kafka
+  namespace: default
+spec:
+  kafka:
+    jvmOptions:
+      "-Xmx": "512M"
+      "-Xms": "512M"
+    config:
+      "message.max.bytes": "134217728" # 128 MB
+      "replica.fetch.max.bytes": "134217728" #128 MB
+      "auto.create.topics.enable": false
+      "log.retention.ms": "7200000" # 2h
+      "metrics.sample.window.ms": "5000" #5s
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+    replicas: 1
+    storage: 
+      type: ephemeral
+  kafkaExporter:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node-role.kubernetes.io/control-plane
+                      operator: In
+                      values:
+                        - "true"
+    storage:
+      type: ephemeral
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: theodolite-kafka-metrics
+          key: kafka-metrics-config.yml
+    entityOperator:
+      template:
+        pod:
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: In
+                        values:
+                          - "true"
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node-role.kubernetes.io/control-plane
+                      operator: In
+                      values:
+                        - "true"
+  zookeeper:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node-role.kubernetes.io/control-plane
+                      operator: In
+                      values:
+                        - "true"
+    storage:
+      type: ephemeral
+    replicas: 1
+    zooEntrance:
+      enabled: false
+      zookeeperClient:
+        nodeSelector:
+          node-role.kubernetes.io/control-plane: "true"
+  # schemaRegistry:
+  #   enabled: true
+  #   replicaCount: 1
+  #   ## ref: https://hub.docker.com/r/confluentinc/cp-schema-registry/
+  #   image: confluentinc/cp-schema-registry
+  #   #imageTag: 6.1.0
+  #   imageTag: 5.4.0
+  #   imagePullPolicy: IfNotPresent
+  #   servicePort: 8081
+  #   heapOptions: "-Xms512M -Xmx512M"
+  #   resources: {}
+  #   nodeSelector:
+  #     node-role.kubernetes.io/control-plane: "true"
+  #   tolerations: []
+  #   affinity:
+  #     nodeAffinity:
+  #       requiredDuringSchedulingIgnoredDuringExecution:
+  #         nodeSelectorTerms:
+  #           - matchExpressions:
+  #               - key: node-role.kubernetes.io/control-plane
+  #                 operator: In
+  #                 values:
+  #                   - "true"
+  #   securityContext:
+  #     runAsUser: 10001
+  #     runAsGroup: 10001
+  #     fsGroup: 10001
+  #     runAsNonRoot: true

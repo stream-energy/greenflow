@@ -1,0 +1,16 @@
+---
+# vim: set ft=yaml:
+- hosts: all
+  become: true
+
+  vars:
+    kubernetes_allow_pods_on_control_plane: true
+
+  pre_tasks:
+    - name: Install python3-apt
+      tags: [always]
+      shell:
+        cmd: apt-get install -y python3-apt
+  roles:
+    - geerlingguy.containerd
+    - geerlingguy.kubernetes
