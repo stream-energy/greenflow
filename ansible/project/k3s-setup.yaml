@@ -88,10 +88,10 @@
     #     state: latest
     #     update_cache: yes
     #   when: ansible_facts['os_family'] == "Debian"
-    # - name: Install Docker
-    #   tags: [always]
-    #   shell:
-    #     cmd: /grid5000/code/bin/g5k-setup-docker -t
+    - name: Install Docker
+      tags: [always]
+      shell:
+        cmd: /grid5000/code/bin/g5k-setup-docker -t
 
 - name: Install K3S and post-install config
   hosts: control
