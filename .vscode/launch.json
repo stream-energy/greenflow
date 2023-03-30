@@ -12,5 +12,16 @@
             ],
             "subProcess": false
         },
+        {
+            "name": "Destroy",
+            "type": "python",
+            "request": "launch",
+            "module": "greenflow",
+            "justMyCode": false,
+            "args": [
+                "destroy"
+            ],
+            "subProcess": false
+        },
     ]
 }

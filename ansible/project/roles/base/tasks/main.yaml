@@ -63,7 +63,7 @@
     definition: "{{ lookup('ansible.builtin.template', 'vm-pvc.yaml.j2') | from_yaml }}"
   when: mock is not defined
 
-- name: Deploy latest version of Prometheus Stack in monitoring namespace
+- name: Deploy latest version of Prometheus Stack in "default" namespace
   delegate_to: localhost
   kubernetes.core.helm:
     name: kp

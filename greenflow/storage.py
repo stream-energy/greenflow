@@ -37,15 +37,31 @@ class ExpStorage:
     def current_exp(self):
         return Query().metadata.deployment_start_ts == g.deployment_start
 
-    def create_new_exp(self):
+    def create_new_exp(self, platform):
+
         self.current_exp_data = dict(
-            metadata={"deployment_start_ts": g.deployment_start},
+            metadata={
+                "deployment_start_ts": g.deployment_start,
+            },
         )
         self.current_exp_id = self.db2.insert(self.current_exp_data)
         self.write_gin_config()
 
+    def _refresh_current_exp_data(self):
+        try:
+            doc_id = self.current_exp_id
+        except AttributeError:
+            print("Missing current_exp_data ! Using last value instead")
+            doc_id = self.db2.__len__()
+
+        self.current_exp_id = doc_id
+        self.current_exp_data = self.db2.get(doc_id=doc_id)
+
     def _update_current_exp_data(self, new_data):
-        result = always_merger.merge(self.current_exp_data, new_data)
+        self._refresh_current_exp_data()
+
+        result = always_merger.merge(new_data, self.current_exp_data)
+
         self.current_exp_data = result
         self.db2.upsert(
             Document(
@@ -72,6 +88,16 @@ class ExpStorage:
         )
 
     def write_grafana_dashboard_url(self) -> None:
+        self._refresh_current_exp_data()
         self._update_current_exp_data(
-            {"metadata": {"dashboard_url": generate_grafana_dashboard_url()}},
+            {
+                "metadata": {
+                    "dashboard_url": generate_grafana_dashboard_url(
+                        start_ts=self.current_exp_data["metadata"][
+                            "deployment_start_ts"
+                        ],
+                        end_ts=self.current_exp_data["metadata"]["deployment_end_ts"],
+                    )
+                }
+            },
         )

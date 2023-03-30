@@ -18,6 +18,38 @@ from sh import kubectl, ssh
 
 @gin.register(denylist=["job_name"])
 class G5KPlatform(Platform):
+    @staticmethod
+    def __get_conf(**kwargs):
+        import enoslib as en
+
+        network = en.G5kNetworkConf(
+            type="prod", roles=["my_network"], site=kwargs["site"]
+        )
+
+        conf = (
+            en.G5kConf.from_settings(
+                job_type="allow_classic_ssh",
+                job_name=kwargs["job_name"],
+                queue=kwargs["queue"],
+                walltime=kwargs["walltime"],
+            )
+            .add_network_conf(network)
+            .add_machine(
+                roles=["control"],
+                cluster=kwargs["cluster"],
+                nodes=kwargs["num_control"],
+                primary_network=network,
+            )
+            .add_machine(
+                roles=["worker"],
+                cluster=kwargs["cluster"],
+                nodes=kwargs["num_worker"],
+                primary_network=network,
+            )
+            .finalize()
+        )
+        return conf
+
     @gin.register(denylist=["job_name"])
     def __init__(
         self,
@@ -34,35 +66,20 @@ class G5KPlatform(Platform):
 
         super().__init__()
         _ = en.init_logging()
-        network = en.G5kNetworkConf(type="prod", roles=["my_network"], site=site)
-        conf = (
-            en.G5kConf.from_settings(
-                job_type="allow_classic_ssh",
-                job_name=job_name,
-                queue=queue,
-                walltime=walltime,
-            )
-            .add_network_conf(network)
-            .add_machine(
-                roles=["control"],
-                cluster=cluster,
-                nodes=num_control,
-                primary_network=network,
-            )
-            .add_machine(
-                roles=["worker"],
-                cluster=cluster,
-                nodes=num_worker,
-                primary_network=network,
-            )
-            .finalize()
+        conf = G5KPlatform.__get_conf(
+            job_name=job_name,
+            site=site,
+            cluster=cluster,
+            num_control=num_control,
+            num_worker=num_worker,
+            walltime=walltime,
+            queue=queue,
         )
         self.conf = conf
         self.provider = en.G5k(self.conf)
 
     @gin.register
     def setup(self):
-        self.pre_setup()
         roles, networks = self.provider.init()
         # en.run_ansible(
         #     ["gen-inventory.yaml"],
@@ -100,6 +117,10 @@ class G5KPlatform(Platform):
         self.job_id = jobs[0].uid
         self.job_site = jobs[0].site
 
+        g.storage._update_current_exp_data(
+            {"metadata": {"platform": {"job_id": self.job_id}}}
+        )
+
         self.enable_g5k_nfs_access()
 
     def enable_g5k_nfs_access(self):
@@ -117,8 +138,9 @@ class G5KPlatform(Platform):
             auth=(g5kcreds["username"], g5kcreds["password"]),
         )
 
-    def get_platform_metadata(self) -> dict[str, str]:
-        return dict(job_id=self.job_id)
+    # def get_platform_metadata(self) -> dict[str, str]:
+    #     jobs = self.provider.driver.get_jobs()
+    #     return dict(job_id=jobs[0].uid)
 
     def pre_teardown(self):
         pass

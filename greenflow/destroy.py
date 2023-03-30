@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from os import system
 from shlex import split
 from time import sleep
 
@@ -11,10 +12,7 @@ from .g import g
 
 
 def pre_destroy():
-    try:
-        g.storage.wrap_up_exp()
-    except:
-        pass
+    g.storage.wrap_up_exp()
 
     # p = kubectl(
     #     "port-forward -n monitoring svc/victoria-metrics-single-server 8428:8429".split(
@@ -35,11 +33,11 @@ def pre_destroy():
 
 
 def post_destroy():
-    pass
     ssh(
         split(
             "h-0 sudo rsync -aXxvPh --exclude '*cache*' --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 /mnt/energystream1/ /root/energystream1-mirror"
-        )
+        ),
+        _fg=True,
     )
     ssh(split("h-0 docker restart greenflow-vm-1"))
 

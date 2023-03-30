@@ -18,12 +18,12 @@ class RUN:
 
     def base(self):
         run.base()
-        # destroy.destroy()
 
     def mrun(self):
         run.mrun()
 
-    def full(self):
+    def full(self, ginfile):
+        gin.parse_config_file(ginfile)
         deploy.deploy()
         run.base()
         run.kafka()

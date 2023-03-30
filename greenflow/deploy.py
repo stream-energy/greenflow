@@ -15,9 +15,9 @@ from .platform import MockPlatform, Platform
 from .factors import factors
 
 
-def pre_setup():
+def pre_setup(p):
     # g.storage.create_new_exp()
-    g.storage.create_new_exp()
+    g.storage.create_new_exp(p)
 
 
 def post_setup():
@@ -27,7 +27,7 @@ def post_setup():
 @gin.configurable
 def deploy(*, platform: type[Platform] = gin.REQUIRED):
     p: Platform = platform()
-    pre_setup()
+    pre_setup(p)
     inv = p.setup()
     post_setup()
     match p:
