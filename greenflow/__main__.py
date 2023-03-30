@@ -29,7 +29,15 @@ class RUN:
         run.kafka()
         run.theo()
         run.exp()
-        # destroy.destroy()
+
+    def e2e(self, ginfile):
+        gin.parse_config_file(ginfile)
+        deploy.deploy()
+        run.base()
+        run.kafka()
+        run.theo()
+        run.exp()
+        destroy.destroy()
 
     def mock(self):
         gin.parse_config_file("params/mock.gin")

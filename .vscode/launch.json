@@ -2,6 +2,30 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "1Worker E2E",
+            "type": "python",
+            "request": "launch",
+            "module": "greenflow",
+            "justMyCode": false,
+            "args": [
+                "e2e",
+                "params/1worker.gin"
+            ],
+            "subProcess": false
+        },
+        {
+            "name": "3Worker E2E",
+            "type": "python",
+            "request": "launch",
+            "module": "greenflow",
+            "justMyCode": false,
+            "args": [
+                "e2e",
+                "params/3worker.gin"
+            ],
+            "subProcess": false
+        },
+        {
             "name": "Deploy",
             "type": "python",
             "request": "launch",
