@@ -77,6 +77,10 @@ class DateTimeSerializer(Serializer):
         return pendulum.parse(s, strict=False)
 
 
+def generate_explore_url(*, start_ts, end_ts) -> str:
+    return f"http://h-0:3000/explore?orgId=1&left=%7B%22datasource%22:%22IS5LGzoVk%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22IS5LGzoVk%22%7D%7D%5D,%22range%22:%7B%22from%22:%22{int(start_ts.float_timestamp*1000)}%22,%22to%22:%22{int(end_ts.float_timestamp*1000)}%22%7D%7D"
+
+
 def generate_grafana_dashboard_url(
     *,
     start_ts,

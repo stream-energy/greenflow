@@ -3,36 +3,36 @@
 apiVersion: theodolite.rocks/v1beta1
 kind: execution
 metadata:
-  name: experiment
+  name: uc3-flink
   namespace: default
 spec:
-  benchmark: "uc1-flink"
+  benchmark: "uc3-flink"
   load:
     loadType: "NumSensors"
     loadValues:
-      - 100000
+      - {{ uc3_flink_loadValue }}
   resources:
     resourceType: "Instances"
     resourceValues:
-      - 3
+      - {{ uc3_flink_resourceValue }}
   execution:
     strategy:
       name: "RestrictionSearch"
       restrictions:
         - "LowerBound"
       searchStrategy: "FullSearch"
-    duration: 300 # in seconds
+    duration: {{ duration }} # in seconds
     repetitions: 1
-    loadGenerationDelay: 30 # in seconds
+    loadGenerationDelay: 5 # in seconds
   configOverrides: []
   slos:
     - name: "Dummy SLO"
       properties:
-        externalslourl: "http://kp-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
-        promqlquery: "sum by(instance) (up)"
+        externalSloUrl: "http://kp-kube-prometheus-stack-prometheus.default.svc.cluster.local:9090"
+        promQLQuery: "sum by(instance) (up)"
         warmup: 60 # in seconds
-        queryaggregation: count
-        repetitionaggregation: sum
+        queryAggregation: count
+        repetitionAggregation: sum
         operator: gte
         threshold: 0
   # - patcher:

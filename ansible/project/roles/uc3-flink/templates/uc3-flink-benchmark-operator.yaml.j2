@@ -1,0 +1,126 @@
+apiVersion: theodolite.rocks/v1beta1
+kind: benchmark
+metadata:
+  name: uc3-flink
+  namespace: default
+#TODO: Merge uc1-flink ><> uc3-flink
+spec:
+  infrastructure:
+    afterActions: []
+    beforeActions: []
+    resources: []
+  kafkaConfig:
+    bootstrapServer: theodolite-kafka-kafka-bootstrap:9092
+    topics:
+      - name: input
+        numPartitions: 100
+        removeOnly: false
+        replicationFactor: 1
+      - name: output
+        numPartitions: 100
+        removeOnly: false
+        replicationFactor: 1
+      - name: theodolite-.*
+        numPartitions: 0
+        removeOnly: true
+        replicationFactor: 0
+  loadGenerator:
+    afterActions: []
+    beforeActions: []
+    resources:
+      - configMap:
+          files:
+            - uc3-load-generator-deployment.yaml
+            - uc3-load-generator-service.yaml
+          name: benchmark-resources-uc3-load-generator
+  loadTypes:
+    - patchers:
+        - properties:
+            container: workload-generator
+            variableName: NUM_SENSORS
+          resource: uc3-load-generator-deployment.yaml
+          type: EnvVarPatcher
+        - properties:
+            loadGenMaxRecords: "150000"
+          resource: uc3-load-generator-deployment.yaml
+          type: NumSensorsLoadGeneratorReplicaPatcher
+      typeName: NumSensors
+    - patchers:
+        - properties:
+            container: jobmanager
+            variableName: AGGREGATION_DURATION_DAYS
+          resource: jobmanager-deployment.yaml
+          type: EnvVarPatcher
+      typeName: AggregationDurationDays
+  name: ""
+  resourceTypes:
+    - patchers:
+        - properties: {}
+          resource: taskmanager-deployment.yaml
+          type: ReplicaPatcher
+        - properties:
+            container: jobmanager
+            variableName: PARALLELISM
+          resource: jobmanager-deployment.yaml
+          type: EnvVarPatcher
+      typeName: Instances
+    - patchers:
+        - properties:
+            fileName: flink-conf.yaml
+            variableName: taskmanager.numberOfTaskSlots
+          resource: flink-configuration-configmap.yaml
+          type: ConfigMapYamlPatcher
+        - properties:
+            container: taskmanager
+            factor: 1000
+            format: m
+            limitedResource: cpu
+          resource: taskmanager-deployment.yaml
+          type: ResourceLimitPatcher
+        - properties:
+            container: taskmanager
+            factor: 4
+            format: Gi
+            limitedResource: memory
+          resource: taskmanager-deployment.yaml
+          type: ResourceLimitPatcher
+        - properties:
+            factor: 4
+            fileName: flink-conf.yaml
+            suffix: Gb
+            variableName: taskmanager.memory.process.size
+          resource: flink-configuration-configmap.yaml
+          type: ConfigMapYamlPatcher
+        - properties:
+            container: jobmanager
+            variableName: PARALLELISM
+          resource: jobmanager-deployment.yaml
+          type: EnvVarPatcher
+      typeName: TaskSlotsAndPodResources
+  slos:
+    - name: "lag trend"
+      sloType: "generic"
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        warmup: 60 # in seconds
+        promQLQuery: "sum by(instance) (up)"
+        operator: gte
+        threshold: 0
+        externalSloUrl: "http://localhost:8082"
+        queryAggregation: count
+        repetitionAggregation: sum
+  sut:
+    afterActions: []
+    beforeActions: []
+    resources:
+      - configMap:
+          files:
+            - flink-configuration-configmap.yaml
+            - taskmanager-deployment.yaml
+            - taskmanager-service.yaml
+            - service-monitor.yaml
+            - jobmanager-service.yaml
+            - jobmanager-deployment.yaml
+          name: benchmark-resources-uc3-flink
+  waitForResourcesEnabled: false

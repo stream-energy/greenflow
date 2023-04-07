@@ -5,4 +5,4 @@
   gather_facts: false
   strategy: mitogen_free
   roles:
-    - uc1-flink
+    - uc3-flink

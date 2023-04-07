@@ -15,18 +15,23 @@ from .platform import MockPlatform, Platform
 @gin.configurable
 def factors(
     *,
+    kafkaOnWorker: bool,
     uc1_flink_resourceValue: int,
     uc1_flink_loadValue: int,
+    uc3_flink_loadValue: int,
+    uc3_flink_resourceValue: int,
+    duration: int,
     # *,
     # base_num_workers: int,
     # base_num_control: int,
     # uc1_flink_taskmanager_resources: int,
 ):
     return {
+        "kafkaOnWorker": kafkaOnWorker,
+        "uc1_flink_loadValue": uc1_flink_loadValue,
         "uc1_flink_loadValue": uc1_flink_loadValue,
         "uc1_flink_resourceValue": uc1_flink_resourceValue,
+        "uc3_flink_resourceValue": uc3_flink_resourceValue,
+        "uc3_flink_loadValue": uc3_flink_loadValue,
+        "duration": duration,
     }
-
-
-if __name__ == "__main__":
-    deploy()

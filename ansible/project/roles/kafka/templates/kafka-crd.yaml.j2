@@ -7,6 +7,21 @@ metadata:
   namespace: default
 spec:
   kafka:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+{% if kafkaOnWorker is sameas true %}
+                    - key: node-role.kubernetes.io/worker
+{% else %}
+                    - key: node-role.kubernetes.io/control-plane
+{% endif %}
+                      operator: In
+                      values:
+                        - "true"
     jvmOptions:
       "-Xmx": "512M"
       "-Xms": "512M"
@@ -21,8 +36,8 @@ spec:
         port: 9092
         type: internal
         tls: false
-    replicas: 1
-    storage: 
+    replicas: 3
+    storage:
       type: ephemeral
   kafkaExporter:
     template:
@@ -56,17 +71,6 @@ spec:
                         operator: In
                         values:
                           - "true"
-    template:
-      pod:
-        affinity:
-          nodeAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              nodeSelectorTerms:
-                - matchExpressions:
-                    - key: node-role.kubernetes.io/control-plane
-                      operator: In
-                      values:
-                        - "true"
   zookeeper:
     template:
       pod:
@@ -81,7 +85,7 @@ spec:
                         - "true"
     storage:
       type: ephemeral
-    replicas: 1
+    replicas: 3
     zooEntrance:
       enabled: false
       zookeeperClient:

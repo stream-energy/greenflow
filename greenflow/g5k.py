@@ -5,6 +5,7 @@ import gin
 import requests
 import yaml
 from icecream import ic
+import pendulum
 
 from .platform import Platform
 
@@ -65,6 +66,7 @@ class G5KPlatform(Platform):
         import enoslib as en
 
         super().__init__()
+        self.metadata = {}
         _ = en.init_logging()
         conf = G5KPlatform.__get_conf(
             job_name=job_name,
@@ -77,10 +79,32 @@ class G5KPlatform(Platform):
         )
         self.conf = conf
         self.provider = en.G5k(self.conf)
+        jobs = self.provider.driver.get_jobs()
+
+        try:
+            self.metadata["job_id"] = jobs[0].uid
+            self.metadata["job_site"] = jobs[0].site
+            self.metadata["job_started_ts"] = pendulum.from_format(
+                str(jobs[0].attributes["started_at"]),
+                "X",
+                tz="UTC",
+            )
+
+            self.roles, self.networks = self.provider.init()
+        except IndexError:
+            print("Job not already running. Will start new job")
+            self.roles, self.networks = self.provider.init()
+            jobs = self.provider.driver.get_jobs()
+            self.metadata["job_id"] = jobs[0].uid
+            self.metadata["job_site"] = jobs[0].site
+            self.metadata["job_started_ts"] = pendulum.from_format(
+                str(jobs[0].attributes["started_at"]),
+                "X",
+                tz="UTC",
+            )
 
     @gin.register
     def setup(self):
-        roles, networks = self.provider.init()
         # en.run_ansible(
         #     ["gen-inventory.yaml"],
         #     roles=roles,
@@ -92,7 +116,7 @@ class G5KPlatform(Platform):
         #     { "all": { "hosts": { "vm1.nodekite.com": null, "vm2.nodekite.com": null }, "children": { "web": { "hosts": {
         #     "vm3.nodekite.com": null, "vm4.nodekite.com": null } }, "db": { "hosts": { "vm5.nodekite.com": null, "vm6.nodekite.com": null }
         # } } } }
-        for grp, hostset in roles.items():
+        for grp, hostset in self.roles.items():
             inv["all"]["children"][grp] = {}
             inv["all"]["children"][grp]["hosts"] = {}
             for host in hostset:
@@ -105,6 +129,7 @@ class G5KPlatform(Platform):
                         "kubernetes_role": "node"
                     }
 
+        self.metadata["nodes"] = inv
         self.post_setup()
         return inv
 
@@ -112,14 +137,7 @@ class G5KPlatform(Platform):
         pass
 
     def post_setup(self):
-        jobs = self.provider.driver.get_jobs()
-
-        self.job_id = jobs[0].uid
-        self.job_site = jobs[0].site
-
-        g.storage._update_current_exp_data(
-            {"metadata": {"platform": {"job_id": self.job_id}}}
-        )
+        g.storage._update_current_exp_data({"metadata": {"platform": self.metadata}})
 
         self.enable_g5k_nfs_access()
 
@@ -134,7 +152,12 @@ class G5KPlatform(Platform):
 
         requests.post(
             uri,
-            json={"termination": {"job": self.job_id, "site": self.job_site}},
+            json={
+                "termination": {
+                    "job": self.metadata["job_id"],
+                    "site": self.metadata["job_site"],
+                }
+            },
             auth=(g5kcreds["username"], g5kcreds["password"]),
         )
 

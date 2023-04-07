@@ -1,5 +1,3 @@
-include 'params/default.gin'
-
 greenflow.deploy.deploy.platform = @greenflow.g5k.G5KPlatform
 greenflow.destroy.destroy.platform = @greenflow.g5k.G5KPlatform
 
@@ -10,5 +8,6 @@ greenflow.g5k.G5KPlatform.num_worker = 1
 greenflow.g5k.G5KPlatform.queue = "default"
 greenflow.g5k.G5KPlatform.walltime = "1:00:00"
 
-greenflow.factors.factors.uc3_flink_resourceValue = 1
-greenflow.factors.factors.uc3_flink_loadValue = 10000
+greenflow.factors.factors.uc3_flink_resourceValue = 3
+greenflow.factors.factors.uc3_flink_loadValue = 100
+greenflow.factors.factors.duration = 40

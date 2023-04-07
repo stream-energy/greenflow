@@ -108,6 +108,7 @@ def kafka():
     run = ansible_runner.run(
         # role="helm",
         # inventory=p.ansible_inventory_file_path,
+        # verbosity=3,
         playbook="kafka.yaml",
         private_data_dir="./ansible",
         # TODO: Rename all instances of deployment_ts to deployment_start_ts

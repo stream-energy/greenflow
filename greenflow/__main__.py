@@ -16,6 +16,12 @@ class RUN:
     def destroy(self):
         return destroy.destroy()
 
+    def mock_destroy(self):
+        return destroy.mock_destroy()
+
+    def killjob(self):
+        destroy.killjob()
+
     def base(self):
         run.base()
 

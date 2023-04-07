@@ -1,0 +1,58 @@
+---
+# vim: set ft=yaml:
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: benchmark-resources-uc3-load-generator
+  namespace: default
+data:
+  uc3-load-generator-deployment.yaml: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: titan-ccp-load-generator
+    spec:
+      selector:
+        matchLabels:
+          app: titan-ccp-load-generator
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: titan-ccp-load-generator
+        spec:
+          terminationGracePeriodSeconds: 0
+          containers:
+            - name: workload-generator
+              image: ghcr.io/cau-se/theodolite-uc3-workload-generator:latest
+              ports:
+                - containerPort: 5701
+                  name: coordination
+              env:
+                - name: KUBERNETES_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                - name: KUBERNETES_DNS_NAME
+                  value: "titan-ccp-load-generator.$(KUBERNETES_NAMESPACE).svc.cluster.local"
+                - name: KAFKA_BOOTSTRAP_SERVERS
+                  value: "theodolite-kafka-kafka-bootstrap:9092"
+                - name: SCHEMA_REGISTRY_URL
+                  value: "http://theodolite-kafka-schema-registry:8081"
+  uc3-load-generator-service.yaml: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: titan-ccp-load-generator
+      labels:
+        app: titan-ccp-load-generator
+    spec:
+      type: ClusterIP
+      clusterIP: None
+      selector:
+        app: titan-ccp-load-generator
+      ports:
+        - name: coordination
+          port: 5701
+          targetPort: 5701
+          protocol: TCP

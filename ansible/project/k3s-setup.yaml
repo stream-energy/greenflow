@@ -261,6 +261,9 @@
         path: "{{ kubeconfig_path }}"
         mode: "0600"
 
+    - name: Label worker nodes # https://github.com/k3s-io/k3s/issues/1289
+      shell: kubectl get nodes -oname -l 'node-role.kubernetes.io/control-plane notin (true)' | xargs -n1 -I@ kubectl label @ node-role.kubernetes.io/worker=true
+
     - name: Wait for all k3s nodes to be ready
       shell: kubectl wait --for=condition=Ready nodes --all --timeout=600s
       register: nodes_ready

@@ -55,5 +55,21 @@ def destroy(*, platform=gin.REQUIRED):
             post_destroy()
 
 
+@gin.configurable
+def killjob(*, platform=gin.REQUIRED):
+    p: Platform = platform()
+    # pre_destroy()
+    # p.teardown()
+    # post_destroy()
+    match p:
+        case G5KPlatform():
+            p.teardown()
+
+
+def mock_destroy():
+    pre_destroy()
+    post_destroy()
+
+
 if __name__ == "__main__":
     destroy()

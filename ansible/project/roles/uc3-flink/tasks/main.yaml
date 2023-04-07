@@ -1,0 +1,25 @@
+# vim: set ft=yaml:
+---
+# - name: Debug templating
+#   ansible.builtin.debug:
+#     msg: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+#   with_fileglob:
+#     - "../templates/*.j2"
+
+- name: Deploy all resources
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    - "../templates/*.j2"
+
+# - name: create x template
+#   template:
+#     src: "{{ item }}"
+#     dest: /tmp/{{ item | basename | regex_replace('\.j2$', '') }}
+#   with_fileglob:
+#     - ../templates/*.j2
+
+- name: Wait for execution to finish
+  delegate_to: localhost
+  shell: kubectl wait execution uc3-flink --for=jsonpath='{.status.executionState}'=Finished --timeout=1h

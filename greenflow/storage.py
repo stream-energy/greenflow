@@ -14,6 +14,7 @@ from .utils import (
     DateTimeSerializer,
     YAMLStorage,
     generate_grafana_dashboard_url,
+    generate_explore_url,
     get_readable_gin_config,
 )
 
@@ -39,13 +40,28 @@ class ExpStorage:
 
     def create_new_exp(self, platform):
 
+        from .factors import factors
+
+        _ = factors()
+
+        self.db2.get(Query().metadata.platform.job_id == platform.metadata["job_id"])
+
         self.current_exp_data = dict(
+            inputs={},
             metadata={
                 "deployment_start_ts": g.deployment_start,
             },
         )
+        try:
+            current_gin_config = self.current_exp_data["inputs"]["gin_config"]
+        except KeyError:
+            current_gin_config = {}
+        result = always_merger.merge(
+            current_gin_config, dict(get_readable_gin_config())
+        )
+        self.current_exp_data["inputs"]["gin_config"] = result
+
         self.current_exp_id = self.db2.insert(self.current_exp_data)
-        self.write_gin_config()
 
     def _refresh_current_exp_data(self):
         try:
@@ -57,18 +73,21 @@ class ExpStorage:
         self.current_exp_id = doc_id
         self.current_exp_data = self.db2.get(doc_id=doc_id)
 
-    def _update_current_exp_data(self, new_data):
-        self._refresh_current_exp_data()
-
-        result = always_merger.merge(new_data, self.current_exp_data)
-
-        self.current_exp_data = result
+    def _commit(self):
         self.db2.upsert(
             Document(
                 self.current_exp_data,
                 doc_id=self.current_exp_id,
             )
         )
+
+    def _update_current_exp_data(self, new_data):
+        self._refresh_current_exp_data()
+
+        result = always_merger.merge(new_data, self.current_exp_data)
+
+        self.current_exp_data = result
+        self._commit()
 
     def wrap_up_exp(self):
         # g.deployment_end = pendulum.now()
@@ -83,21 +102,33 @@ class ExpStorage:
         self.write_gin_config()
 
     def write_gin_config(self) -> None:
-        self._update_current_exp_data(
-            {"inputs": {"gin_config": dict(get_readable_gin_config())}},
+        from .factors import factors
+
+        current_gin_config = self.current_exp_data["inputs"]["gin_config"]
+        result = always_merger.merge(
+            current_gin_config, dict(get_readable_gin_config())
         )
+        self.current_exp_data["inputs"]["gin_config"] = result
+
+        self._commit()
 
     def write_grafana_dashboard_url(self) -> None:
         self._refresh_current_exp_data()
         self._update_current_exp_data(
             {
                 "metadata": {
+                    "explore_url": generate_explore_url(
+                        start_ts=self.current_exp_data["metadata"][
+                            "deployment_start_ts"
+                        ],
+                        end_ts=self.current_exp_data["metadata"]["deployment_end_ts"],
+                    ),
                     "dashboard_url": generate_grafana_dashboard_url(
                         start_ts=self.current_exp_data["metadata"][
                             "deployment_start_ts"
                         ],
                         end_ts=self.current_exp_data["metadata"]["deployment_end_ts"],
-                    )
+                    ),
                 }
             },
         )
