@@ -24,7 +24,6 @@ def post_setup():
 
 
 def exp():
-    gin.parse_config_file("params/exp.gin")
     run = ansible_runner.run(
         # role="helm",
         # inventory=p.ansible_inventory_file_path,

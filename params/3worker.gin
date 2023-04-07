@@ -11,3 +11,4 @@ greenflow.g5k.G5KPlatform.walltime = "1:00:00"
 
 greenflow.factors.factors.uc3_flink_resourceValue = 3
 greenflow.factors.factors.uc3_flink_loadValue = 10000
+greenflow.factors.factors.duration = 60

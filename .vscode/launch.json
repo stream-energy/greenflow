@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "1Worker E2E",
             "type": "python",
@@ -10,6 +11,18 @@
             "args": [
                 "e2e",
                 "params/1worker.gin"
+            ],
+            "subProcess": false
+        },
+        {
+            "name": "3Worker full",
+            "type": "python",
+            "request": "launch",
+            "module": "greenflow",
+            "justMyCode": false,
+            "args": [
+                "full",
+                "params/3worker.gin"
             ],
             "subProcess": false
         },

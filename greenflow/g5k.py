@@ -88,7 +88,7 @@ class G5KPlatform(Platform):
                 str(jobs[0].attributes["started_at"]),
                 "X",
                 tz="UTC",
-            )
+            ).in_timezone("Europe/Paris")
 
             self.roles, self.networks = self.provider.init()
         except IndexError:

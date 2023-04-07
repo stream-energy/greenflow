@@ -11,9 +11,11 @@ from os import system
 
 class RUN:
     def deploy(self):
+        gin.parse_config_file("params/default.gin")
         return deploy.deploy()
 
     def destroy(self):
+        gin.parse_config_file("params/default.gin")
         return destroy.destroy()
 
     def mock_destroy(self):
@@ -72,5 +74,4 @@ class RUN:
 
 if __name__ == "__main__":
     install()
-    gin.parse_config_file("params/default.gin")
     fire.Fire(RUN)
