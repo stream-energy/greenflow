@@ -1,3 +1,4 @@
+import sys
 import fire
 import gin
 from icecream import install
@@ -7,6 +8,8 @@ from . import deploy, destroy, run, platform
 from sh import ssh
 from shlex import split
 from os import system
+
+print(sys.argv)
 
 
 class RUN:
@@ -43,6 +46,16 @@ class RUN:
         deploy.deploy()
         run.base()
         run.kafka()
+        run.theo()
+        run.exp()
+        destroy.destroy()
+
+    def redpanda(self, ginfile):
+        ginfile = "params/1worker-3resources-redpanda.gin"
+        gin.parse_config_file(ginfile)
+        deploy.deploy()
+        run.base()
+        run.redpanda()
         run.theo()
         run.exp()
         destroy.destroy()

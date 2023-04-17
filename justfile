@@ -1,12 +1,8 @@
-default: run
+set positional-arguments
+
+default:
 	@echo "No targets specified. Assuming deploy"
-debug:
-	python -m pdb -c continue -m greenflow run
-deploy:
-	time python -m greenflow deploy
+deploy $ARGS:
+	time python -m greenflow full $1
 destroy:
 	time python -m greenflow destroy
-run:
-	time python -m greenflow run
-mock:
-	time python -m greenflow mock

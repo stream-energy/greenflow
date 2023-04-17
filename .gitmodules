@@ -19,3 +19,6 @@
 [submodule "charts/strimzi-kafka-operator"]
 	path = charts/strimzi-kafka-operator
 	url = https://github.com/strimzi/strimzi-kafka-operator
+[submodule "charts/redpanda-helm-charts"]
+	path = charts/redpanda-helm-charts
+	url = https://github.com/redpanda-data/helm-charts
