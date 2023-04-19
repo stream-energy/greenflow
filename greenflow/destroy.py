@@ -9,6 +9,16 @@ from sh import kubectl, ssh
 from .g5k import G5KPlatform
 from .platform import Platform
 from .g import g
+import ansible_runner
+import gin
+import pendulum
+from sh import ansible_playbook, rm
+
+from .factors import factors
+
+from .g import g
+from .g5k import G5KPlatform
+from .platform import MockPlatform, Platform
 
 
 def pre_destroy():
@@ -33,12 +43,13 @@ def pre_destroy():
 
 
 def post_destroy():
-    ssh(
+    p = ssh(
         split(
             "h-0 sudo rsync -aXxvPh --exclude '*cache*' --exclude '*tmp*' --exclude '*txn*' --exclude '*lock*' --info=progress2 /mnt/energystream1/ /root/energystream1-mirror"
         ),
         _fg=True,
     )
+    p.wait()
     ssh(split("h-0 docker restart greenflow-vm-1"))
 
 
@@ -67,6 +78,11 @@ def killjob(*, platform=gin.REQUIRED):
 
 
 def mock_destroy():
+    pre_destroy()
+    post_destroy()
+
+
+def blowaway():
     pre_destroy()
     post_destroy()
 

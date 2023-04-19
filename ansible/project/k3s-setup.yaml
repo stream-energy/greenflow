@@ -28,6 +28,10 @@
       ansible.builtin.template:
         src: registries.yaml.j2
         dest: /etc/rancher/k3s/registries.yaml
+      register: result
+    # - name: Skip the rest of the playbook if the deployment was successful and there was no change
+    #   meta: skip_tags=all
+    #   when: result is success and result is not changed
     # - name: Create /etc/docker
     #   tags: [always]
     #   shell:

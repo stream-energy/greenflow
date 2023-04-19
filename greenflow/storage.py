@@ -32,7 +32,7 @@ class ExpStorage:
         #     separators=(",", ": "),
         #     storage=serialization1,
         # )
-        self.db2 = TinyDB("storage/experiment-history.yaml", storage=serialization2)
+        self.db = TinyDB("storage/experiment-history.yaml", storage=serialization2)
 
     @property
     def current_exp(self):
@@ -44,7 +44,7 @@ class ExpStorage:
 
         _ = factors()
 
-        self.db2.get(Query().metadata.platform.job_id == platform.metadata["job_id"])
+        self.db.get(Query().metadata.platform.job_id == platform.metadata["job_id"])
 
         self.current_exp_data = dict(
             inputs={},
@@ -61,20 +61,27 @@ class ExpStorage:
         )
         self.current_exp_data["inputs"]["gin_config"] = result
 
-        self.current_exp_id = self.db2.insert(self.current_exp_data)
+        self.current_exp_id = self.db.insert(self.current_exp_data)
+        print(f"Current exp id: {self.current_exp_id}")
 
     def _refresh_current_exp_data(self):
         try:
             doc_id = self.current_exp_id
+            self.current_exp_id = doc_id
+            self.current_exp_data = self.db.get(doc_id=doc_id)
         except AttributeError:
-            print("Missing current_exp_data ! Using last value instead")
-            doc_id = self.db2.__len__()
-
-        self.current_exp_id = doc_id
-        self.current_exp_data = self.db2.get(doc_id=doc_id)
+            print(
+                "Missing current_exp_id ! Using last value of current_exp_data instead."
+            )
+            print("saving a backup just in case")
+            doc_id = self.db.__len__()
+            self.current_exp_id = self.db.__len__()
+            self.current_exp_data = self.db.get(doc_id=doc_id)
+            self.db.insert(Document(self.current_exp_data, doc_id=doc_id + 1))
+            self.current_exp_id = self.db.__len__()
 
     def _commit(self):
-        self.db2.upsert(
+        self.db.upsert(
             Document(
                 self.current_exp_data,
                 doc_id=self.current_exp_id,

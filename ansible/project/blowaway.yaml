@@ -1,0 +1,13 @@
+---
+# vim: set ft=yaml:
+- name: Uninstall k3s agents and servers
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Uninstall k3s agent on worker nodes
+      shell: "/usr/local/bin/k3s-agent-uninstall.sh"
+      when: "'worker' in group_names"
+    - name: Uninstall k3s agent on control nodes
+      shell: "/usr/local/bin/k3s-uninstall.sh"
+      when: "'control' in group_names"

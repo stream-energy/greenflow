@@ -1,8 +1,8 @@
 ---
 # vim: set ft=yaml:
-- name: Deploy Base Helm Charts
+- name: Deploying Redpanda
   hosts: localhost
-  gather_facts: false
   strategy: mitogen_free
+  gather_facts: false
   roles:
-    - base
+    - redpanda

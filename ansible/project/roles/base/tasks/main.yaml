@@ -75,6 +75,21 @@
     # force: true
     values: "{{ lookup('ansible.builtin.template', 'kube-prometheus-stack-values.yaml.j2') | from_yaml }}"
 
+- name: Deploy additional ServiceMonitor for Scaphandre
+  delegate_to: localhost
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', 'scaph-ServiceMonitor.yaml.j2') | from_yaml }}"
+
+- name: Deploy Scaphandre for Power Metrics monitoring
+  delegate_to: localhost
+  kubernetes.core.helm:
+    name: scaph
+    chart_ref: "{{ q('pipe', 'git rev-parse --show-toplevel')[0] }}/charts/scaphandre/helm/scaphandre"
+    chart_repo_url: git+https://github.com/hubblo-org/scaphandre@helm/scaphandre?ref=main
+    release_namespace: default
+    create_namespace: true
+
 - name: Deploy latest version of VictoriaMetrics chart for long term storage of experiment results
   delegate_to: localhost
   kubernetes.core.helm:
@@ -92,31 +107,16 @@
         nodeSelector:
           node-role.kubernetes.io/control-plane: "true"
   when: mock is not defined
+# - name: Deploy Strimzi
+#   delegate_to: localhost
+#   kubernetes.core.helm:
+#     name: strimzi
+#     chart_ref: "{{ q('pipe', 'git rev-parse --show-toplevel')[0] }}/charts/strimzi-kafka-operator/helm-charts/helm3/strimzi-kafka-operator"
+#     # chart_version: 0.8.2
+#     wait: true
+#     release_namespace: default
+#     values: "{{ lookup('ansible.builtin.template', 'strimzi-values.yaml.j2') | from_yaml }}"
 
-- name: Deploy additional ServiceMonitor for Scaphandre
-  delegate_to: localhost
-  kubernetes.core.k8s:
-    state: present
-    definition: "{{ lookup('ansible.builtin.template', 'scaph-ServiceMonitor.yaml.j2') | from_yaml }}"
-
-- name: Deploy Scaphandre for Power Metrics monitoring
-  delegate_to: localhost
-  kubernetes.core.helm:
-    name: scaph
-    chart_ref: "{{ q('pipe', 'git rev-parse --show-toplevel')[0] }}/charts/scaphandre/helm/scaphandre"
-    chart_repo_url: git+https://github.com/hubblo-org/scaphandre@helm/scaphandre?ref=main
-    release_namespace: default
-    create_namespace: true
-
-- name: Deploy Strimzi
-  delegate_to: localhost
-  kubernetes.core.helm:
-    name: strimzi
-    chart_ref: "{{ q('pipe', 'git rev-parse --show-toplevel')[0] }}/charts/strimzi-kafka-operator/helm-charts/helm3/strimzi-kafka-operator"
-    # chart_version: 0.8.2
-    wait: true
-    release_namespace: default
-    values: "{{ lookup('ansible.builtin.template', 'strimzi-values.yaml.j2') | from_yaml }}"
 # - name: Deploy Theodolite
 #   delegate_to: localhost
 #   kubernetes.core.helm:

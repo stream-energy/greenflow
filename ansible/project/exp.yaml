@@ -1,8 +1,8 @@
 ---
 # vim: set ft=yaml:
-- name: Deploy Helm Charts
+- name: Deploy EXP
   hosts: localhost
   gather_facts: false
   strategy: mitogen_free
   roles:
-    - uc3-flink
+    - uc3-flink-def

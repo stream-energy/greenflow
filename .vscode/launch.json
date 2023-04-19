@@ -1,64 +1,29 @@
 {
     "version": "0.2.0",
     "configurations": [
-
         {
-            "name": "1Worker E2E",
+            "name": "Dep 1 Worker",
+            "type": "python",
+            "request": "launch",
+            "module": "greenflow",
+            "justMyCode": false,
+            "args": [
+                "deploy",
+                "params/1worker-1resources-kafka.gin"
+            ],
+            "subProcess": false
+        },
+        {
+            "name": "E2E 1Worker",
             "type": "python",
             "request": "launch",
             "module": "greenflow",
             "justMyCode": false,
             "args": [
                 "e2e",
-                "params/1worker.gin"
+                "params/1worker-1resources-kafka.gin"
             ],
             "subProcess": false
-        },
-        {
-            "name": "3Worker full",
-            "type": "python",
-            "request": "launch",
-            "module": "greenflow",
-            "justMyCode": false,
-            "args": [
-                "full",
-                "params/3worker.gin"
-            ],
-            "subProcess": false
-        },
-        {
-            "name": "3Worker E2E",
-            "type": "python",
-            "request": "launch",
-            "module": "greenflow",
-            "justMyCode": false,
-            "args": [
-                "e2e",
-                "params/3worker.gin"
-            ],
-            "subProcess": false
-        },
-        {
-            "name": "Deploy",
-            "type": "python",
-            "request": "launch",
-            "module": "greenflow",
-            "justMyCode": false,
-            "args": [
-                "deploy"
-            ],
-            "subProcess": false
-        },
-        {
-            "name": "Destroy",
-            "type": "python",
-            "request": "launch",
-            "module": "greenflow",
-            "justMyCode": false,
-            "args": [
-                "destroy"
-            ],
-            "subProcess": false
-        },
+        }
     ]
 }

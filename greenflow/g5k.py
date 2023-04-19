@@ -89,8 +89,6 @@ class G5KPlatform(Platform):
                 "X",
                 tz="UTC",
             ).in_timezone("Europe/Paris")
-
-            self.roles, self.networks = self.provider.init()
         except IndexError:
             print("Job not already running. Will start new job")
             self.roles, self.networks = self.provider.init()
@@ -101,7 +99,10 @@ class G5KPlatform(Platform):
                 str(jobs[0].attributes["started_at"]),
                 "X",
                 tz="UTC",
-            )
+            ).in_timezone("Europe/Paris")
+            return
+
+        self.roles, self.networks = self.provider.init()
 
     @gin.register
     def setup(self):

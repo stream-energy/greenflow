@@ -6,9 +6,10 @@ kafkaClient:
     node-role.kubernetes.io/control-plane: "true"
 strimzi:
   # Disabling strimzi in favour of deploying chart manually
-  enabled: false
+  # ReEnabling theodolite kafka
+  enabled: true
   kafka:
-    replicas: 1
+    replicas: 3
     kafkaExporter:
       template:
         pod:
@@ -21,13 +22,13 @@ strimzi:
                         operator: In
                         values:
                           - "true"
-    config:
-      offsets.topic.replication.factor: 1
-      transaction.state.log.replication.factor: 1
-      transaction.state.log.min.isr: 1
-      default.replication.factor: 1
-      min.insync.replicas: 1
-      # inter.broker.protocol.version: "3.3"
+    # config:
+    #   offsets.topic.replication.factor: 1
+    #   transaction.state.log.replication.factor: 1
+    #   transaction.state.log.min.isr: 1
+    #   default.replication.factor: 1
+    #   min.insync.replicas: 1
+    # inter.broker.protocol.version: "3.3"
     entityOperator:
       template:
         topicOperatorContainer:
@@ -51,12 +52,12 @@ strimzi:
             requiredDuringSchedulingIgnoredDuringExecution:
               nodeSelectorTerms:
                 - matchExpressions:
-                    - key: node-role.kubernetes.io/control-plane
+                    - key: node-role.kubernetes.io/worker
                       operator: In
                       values:
                         - "true"
   zookeeper:
-    replicas: 1
+    replicas: 3
     zooEntrance:
       enabled: false
       zookeeperClient:
@@ -64,14 +65,14 @@ strimzi:
           node-role.kubernetes.io/control-plane: "true"
     nodeselectorterms:
       - matchexpressions:
-          - key: node-role.kubernetes.io/control-plane
+          - key: node-role.kubernetes.io/worker
             operator: In
             values:
               - "true"
   schemaRegistry:
     enabled: true
     nodeSelector:
-      node-role.kubernetes.io/control-plane: "true"
+      node-role.kubernetes.io/worker: "true"
 prometheus:
   enabled: false
 kube-prometheus-stack:
@@ -106,9 +107,9 @@ operator:
       uc2Flink: false
       uc2BeamFlink: false
       uc2BeamSamza: false
-      uc3LoadGenerator: false
+      uc3LoadGenerator: true
       uc3Kstreams: false
-      uc3Flink: false
+      uc3Flink: true
       uc3BeamFlink: false
       uc3BeamSamza: false
       uc4LoadGenerator: false
@@ -126,7 +127,7 @@ operator:
       uc2BeamFlink: false
       uc2BeamSamza: false
       uc3Kstreams: false
-      uc3Flink: false
+      uc3Flink: true
       uc3BeamFlink: false
       uc3BeamSamza: false
       uc4Kstreams: false

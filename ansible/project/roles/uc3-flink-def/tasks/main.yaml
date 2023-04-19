@@ -6,6 +6,13 @@
 #   with_fileglob:
 #     - "../templates/*.j2"
 
+- name: Delete any past experiment
+  kubernetes.core.k8s:
+    state: absent
+    definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    - "../templates/*.j2"
+
 - name: Deploy all resources
   kubernetes.core.k8s:
     state: present
@@ -22,4 +29,4 @@
 
 - name: Wait for execution to finish
   delegate_to: localhost
-  shell: kubectl wait execution uc3-flink --for=jsonpath='{.status.executionState}'=Finished --timeout=1h
+  shell: kubectl wait execution exp --for=jsonpath='{.status.executionState}'=Finished --timeout=1h
