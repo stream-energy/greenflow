@@ -60,24 +60,30 @@ class RUN:
         run.theo()
         run.exp()
 
-    def e2e(self, ginfile):
-        gin.parse_config_file(ginfile)
+    def e2e(self):
+        gin.parse_config_file("params/1worker-1resources-kafka.gin")
         deploy.deploy()
         run.base()
         run.kafka()
         run.theo()
         run.exp()
-        destroy.destroy()
+        destroy.mock_destroy()
+        run.vm()
+        # destroy.blowaway()
 
-    def kafka(self, ginfile):
-        ginfile = "params/1worker-3resources-kafka.gin"
-        gin.parse_config_file(ginfile)
-        deploy.deploy()
-        run.base()
-        run.redpanda()
-        run.theo()
-        run.exp()
-        destroy.destroy()
+    def kafka(self):
+        # ginfile = "params/1worker-1resources-kafka.gin"
+        # gin.parse_config_file(ginfile)
+        # deploy.deploy()
+        # run.base()
+        run.kafka()
+
+    def vm(self):
+        # ginfile = "params/1worker-1resources-kafka.gin"
+        # gin.parse_config_file(ginfile)
+        # deploy.deploy()
+        # run.base()
+        run.vm()
 
     def redpanda(self):
         ginfile = "params/1worker-3resources-redpanda.gin"

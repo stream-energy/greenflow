@@ -4,7 +4,7 @@ from shlex import split
 from time import sleep
 
 import gin
-from sh import kubectl, ssh
+from sh import kubectl, ssh, helm
 
 from .g5k import G5KPlatform
 from .platform import Platform
@@ -21,20 +21,28 @@ from .g5k import G5KPlatform
 from .platform import MockPlatform, Platform
 
 
+def blowaway():
+    run = ansible_runner.run(
+        # role="helm",
+        # inventory=p.ansible_inventory_file_path,
+        # verbosity=3,
+        playbook="blowaway.yaml",
+        private_data_dir="./ansible",
+        # TODO: Rename all instances of deployment_ts to deployment_start_ts
+        extravars={
+            "deployment_start_ts": g.deployment_start.to_iso8601_string(),
+        }
+        | factors(),
+        # rotate_artifacts=5,
+    )
+
+
 def pre_destroy():
     g.storage.wrap_up_exp()
 
-    # p = kubectl(
-    #     "port-forward -n monitoring svc/victoria-metrics-single-server 8428:8429".split(
-    #         " "
-    #     ),
-    #     _bg=True,
-    # )
     try:
-        p = kubectl(
-            split(
-                "delete --wait=true --timeout=10s statefulsets victoria-metrics-single-server"
-            ),
+        p = helm(
+            split("uninstall victoria-metrics-single"),
             # _bg=True,
         )
         p.wait(timeout=10)
@@ -49,7 +57,6 @@ def post_destroy():
         ),
         _fg=True,
     )
-    p.wait()
     ssh(split("h-0 docker restart greenflow-vm-1"))
 
 
@@ -80,12 +87,3 @@ def killjob(*, platform=gin.REQUIRED):
 def mock_destroy():
     pre_destroy()
     post_destroy()
-
-
-def blowaway():
-    pre_destroy()
-    post_destroy()
-
-
-if __name__ == "__main__":
-    destroy()

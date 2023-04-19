@@ -11,6 +11,6 @@ greenflow.g5k.G5KPlatform.walltime = "6:00:00"
 
 # kafkaOnWorker is always better to keep as true since Kafka is significant
 # We do not want it to add noise into our readings
-greenflow.factors.factors.uc3_flink_resourceValue = 3
-greenflow.factors.factors.uc3_flink_loadValue = 10000
+greenflow.factors.factors.uc3_flink_resourceValue = 64
+greenflow.factors.factors.uc3_flink_loadValue = 100000
 greenflow.factors.factors.duration = 300

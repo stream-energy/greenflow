@@ -9,14 +9,14 @@
     # chart_version: 0.8.2
     wait: true
     release_namespace: default
-    values: "{{ lookup('ansible.builtin.template', 'kafka-values.yaml.j2') | from_yaml }}"
+    values: "{{ lookup('ansible.builtin.template', 'strimzi-values.yaml.j2') | from_yaml }}"
 
 - name: Deploy Kafka
   kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
   with_fileglob:
-    - "../templates/*.j2"
+    - "../templates/kafka-*.j2"
 
 - name: Wait for Kafka to be deployed
   delegate_to: localhost
