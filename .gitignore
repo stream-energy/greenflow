@@ -16,3 +16,10 @@ inventory/g5k.ini
 .devcontainer/devcontainer.json
 /mitogen
 /charts
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+.devenv
+.mamba

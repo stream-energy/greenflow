@@ -2,7 +2,6 @@
 # vim: set ft=yaml:
 - name: Deploying Redpanda
   hosts: localhost
-  strategy: mitogen_free
   gather_facts: false
   roles:
     - redpanda

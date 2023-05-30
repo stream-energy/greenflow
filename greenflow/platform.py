@@ -1,8 +1,8 @@
-import bpdb
-from sh import kubectl, k3d
 from shlex import split
 
+import bpdb
 import gin
+from sh import k3d, kubectl
 
 
 class Platform:

@@ -40,6 +40,7 @@ def deploy(*, platform: type[Platform] = gin.REQUIRED):
             with open("./ansible/inventory/hosts.yaml", "w") as f:
                 # json.dump(inv, f, ensure_ascii=False, indent=4)
                 yaml.dump(inv, f)
+                # input("Dumped yaml. Press any key to continue...")
             # with open("./ansible/inventory/hosts.json", "w") as f:
             #     json.dump(inv, f, ensure_ascii=False, indent=4)
             # yaml.dump(inv, f)

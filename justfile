@@ -6,8 +6,10 @@ default:
 	@echo "No targets specified. Assuming deploy"
 deploy $ARGS:
 	time python -m greenflow full $1
-e2e:
-	time python -m greenflow e2e
+e2e $ARGS:
+	time python -m greenflow e2e $1
+tight:
+	time python -m greenflow tight
 destroy:
 	time python -m greenflow destroy
 redpanda:

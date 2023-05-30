@@ -2,14 +2,24 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Dep 1 Worker",
+            "name": "Tight",
             "type": "python",
             "request": "launch",
             "module": "greenflow",
             "justMyCode": false,
             "args": [
-                "deploy",
-                "params/1worker-1resources-kafka.gin"
+                "tight",
+            ],
+            "subProcess": false
+        },
+        {
+            "name": "exp",
+            "type": "python",
+            "request": "launch",
+            "module": "greenflow",
+            "justMyCode": false,
+            "args": [
+                "exp",
             ],
             "subProcess": false
         },

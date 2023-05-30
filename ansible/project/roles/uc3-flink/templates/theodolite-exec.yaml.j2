@@ -3,7 +3,7 @@
 apiVersion: theodolite.rocks/v1beta1
 kind: execution
 metadata:
-  name: uc3-flink
+  name: exp
   namespace: default
 spec:
   benchmark: "uc3-flink"
@@ -15,6 +15,14 @@ spec:
     resourceType: "Instances"
     resourceValues:
       - {{ uc3_flink_resourceValue }}
+    configOverrides:
+      - patcher:
+          type: "NodeSelectorPatcher"
+          resource: "uc3-flink-deployment.yaml"
+          properties:
+            variableName: "env"
+          value: "prod"
+
   execution:
     strategy:
       name: "RestrictionSearch"
@@ -36,7 +44,7 @@ spec:
         operator: gte
         threshold: 0
   # - patcher:
-  #     type: "NodeSelectorPatcher"
+  #     type: ""
   #     resource: "uc1-load-generator-deployment.yaml"
   #     properties:
   #       variableName: "env"

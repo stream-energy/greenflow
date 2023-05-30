@@ -1,4 +1,4 @@
-enoslib==7.2.1
+enoslib==8.0.0
 ansible==5.10.0
 cryptography==37.0.4
 diskcache==4.0.0

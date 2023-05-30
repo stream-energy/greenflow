@@ -22,6 +22,8 @@ data:
             app: titan-ccp-load-generator
         spec:
           terminationGracePeriodSeconds: 0
+          nodeSelector:
+            node-role.kubernetes.io/control-plane: "true"
           containers:
             - name: workload-generator
               image: ghcr.io/cau-se/theodolite-uc3-workload-generator:latest

@@ -1,0 +1,19 @@
+---
+# vim: set ft=yaml:
+
+- name: Deploy latest version of VictoriaMetrics chart for long term storage of experiment results
+  delegate_to: localhost
+  kubernetes.core.helm:
+    name: victoria-metrics-single
+    chart_ref: "{{ q('pipe', 'git rev-parse --show-toplevel')[0] }}/charts/victoriametrics/charts/victoria-metrics-single"
+    # chart_version: 0.8.41
+    # chart_repo_url: https://victoriametrics.github.io/helm-charts/
+    release_namespace: default
+    create_namespace: true
+    values:
+      server:
+        retentionPeriod: 100y
+        persistentVolume:
+          existingClaim: vm-pvc
+        nodeSelector:
+          node-role.kubernetes.io/control-plane: "true"

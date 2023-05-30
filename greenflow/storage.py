@@ -38,6 +38,16 @@ class ExpStorage:
     def current_exp(self):
         return Query().metadata.deployment_start_ts == g.deployment_start
 
+    def _init_inputs(self):
+        try:
+            current_gin_config = self.current_exp_data["inputs"]["gin_config"]
+        except KeyError:
+            current_gin_config = {}
+        result = always_merger.merge(
+            current_gin_config, dict(get_readable_gin_config())
+        )
+        self.current_exp_data["inputs"]["gin_config"] = result
+
     def create_new_exp(self, platform):
 
         from .factors import factors
@@ -52,14 +62,7 @@ class ExpStorage:
                 "deployment_start_ts": g.deployment_start,
             },
         )
-        try:
-            current_gin_config = self.current_exp_data["inputs"]["gin_config"]
-        except KeyError:
-            current_gin_config = {}
-        result = always_merger.merge(
-            current_gin_config, dict(get_readable_gin_config())
-        )
-        self.current_exp_data["inputs"]["gin_config"] = result
+        self._init_inputs()
 
         self.current_exp_id = self.db.insert(self.current_exp_data)
         print(f"Current exp id: {self.current_exp_id}")
@@ -74,11 +77,18 @@ class ExpStorage:
                 "Missing current_exp_id ! Using last value of current_exp_data instead."
             )
             print("saving a backup just in case")
-            doc_id = self.db.__len__()
             self.current_exp_id = self.db.__len__()
-            self.current_exp_data = self.db.get(doc_id=doc_id)
-            self.db.insert(Document(self.current_exp_data, doc_id=doc_id + 1))
-            self.current_exp_id = self.db.__len__()
+            self.current_exp_data = self.db.get(doc_id=self.current_exp_id)
+            self.current_exp_data["metadata"] = {
+                "deployment_start_ts": self.current_exp_data["metadata"][
+                    "deployment_end_ts"
+                ]
+            }
+            self.current_exp_data["inputs"] = {"gin_config": {}}
+            self.db.insert(
+                Document(self.current_exp_data, doc_id=self.current_exp_id + 1)
+            )
+            self.current_exp_id += 1
 
     def _commit(self):
         self.db.upsert(
@@ -98,6 +108,8 @@ class ExpStorage:
 
     def wrap_up_exp(self):
         # g.deployment_end = pendulum.now()
+        self._refresh_current_exp_data()
+        self._init_inputs()
         self._update_current_exp_data(
             {
                 "metadata": {
@@ -128,13 +140,13 @@ class ExpStorage:
                         start_ts=self.current_exp_data["metadata"][
                             "deployment_start_ts"
                         ],
-                        end_ts=self.current_exp_data["metadata"]["deployment_end_ts"],
+                        end_ts=g.deployment_end,
                     ),
                     "dashboard_url": generate_grafana_dashboard_url(
                         start_ts=self.current_exp_data["metadata"][
                             "deployment_start_ts"
                         ],
-                        end_ts=self.current_exp_data["metadata"]["deployment_end_ts"],
+                        end_ts=g.deployment_end,
                     ),
                 }
             },

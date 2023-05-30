@@ -1,0 +1,6 @@
+---
+# vim: set ft=yaml:
+# vars file for helm
+storage_class_name: nfs-csi
+nfs_server_address: storage1.lyon.grid5000.fr
+nfs_server_share: /export/group/energystream1/k8s-pvs

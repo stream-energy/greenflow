@@ -3,6 +3,5 @@
 - name: Deploy Base Helm Charts
   hosts: localhost
   gather_facts: false
-  strategy: mitogen_free
   roles:
     - base

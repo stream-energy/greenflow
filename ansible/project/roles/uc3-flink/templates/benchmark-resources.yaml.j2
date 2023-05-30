@@ -16,7 +16,7 @@ data:
     data:
       flink-conf.yaml: |+
         jobmanager.rpc.address: flink-jobmanager
-        taskmanager.numberOfTaskSlots: 1
+        taskmanager.numberOfTaskSlots: 2
         blob.server.port: 6124
         jobmanager.rpc.port: 6123
         taskmanager.rpc.port: 6122
@@ -190,7 +190,6 @@ data:
         - port: metrics
           interval: 10s
   taskmanager-deployment.yaml: |
-    # TODO: Need to ensure only scheduled on worker nodes
     apiVersion: apps/v1
     kind: Deployment
     metadata:
@@ -207,6 +206,8 @@ data:
             app: flink
             component: taskmanager
         spec:
+          nodeSelector:
+            node-role.kubernetes.io/worker: "true"
           terminationGracePeriodSeconds: 0
           containers:
             - name: taskmanager

@@ -5,7 +5,7 @@ from icecream import install
 
 from . import deploy, destroy, run, platform
 
-from sh import ssh
+from sh import ssh, helm
 from shlex import split
 from os import system
 
@@ -20,9 +20,11 @@ class RUN:
         run.theo()
 
     def exp(self):
+        gin.parse_config_file("params/1worker-1resources-kafka.gin")
         run.exp()
 
     def theo(self):
+        gin.parse_config_file("params/1worker-1resources-kafka.gin")
         run.theo()
 
     def kafka(self):
@@ -40,6 +42,7 @@ class RUN:
         return destroy.mock_destroy()
 
     def blowaway(self):
+        gin.parse_config_file("params/1worker-1resources-kafka.gin")
         return destroy.blowaway()
 
     def killjob(self):
@@ -60,15 +63,40 @@ class RUN:
         run.theo()
         run.exp()
 
-    def e2e(self):
+    def tight(self):
         gin.parse_config_file("params/1worker-1resources-kafka.gin")
+        # deploy.deploy()
+        # run.base()
+        # run.vm()
+        run.vm()
+        # run.kafka()
+        run.theo()
+        run.exp()
+        c = input("Press any key to mock_destroy or q to exit")
+        if c == "q":
+            return
+        destroy.mock_destroy()
+        helm(split("uninstall theodolite"))
+        # helm(split("uninstall strimzi"))
+
+    def e2e(self, ginfile):
+        # gin.parse_config_file("params/1worker-1resources-kafka.gin")
+        gin.parse_config_file(ginfile)
         deploy.deploy()
         run.base()
+        run.vm()
         run.kafka()
         run.theo()
         run.exp()
+        # c = input("Press any key to mock_destroy or q to exit")
+        # if c == "q":
+        #     return
         destroy.mock_destroy()
-        run.vm()
+        # c = input("Press any key to vm or q to exit")
+        # if c == "q":
+        #     return
+        destroy.destroy()
+        # run.vm()
         # destroy.blowaway()
 
     def kafka(self):
@@ -79,8 +107,8 @@ class RUN:
         run.kafka()
 
     def vm(self):
-        # ginfile = "params/1worker-1resources-kafka.gin"
-        # gin.parse_config_file(ginfile)
+        ginfile = "params/1worker-1resources-kafka.gin"
+        gin.parse_config_file(ginfile)
         # deploy.deploy()
         # run.base()
         run.vm()
