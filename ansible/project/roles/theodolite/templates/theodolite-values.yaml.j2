@@ -59,7 +59,7 @@ strimzi:
   zookeeper:
     replicas: 3
     zooEntrance:
-      enabled: false
+      enabled: true
       zookeeperClient:
         nodeSelector:
           node-role.kubernetes.io/control-plane: "true"
@@ -110,11 +110,11 @@ operator:
       uc2BeamFlink: false
       uc2BeamSamza: false
       uc3LoadGenerator: true
-      uc3Hazelcast: false
-      uc3Kstreams: false
+      uc3Hazelcast: true
+      uc3Kstreams: true
       uc3Flink: true
       uc3BeamFlink: false
-      uc3BeamSamza: false
+      uc3BeamSamza: true
       uc4LoadGenerator: false
       uc4Hazelcast: false
       uc4Kstreams: false
@@ -132,11 +132,11 @@ operator:
       uc2BeamFlink: false
       uc2BeamSamza: false
       uc2Hazelcast: false
-      uc3Kstreams: false
+      uc3Kstreams: true
       uc3Flink: true
       uc3BeamFlink: false
-      uc3BeamSamza: false
-      uc3Hazelcast: false
+      uc3BeamSamza: true
+      uc3Hazelcast: true
       uc4Kstreams: false
       uc4Flink: false
       uc4BeamFlink: false

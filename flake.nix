@@ -7,7 +7,7 @@
     nix2container.url = "github:nlewo/nix2container";
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
-    myCertificate.url = "path:api-proxy-lille-grid5000-fr-chain.pem";
+    #myCertificate.url = "path:api-proxy-lille-grid5000-fr-chain.pem";
   };
 
   outputs = inputs @ {flake-parts, ...}:
@@ -46,6 +46,9 @@
               "mkhl.direnv"
             ];
           };
+          env = {
+            REQUESTS_CA_BUNDLE = "/etc/ssl/certs/ca-certificates.crt";
+          };
           # languages.python = {
           #   enable = true;
           #   poetry = {
@@ -66,22 +69,39 @@
             time
             gcc
             kube3d
+            atuin
+            fish
           ];
-          scripts.firstTimeSetup.exec = ''
+          scripts.certSetup.exec = ''
+            ${
+              if system == "x86_64-linux"
+              then "sudo cp api-proxy-lille-grid5000-fr-chain.pem /usr/local/share/ca-certificates/api-proxy-lille-grid5000-fr-chain.crt; sudo update-ca-certificates"
+              else ""
+            }
+          '';
+          scripts.pythonSetup.exec = ''
+            eval "$(micromamba shell hook --shell=posix)"
+            micromamba activate
+            micromamba install -y python=3.10 poetry pip -p ./.mamba -c conda-forge
+            micromamba install -y -f env.yaml
+          '';
+          scripts.containerSetup.exec = ''
             eval "$(micromamba shell hook --shell=posix)"
             if ! [ -d "$PWD/.mamba" ]; then
               mkdir -p "$PWD/.mamba"
             fi
-            micromamba activate
-            micromamba install -y python=3.10 poetry pip -p ./.mamba -c conda-forge
-            micromamba install -y -f env.yaml
+            # curl https://raw.githubusercontent.com/rcaloras/bash-preexec/master/bash-preexec.sh -o ~/.bash-preexec.sh
+            # echo '[[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh' >> ~/.bashrc
+            # echo 'eval "$(atuin init bash)"' >> ~/.bashrc
+            echo "
+            username: $GRID5000_USERNAME
+            password: $GRID5000_PASSWORD
+            " > ~/.python-grid5000.yaml
             git config --global user.name Govind
             git config --global user.email git@govind.work
           '';
 
           enterShell = ''
-            export REQUESTS_CA_BUNDLE=${inputs.myCertificate}
-
             export MAMBA_ROOT_PREFIX=$PWD/.mamba
             export KUBECONFIG=$PWD/kubeconfig
             eval "$(micromamba shell hook --shell=posix)"

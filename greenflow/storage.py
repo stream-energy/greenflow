@@ -80,9 +80,7 @@ class ExpStorage:
             self.current_exp_id = self.db.__len__()
             self.current_exp_data = self.db.get(doc_id=self.current_exp_id)
             self.current_exp_data["metadata"] = {
-                "deployment_start_ts": self.current_exp_data["metadata"][
-                    "deployment_end_ts"
-                ]
+                "deployment_start_ts": self.current_exp_data["metadata"].get("deployment_start_ts",pendulum.now())
             }
             self.current_exp_data["inputs"] = {"gin_config": {}}
             self.db.insert(
@@ -107,7 +105,7 @@ class ExpStorage:
         self._commit()
 
     def wrap_up_exp(self):
-        # g.deployment_end = pendulum.now()
+        g.deployment_end = pendulum.now()
         self._refresh_current_exp_data()
         self._init_inputs()
         self._update_current_exp_data(

@@ -4,10 +4,10 @@ base:
 	time python -m greenflow base
 default:
 	@echo "No targets specified. Assuming deploy"
-deploy $ARGS:
-	time python -m greenflow full $1
-e2e $ARGS:
-	time python -m greenflow e2e $1
+deploy:
+	time python -m greenflow deploy
+e2e:
+	time python -m greenflow e2e
 tight:
 	time python -m greenflow tight
 destroy:

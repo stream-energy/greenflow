@@ -3,7 +3,7 @@ import fire
 import gin
 from icecream import install
 
-from . import deploy, destroy, run, platform
+from . import deploy, destroy, run
 
 from sh import ssh, helm
 from shlex import split
@@ -17,6 +17,7 @@ class RUN:
         gin.parse_config_file("params/1worker-1resources-kafka.gin")
         deploy.deploy()
         run.base()
+        run.kafka()
         run.theo()
 
     def exp(self):
@@ -47,6 +48,7 @@ class RUN:
 
     def killjob(self):
         gin.parse_config_file("params/1worker-1resources-kafka.gin")
+        destroy.mock_destroy()
         destroy.killjob()
 
     def base(self):
@@ -68,9 +70,9 @@ class RUN:
         # deploy.deploy()
         # run.base()
         # run.vm()
-        run.vm()
+        # run.vm()
         # run.kafka()
-        run.theo()
+        # run.theo()
         run.exp()
         c = input("Press any key to mock_destroy or q to exit")
         if c == "q":
@@ -79,9 +81,9 @@ class RUN:
         helm(split("uninstall theodolite"))
         # helm(split("uninstall strimzi"))
 
-    def e2e(self, ginfile):
-        # gin.parse_config_file("params/1worker-1resources-kafka.gin")
-        gin.parse_config_file(ginfile)
+    def e2e(self):
+        gin.parse_config_file("params/1worker-1resources-kafka.gin")
+        # gin.parse_config_file(ginfile)
         deploy.deploy()
         run.base()
         run.vm()
@@ -91,20 +93,13 @@ class RUN:
         # c = input("Press any key to mock_destroy or q to exit")
         # if c == "q":
         #     return
-        destroy.mock_destroy()
+        # destroy.mock_destroy()
         # c = input("Press any key to vm or q to exit")
         # if c == "q":
         #     return
         destroy.destroy()
         # run.vm()
         # destroy.blowaway()
-
-    def kafka(self):
-        # ginfile = "params/1worker-1resources-kafka.gin"
-        # gin.parse_config_file(ginfile)
-        # deploy.deploy()
-        # run.base()
-        run.kafka()
 
     def vm(self):
         ginfile = "params/1worker-1resources-kafka.gin"
@@ -141,4 +136,5 @@ class RUN:
 
 if __name__ == "__main__":
     install()
+    gin.parse_config_file("params/1worker-1resources-kafka.gin")
     fire.Fire(RUN)

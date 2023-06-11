@@ -11,22 +11,22 @@
   },
   "image": "ghcr.io/cachix/devenv:latest",
   "overrideCommand": false,
-  "updateContentCommand": "nix develop --impure",
+  // "updateContentCommand": "nix develop --impure",
   "runArgs": [
     "--network=host",
     "--security-opt",
     "label=disable"
   ],
-  "containerEnv": {
-    "GRID5000_USERNAME": "***REMOVED***",
-    "GRID5000_PASSWORD": "***REMOVED***"
-  },
+  // "containerEnv": {
+  //   "GRID5000_USERNAME": "***REMOVED***",
+  //   "GRID5000_PASSWORD": "***REMOVED***"
+  // },
   "mounts": [
     "source=nix-cache,target=/nix,type=volume,consistency=cached",
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
-    "source=/home/g/.ssh,target=/home/g/.ssh,type=bind",
-    "source=/home/g/.kube,target=/home/g/.kube,type=bind",
+    "source=/home/g/.ssh,target=/home/vscode/.ssh,type=bind",
+    "source=/home/g/.kube,target=/home/vscode/.kube,type=bind",
     "source=/home/g/storage,target=/workspaces/greenflow/storage,type=bind",
-    "source=local-cache,target=/home/g/.local/share,type=volume,consistency=cached"
+    "source=local-cache,target=/home/vscode/.local/share,type=volume,consistency=cached"
   ],
 }

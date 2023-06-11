@@ -1,0 +1,36 @@
+# vim: set ft=yaml:
+---
+# - name: Debug templating
+#   ansible.builtin.debug:
+#     msg: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+#   with_fileglob:
+#     - "../templates/*.j2"
+
+# - name: Create YAML file from Jinja2 template
+#   template:
+#     src: "../templates/theodolite-exec.yaml.j2"
+#     dest: /path/to/myfile.yaml
+
+- name: Debug YAML output
+  debug:
+    msg: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    - "../templates/*.j2"
+
+- name: Deploy all resources
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    - "../templates/*.j2"
+
+- name: Wait for execution to finish
+  delegate_to: localhost
+  shell: kubectl wait execution exp --for=jsonpath='{.status.executionState}'=Finished --timeout=1h
+
+- name: Delete any past experiment
+  kubernetes.core.k8s:
+    state: absent
+    definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    - "../templates/*.j2"

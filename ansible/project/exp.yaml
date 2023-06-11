@@ -4,4 +4,4 @@
   hosts: localhost
   gather_facts: false
   roles:
-    - uc3-flink-def
+    - uc3-beam-samza

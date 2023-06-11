@@ -1,11 +1,24 @@
 ---
-# vim: set ft=yaml:
 apiVersion: theodolite.rocks/v1beta1
 kind: execution
 metadata:
   name: exp
   namespace: default
 spec:
+  # configOverrides:
+  #   - patcher:
+  #       type: "NodeSelectorPatcher"
+  #       resource: "uc3-load-generator-deployment.yaml"
+  #       properties:
+  #         variableName: "node-role.kubernetes.io/control-plane"
+  #       value: "true"
+  #   - patcher:
+  #       type: "NodeSelectorPatcher"
+  #       resource: "taskmanager-deployment.yaml"
+  #       properties:
+  #         variableName: "node-role.kubernetes.io/worker"
+  #       value: "true"
+
   benchmark: "uc3-flink"
   load:
     loadType: "NumSensors"
@@ -15,14 +28,6 @@ spec:
     resourceType: "Instances"
     resourceValues:
       - {{ uc3_flink_resourceValue }}
-    configOverrides:
-      - patcher:
-          type: "NodeSelectorPatcher"
-          resource: "uc3-flink-deployment.yaml"
-          properties:
-            variableName: "env"
-          value: "prod"
-
   execution:
     strategy:
       name: "RestrictionSearch"
@@ -32,7 +37,6 @@ spec:
     duration: {{ duration }} # in seconds
     repetitions: 1
     loadGenerationDelay: 5 # in seconds
-  configOverrides: []
   slos:
     - name: "Dummy SLO"
       properties:
@@ -43,33 +47,3 @@ spec:
         repetitionAggregation: sum
         operator: gte
         threshold: 0
-  # - patcher:
-  #     type: ""
-  #     resource: "uc1-load-generator-deployment.yaml"
-  #     properties:
-  #       variableName: "env"
-  #     value: "prod"
-  # - patcher:
-  #     type: "NodeSelectorPatcher"
-  #     resource: "uc1-kstreams-deployment.yaml"
-  #     properties:
-  #       variableName: "env"
-  #   value: "prod"
-  # - patcher:
-  #     type: "ResourceLimitPatcher"
-  #     resource: "uc1-kstreams-deployment.yaml"
-  #     properties:
-  #       container: "uc-application"
-  #       limitedResource: "cpu"
-  #   value: "1000m"
-  # - patcher:
-  #     type: "ResourceLimitPatcher"
-  #     resource: "uc1-kstreams-deployment.yaml"
-  #     properties:
-  #       container: "uc-application"
-  #       limitedResource: "memory"
-  #   value: "2Gi"
-  #  - patcher:
-  #      type: "SchedulerNamePatcher"
-  #      resource: "uc1-kstreams-deployment.yaml"
-  #    value: "random-scheduler"
