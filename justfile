@@ -5,6 +5,8 @@ default:
 e2e:
 	time python -m greenflow e2e
 
+setup:
+	time python -m greenflow setup
 provision:
 	time python -m greenflow provision
 deploy:
@@ -15,6 +17,7 @@ strimzi:
 	time python -m greenflow strimzi
 theodolite:
 	time python -m greenflow theodolite
+
 exp:
 	time python -m greenflow exp
 blowaway:

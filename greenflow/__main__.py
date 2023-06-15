@@ -11,6 +11,14 @@ from . import base, destroy, provision
 
 
 class RUN:
+    def setup(self):
+        gin.parse_config_file("params/1worker-1resources-kafka.gin")
+        provision.provision()
+        base.base()
+        base.deploy_k3s()
+        base.strimzi()
+        base.theodolite()
+
     def provision(self):
         gin.parse_config_file("params/1worker-1resources-kafka.gin")
         provision.provision()
