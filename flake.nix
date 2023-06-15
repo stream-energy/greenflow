@@ -59,12 +59,15 @@
             })
           ];
           scripts.init.exec = ''
+            git submodule update --recursive --init
+            # Unset REQUESTS_CA_BUNDLE as we need to download pip packages
+            export REQUESTS_CA_BUNDLE=
+
             # Python Stuff
             # rm -rf "$PWD/.mamba"
             if ! [ -d "$PWD/.mamba" ]; then
               mkdir -p "$PWD/.mamba"
             fi
-            which -a micromamba
             micromamba install -y python=3.10 poetry pip -p ./.mamba -c conda-forge
             micromamba install -y -f env.yaml
 
@@ -89,9 +92,6 @@
           '';
 
           enterShell = ''
-            export MAMBA_ROOT_PREFIX="$PWD/.mamba"
-            export KUBECONFIG="$PWD/kubeconfig"
-            export REQUESTS_CA_BUNDLE="$PWD/api-proxy-lille-grid5000-fr-chain.pem"
             eval "$(micromamba shell hook --shell=posix)"
             micromamba activate
           '';
