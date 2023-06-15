@@ -2,15 +2,24 @@ from shlex import split
 
 import bpdb
 import gin
+import persistent
+import transaction
+import yaml
 from sh import k3d, kubectl
 
 
-class Platform:
-    def pre_setup(self):
+class Platform(persistent.Persistent):
+    def set_platform_metadata(self):
         raise NotImplementedError()
 
-    def post_setup(self):
+    def pre_provision(self):
         raise NotImplementedError()
+
+    def post_provision(self):
+        self.set_platform_metadata()
+        with open("./ansible/inventory/hosts.yaml", "w") as f:
+            yaml.dump(self.get_ansible_inventory(), f)
+        transaction.commit()
 
     def pre_teardown(self):
         raise NotImplementedError()
@@ -21,7 +30,13 @@ class Platform:
     def get_platform_metadata(self) -> dict:
         raise NotImplementedError()
 
-    def setup(self) -> dict:
+    def provision(self) -> dict:
+        """Deploys Resources.
+        Produces a dict that can be written into an ansible hosts.yaml file"""
+        raise NotImplementedError()
+
+    def get_ansible_inventory(self) -> dict:
+        "Produces a dict that can be written into an ansible hosts.yaml file"
         raise NotImplementedError()
 
 

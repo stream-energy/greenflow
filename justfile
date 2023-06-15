@@ -1,30 +1,31 @@
 set positional-arguments
 
-base:
-	time python -m greenflow base
 default:
-	@echo "No targets specified. Assuming deploy"
-deploy:
-	time python -m greenflow deploy
+	@echo "No targets specified. Assuming e2e"
 e2e:
 	time python -m greenflow e2e
-tight:
-	time python -m greenflow tight
+
+provision:
+	time python -m greenflow provision
+deploy:
+	time python -m greenflow deploy
+base:
+	time python -m greenflow base
+strimzi:
+	time python -m greenflow strimzi
+theodolite:
+	time python -m greenflow theodolite
+exp:
+	time python -m greenflow exp
+blowaway:
+	time python -m greenflow blowaway
 destroy:
 	time python -m greenflow destroy
 redpanda:
 	time python -m greenflow redpanda
-theo:
-	time python -m greenflow theo
 killjob:
 	time python -m greenflow killjob
-kafka:
-	time python -m greenflow kafka
 mockdestroy:
 	time python -m greenflow mock_destroy
-blowaway:
-	time python -m greenflow blowaway
 vm:
 	time python -m greenflow vm
-exp:
-	time python -m greenflow exp

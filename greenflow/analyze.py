@@ -17,12 +17,12 @@ def pre_deploy(platform: Platform):
     # g.storage.create_new_exp()
     g.storage.create_new_exp()
     g.storage.write_gin_config()
-    platform.pre_setup()
+    platform.pre_provision()
 
 
 def post_deploy(platform: Platform):
     # g.storage.create_new_exp()
-    platform.post_setup()
+    platform.post_provision()
 
 
 @gin.configurable
@@ -34,7 +34,7 @@ def deploy(*, platform: type[Platform] = gin.REQUIRED):
             p.pre_deploy()
         case G5KPlatform():
             pre_deploy(p)
-            inv = p.setup()
+            inv = p.provision()
             post_deploy(p)
 
             # sh.rm(split("-rfv ./ansible/main.json"), _ok_code=[0, 1])

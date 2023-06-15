@@ -7,7 +7,7 @@ prometheus:
     externalLabels:
       deployment_start_ts: "{{ deployment_start_ts }}"
     remoteWrite:
-      - url: http://victoria-metrics-single-server.default.svc.cluster.local:8428/api/v1/write
+      - url: "{{ lookup('ansible.builtin.env', 'EXPERIMENT_STORAGE_URL') }}"
     nodeSelector:
       node-role.kubernetes.io/control-plane: "true"
   serviceMonitor:

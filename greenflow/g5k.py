@@ -1,58 +1,19 @@
-from multiprocessing import Process
+from functools import cached_property
 
-import ansible_runner
+import enoslib as en
 import gin
+import pendulum
 import requests
 import yaml
-from icecream import ic
-import pendulum
-
-from .platform import Platform
 
 from .g import g
-from shlex import split
-from time import sleep
-
-import gin
-from sh import kubectl, ssh
+from .platform import Platform
 
 
-@gin.register(denylist=["job_name"])
+@gin.register()
 class G5KPlatform(Platform):
-    @staticmethod
-    def __get_conf(**kwargs):
-        import enoslib as en
-
-        network = en.G5kNetworkConf(
-            type="prod", roles=["my_network"], site=kwargs["site"]
-        )
-
-        conf = (
-            en.G5kConf.from_settings(
-                job_type="allow_classic_ssh",
-                job_name=kwargs["job_name"],
-                queue=kwargs["queue"],
-                walltime=kwargs["walltime"],
-            )
-            .add_network_conf(network)
-            .add_machine(
-                roles=["control"],
-                cluster=kwargs["cluster"],
-                nodes=kwargs["num_control"],
-                primary_network=network,
-            )
-            .add_machine(
-                roles=["worker"],
-                cluster=kwargs["cluster"],
-                nodes=kwargs["num_worker"],
-                primary_network=network,
-            )
-            .finalize()
-        )
-        return conf
-
     @gin.register(denylist=["job_name"])
-    def __init__(
+    def get_conf(
         self,
         *,
         job_name: str = "eesp-01",
@@ -63,83 +24,72 @@ class G5KPlatform(Platform):
         walltime: str = gin.REQUIRED,
         queue: str = gin.REQUIRED,
     ):
-        import enoslib as en
+        network = en.G5kNetworkConf(type="prod", roles=["my_network"], site=site)
 
+        return (
+            en.G5kConf.from_settings(
+                job_type="allow_classic_ssh",
+                job_name=job_name,
+                queue=queue,
+                walltime=walltime,
+            )
+            .add_network_conf(network)
+            .add_machine(
+                roles=["control"],
+                cluster=cluster,
+                nodes=num_control,
+                primary_network=network,
+            )
+            .add_machine(
+                roles=["worker"],
+                cluster=cluster,
+                nodes=num_worker,
+                primary_network=network,
+            )
+            .finalize()
+        )
+
+    def __init__(self):
         super().__init__()
         self.metadata = {}
         _ = en.init_logging()
-        conf = G5KPlatform.__get_conf(
-            job_name=job_name,
-            site=site,
-            cluster=cluster,
-            num_control=num_control,
-            num_worker=num_worker,
-            walltime=walltime,
-            queue=queue,
-        )
-        self.conf = conf
-        self.provider = en.G5k(self.conf)
-        jobs = self.provider.driver.get_jobs()
 
-        try:
-            self.metadata["job_id"] = jobs[0].uid
-            self.metadata["job_site"] = jobs[0].site
-            self.metadata["job_started_ts"] = pendulum.from_format(
-                str(jobs[0].attributes["started_at"]),
-                "X",
-                tz="UTC",
-            ).in_timezone("Europe/Paris")
-        except IndexError:
-            print("Job not already running. Will start new job")
-            self.roles, self.networks = self.provider.init()
-            jobs = self.provider.driver.get_jobs()
-            self.metadata["job_id"] = jobs[0].uid
-            self.metadata["job_site"] = jobs[0].site
-            self.metadata["job_started_ts"] = pendulum.from_format(
-                str(jobs[0].attributes["started_at"]),
-                "X",
-                tz="UTC",
-            ).in_timezone("Europe/Paris")
-            return
-
-        self.roles, self.networks = self.provider.init()
-
-    @gin.register
-    def setup(self):
-        # en.run_ansible(
-        #     ["gen-inventory.yaml"],
-        #     roles=roles,
-        #     extra_vars={
-        #         "ansible_inventory_file_path": self.ansible_inventory_file_path
-        #     },
-        # )
-        inv = {"all": {"children": {}}}
-        #     { "all": { "hosts": { "vm1.nodekite.com": null, "vm2.nodekite.com": null }, "children": { "web": { "hosts": {
-        #     "vm3.nodekite.com": null, "vm4.nodekite.com": null } }, "db": { "hosts": { "vm5.nodekite.com": null, "vm6.nodekite.com": null }
-        # } } } }
-        for grp, hostset in self.roles.items():
-            inv["all"]["children"][grp] = {}
-            inv["all"]["children"][grp]["hosts"] = {}
-            for host in hostset:
-                if grp == "control":
-                    inv["all"]["children"][grp]["hosts"][host.alias] = {
-                        "kubernetes_role": "control_plane"
-                    }
-                elif grp == "worker":
-                    inv["all"]["children"][grp]["hosts"][host.alias] = {
-                        "kubernetes_role": "node"
-                    }
-
-        self.metadata["nodes"] = inv
-        self.post_setup()
-        return inv
-
-    def pre_setup(self):
+    def pre_provision(self):
         pass
 
-    def post_setup(self):
-        g.storage._update_current_exp_data({"metadata": {"platform": self.metadata}})
+    @gin.register
+    def provision(self):
+        self.provider = en.G5k(self.get_conf())
 
+        self.roles, self.networks = self.provider.init()
+        self.jobs = self.provider.driver.get_jobs()
+
+    def set_platform_metadata(self):
+        self.metadata["type"] = "g5k"
+        self.metadata["job_id"] = self.jobs[0].uid
+        self.metadata["job_site"] = self.jobs[0].site
+        self.metadata["job_started_ts"] = pendulum.from_format(
+            str(self.jobs[0].attributes["started_at"]),
+            "X",
+            tz="UTC",
+        ).in_timezone("Europe/Paris")
+        self.metadata["ansible_inventory"] = {"all": {"children": {}}}
+        for grp, hostset in self.roles.items():
+            self.metadata["ansible_inventory"]["all"]["children"][grp] = {}
+            self.metadata["ansible_inventory"]["all"]["children"][grp]["hosts"] = {}
+            for host in hostset:
+                if grp == "control":
+                    self.metadata["ansible_inventory"]["all"]["children"][grp]["hosts"][
+                        host.alias
+                    ] = {"kubernetes_role": "control_plane"}
+                elif grp == "worker":
+                    self.metadata["ansible_inventory"]["all"]["children"][grp]["hosts"][
+                        host.alias
+                    ] = {"kubernetes_role": "node"}
+        g.reinit_deployment(self)
+
+    def post_provision(self):
+        self.set_platform_metadata()
         self.enable_g5k_nfs_access()
 
     def enable_g5k_nfs_access(self):
@@ -148,8 +98,7 @@ class G5KPlatform(Platform):
         with open(expanduser("~") + "/.python-grid5000.yaml") as f:
             g5kcreds = yaml.safe_load(f)
 
-        # home_uri = f"https://api.grid5000.fr/3.0/sites/{self.job_site}/storage/home/{g5kcreds['username']}/access"
-        uri = f"https://api.grid5000.fr/stable/sites/lyon/storage/storage1/energystream1/access"
+        uri = "https://api.grid5000.fr/stable/sites/lyon/storage/storage1/energystream1/access"
 
         requests.post(
             uri,
@@ -161,10 +110,6 @@ class G5KPlatform(Platform):
             },
             auth=(g5kcreds["username"], g5kcreds["password"]),
         )
-
-    # def get_platform_metadata(self) -> dict[str, str]:
-    #     jobs = self.provider.driver.get_jobs()
-    #     return dict(job_id=jobs[0].uid)
 
     def pre_teardown(self):
         pass
@@ -179,6 +124,9 @@ class G5KPlatform(Platform):
         self.pre_teardown()
         self.provider.destroy()
         self.post_teardown()
+
+    def get_ansible_inventory(self) -> dict:
+        return self.metadata["ansible_inventory"]
 
     def post_teardown(self):
         pass

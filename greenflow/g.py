@@ -1,9 +1,10 @@
-import pendulum
-
 from functools import cached_property
 
-from .datatypes import DateTime
+import pendulum
+import transaction
+import ZODB
 
+from .datatypes import DateTime, Deployment
 from .platform import Platform
 
 
@@ -26,9 +27,21 @@ class _g:
 
     @cached_property
     def storage(self):
-        from .storage import ExpStorage
+        from .tiny import ExpStorage
 
         return ExpStorage()
+
+    @cached_property
+    def root(self):
+        connection = ZODB.connection("storage/current_deployment.fs")
+        root = connection.root
+        return root
+
+    def reinit_deployment(self, platform):
+        d = Deployment(platform.metadata)
+        self.root.current_deployment = d
+        self.root.current_deployment.last_updated = pendulum.now()
+        transaction.commit()
 
 
 g: _g = _g()

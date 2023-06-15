@@ -7,7 +7,6 @@
     nix2container.url = "github:nlewo/nix2container";
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
-    #myCertificate.url = "path:api-proxy-lille-grid5000-fr-chain.pem";
   };
 
   outputs = inputs @ {flake-parts, ...}:
@@ -15,6 +14,7 @@
       imports = [
         inputs.devenv.flakeModule
       ];
+      debug = true;
       systems = ["x86_64-linux" "i686-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin"];
 
       perSystem = {
@@ -24,17 +24,9 @@
         pkgs,
         system,
         ...
-      }: {
-        # Per-system attributes can be defined here. The self' and inputs'
-        # module parameters provide easy access to attributes of the same
-        # system.
-
-        # Equivalent to  inputs'.nixpkgs.legacyPackages.hello;
-        # packages.default = with pkgs; [
-        #   hello
-        #   micromamba
-        # ];
-
+      }: let
+        _ = 0;
+      in {
         devenv.shells.default = {
           name = "greenflow";
           devcontainer = {
@@ -46,20 +38,8 @@
               "mkhl.direnv"
             ];
           };
-          env = {
-            REQUESTS_CA_BUNDLE = "/etc/ssl/certs/ca-certificates.crt";
-          };
-          # languages.python = {
-          #   enable = true;
-          #   poetry = {
-          #     enable = true;
-          #     activate.enable = true;
-          #   };
-          # };
 
-          # https://devenv.sh/reference/options/
           packages = with pkgs; [
-            # python310
             micromamba
             alejandra
             kubectl
@@ -71,48 +51,51 @@
             kube3d
             atuin
             fish
+            (pkgs.wrapHelm pkgs.kubernetes-helm {
+              plugins = [
+                pkgs.kubernetes-helmPlugins.helm-git
+                pkgs.kubernetes-helmPlugins.helm-diff
+              ];
+            })
           ];
-          scripts.certSetup.exec = ''
-            ${
-              if system == "x86_64-linux"
-              then "sudo cp api-proxy-lille-grid5000-fr-chain.pem /usr/local/share/ca-certificates/api-proxy-lille-grid5000-fr-chain.crt; sudo update-ca-certificates"
-              else ""
-            }
-          '';
-          scripts.pythonSetup.exec = ''
-            eval "$(micromamba shell hook --shell=posix)"
-            micromamba activate
-            micromamba install -y python=3.10 poetry pip -p ./.mamba -c conda-forge
-            micromamba install -y -f env.yaml
-          '';
-          scripts.containerSetup.exec = ''
-            eval "$(micromamba shell hook --shell=posix)"
+          scripts.init.exec = ''
+            # Python Stuff
+            # rm -rf "$PWD/.mamba"
             if ! [ -d "$PWD/.mamba" ]; then
               mkdir -p "$PWD/.mamba"
             fi
-            # curl https://raw.githubusercontent.com/rcaloras/bash-preexec/master/bash-preexec.sh -o ~/.bash-preexec.sh
-            # echo '[[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh' >> ~/.bashrc
-            # echo 'eval "$(atuin init bash)"' >> ~/.bashrc
+            which -a micromamba
+            micromamba install -y python=3.10 poetry pip -p ./.mamba -c conda-forge
+            micromamba install -y -f env.yaml
+
+            # Helm stuff
+            helm repo add strimzi https://strimzi.io/charts/
+            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+            helm repo add grafana https://grafana.github.io/helm-charts
+
+            pushd $PWD/charts/prometheus-community/charts/kube-prometheus-stack
+              helm dep build
+            popd
+            pushd $PWD/charts/theodolite/helm
+              helm dep build
+            popd
+
+            # Create grid5000 creds file
             echo "
             username: $GRID5000_USERNAME
             password: $GRID5000_PASSWORD
+            verify_ssl: $PWD/api-proxy-lille-grid5000-fr-chain.pem
             " > ~/.python-grid5000.yaml
-            git config --global user.name Govind
-            git config --global user.email git@govind.work
           '';
 
           enterShell = ''
-            export MAMBA_ROOT_PREFIX=$PWD/.mamba
-            export KUBECONFIG=$PWD/kubeconfig
+            export MAMBA_ROOT_PREFIX="$PWD/.mamba"
+            export KUBECONFIG="$PWD/kubeconfig"
+            export REQUESTS_CA_BUNDLE="$PWD/api-proxy-lille-grid5000-fr-chain.pem"
             eval "$(micromamba shell hook --shell=posix)"
             micromamba activate
           '';
         };
-      };
-      flake = {
-        # The usual flake attributes can be defined here, including system-
-        # agnostic ones like nixosModule and system-enumerating ones, although
-        # those are more easily expressed in perSystem.
       };
     };
 }

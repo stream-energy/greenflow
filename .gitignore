@@ -23,3 +23,5 @@ devenv.local.nix
 
 .devenv
 .mamba
+.DS_Store
+.secrets.env

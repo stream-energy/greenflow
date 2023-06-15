@@ -1,19 +1,5 @@
 ---
 # vim: set ft=yaml:
-# - name: Common setup for both workers and controller
-#   hosts: control, worker
-#   become: true
-#   strategy: free
-#   gather_facts: true
-#   roles:
-#     - k3s-common
-
-# - name: Install K3S and post-install config
-#   hosts: control
-#   become: true
-#   gather_facts: false
-#   roles:
-#     - k3s-controller
 - name: Common setup for both workers and controller
   hosts: control, worker
   become: true
@@ -272,3 +258,11 @@
       shell: kubectl wait --for=condition=Ready nodes --all --timeout=600s
       register: nodes_ready
     - debug: var=nodes_ready.stdout_lines
+
+- name: Deploy Base Helm Charts
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - base
+    - strimzi
+    - theodolite

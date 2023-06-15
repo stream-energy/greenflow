@@ -1,10 +1,19 @@
-from pydantic import BaseModel
 import pendulum
-
+import persistent
 from pendulum import DateTime
+from pydantic import BaseModel
 
-# FIXME: Rethink whether we want pydantic validation for inputs and outputs
-# Probably not for this iteration.
+
+class Deployment(persistent.Persistent):
+    def __init__(self, metadata):
+        match metadata:
+            case {
+                "type": "g5k",
+            }:
+                self.metadata = metadata
+                self.started_ts = metadata["job_started_ts"]
+            case _:
+                raise NotImplementedError
 
 
 class PlatformMetadata(BaseModel):

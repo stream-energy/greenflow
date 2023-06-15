@@ -2,13 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Tight",
+            "name": "Base",
             "type": "python",
             "request": "launch",
             "module": "greenflow",
             "justMyCode": false,
             "args": [
-                "tight",
+                "base",
             ],
             "subProcess": false
         },
