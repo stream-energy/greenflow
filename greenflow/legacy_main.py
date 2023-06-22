@@ -7,7 +7,7 @@ import gin
 from icecream import install
 from sh import helm, ssh
 
-from . import base, destroy, provision
+from . import destroy, playbook, provision
 
 print(sys.argv)
 
@@ -16,20 +16,20 @@ class RUN:
     def upto(self):
         gin.parse_config_file("params/1worker-1resources-kafka.gin")
         provision.provision()
-        base.base()
-        base.kafka()
-        base.theo()
+        playbook.base()
+        playbook.kafka()
+        playbook.theo()
 
     def exp(self):
         gin.parse_config_file("params/1worker-1resources-kafka.gin")
-        base.exp()
+        playbook.exp()
 
     def theo(self):
         gin.parse_config_file("params/1worker-1resources-kafka.gin")
-        base.theo()
+        playbook.theo()
 
     def kafka(self):
-        base.kafka()
+        playbook.kafka()
 
     def deploy(self):
         gin.parse_config_file("params/1worker-1resources-kafka.gin")
@@ -52,18 +52,18 @@ class RUN:
         destroy.killjob()
 
     def base(self):
-        base.base()
+        playbook.base()
 
     def mrun(self):
-        base.mrun()
+        playbook.mrun()
 
     def full(self, ginfile):
         gin.parse_config_file(ginfile)
         provision.provision()
-        base.base()
-        base.kafka()
-        base.theo()
-        base.exp()
+        playbook.base()
+        playbook.kafka()
+        playbook.theo()
+        playbook.exp()
 
     def tight(self):
         gin.parse_config_file("params/1worker-1resources-kafka.gin")
@@ -73,7 +73,7 @@ class RUN:
         # run.vm()
         # run.kafka()
         # run.theo()
-        base.exp()
+        playbook.exp()
         c = input("Press any key to mock_destroy or q to exit")
         if c == "q":
             return
@@ -85,11 +85,11 @@ class RUN:
         gin.parse_config_file("params/1worker-1resources-kafka.gin")
         # gin.parse_config_file(ginfile)
         provision.provision()
-        base.base()
-        base.vm()
-        base.kafka()
-        base.theo()
-        base.exp()
+        playbook.base()
+        playbook.vm()
+        playbook.kafka()
+        playbook.theo()
+        playbook.exp()
         # c = input("Press any key to mock_destroy or q to exit")
         # if c == "q":
         #     return
@@ -106,14 +106,14 @@ class RUN:
         gin.parse_config_file(ginfile)
         # deploy.deploy()
         # run.base()
-        base.vm()
+        playbook.vm()
 
     def redpanda(self):
         ginfile = "params/1worker-3resources-redpanda.gin"
         gin.parse_config_file(ginfile)
         # deploy.deploy()
         # run.base()
-        base.redpanda()
+        playbook.redpanda()
         # run.theo()
         # run.exp()
         # destroy.destroy()

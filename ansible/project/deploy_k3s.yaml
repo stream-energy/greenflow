@@ -258,11 +258,3 @@
       shell: kubectl wait --for=condition=Ready nodes --all --timeout=600s
       register: nodes_ready
     - debug: var=nodes_ready.stdout_lines
-
-- name: Deploy Base Helm Charts
-  hosts: localhost
-  gather_facts: false
-  roles:
-    - base
-    - strimzi
-    - theodolite

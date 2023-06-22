@@ -1,0 +1,10 @@
+---
+# vim: set ft=yaml:
+- name: Deploy EXP
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - template:
+        src: exp.yaml.j2
+        dest: "{{ lookup('env', 'GITROOT') }}/ansible/project/_current_exp.yaml"

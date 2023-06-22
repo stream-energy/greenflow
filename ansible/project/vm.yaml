@@ -1,7 +1,0 @@
----
-# vim: set ft=yaml:
-- name: Deploy Base Helm Charts
-  hosts: localhost
-  gather_facts: false
-  roles:
-    - vm

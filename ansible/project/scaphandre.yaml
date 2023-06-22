@@ -1,0 +1,7 @@
+---
+# vim: set ft=yaml:
+- name: Deploy Scaphandre
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - scaphandre

@@ -1,37 +1,17 @@
 #!/usr/bin/env python3
-import json
-from shlex import split
 
-import ansible_runner
 import gin
-import pendulum
-from sh import ansible_playbook, rm
-
-from .g import g
-from .g5k import G5KPlatform
-from .platform import MockPlatform, Platform
 
 
 @gin.configurable
 def factors(
     *,
-    kafkaOnWorker: bool = True,
-    uc1_flink_resourceValue: int = 20,
-    uc1_flink_loadValue: int = 1500000,
-    uc3_flink_loadValue: int = gin.REQUIRED,
-    uc3_flink_resourceValue: int = gin.REQUIRED,
-    duration: int = gin.REQUIRED,
-    # *,
-    # base_num_workers: int,
-    # base_num_control: int,
-    # uc1_flink_taskmanager_resources: int,
-):
-    return {
-        "kafkaOnWorker": kafkaOnWorker,
-        "uc1_flink_loadValue": uc1_flink_loadValue,
-        "uc1_flink_loadValue": uc1_flink_loadValue,
-        "uc1_flink_resourceValue": uc1_flink_resourceValue,
-        "uc3_flink_resourceValue": uc3_flink_resourceValue,
-        "uc3_flink_loadValue": uc3_flink_loadValue,
-        "duration": duration,
-    }
+    experiment_name: str = gin.REQUIRED,
+    experiment_params: dict = gin.REQUIRED,
+) -> dict:
+    return dict(
+        {
+            "experiment_name": experiment_name,
+            "experiment_params": experiment_params,
+        }
+    )

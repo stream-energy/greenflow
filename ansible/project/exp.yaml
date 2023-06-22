@@ -1,7 +1,0 @@
----
-# vim: set ft=yaml:
-- name: Deploy EXP
-  hosts: localhost
-  gather_facts: false
-  roles:
-    - uc3-beam-samza

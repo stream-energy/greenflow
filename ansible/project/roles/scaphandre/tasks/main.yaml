@@ -1,0 +1,17 @@
+---
+# vim: set ft=yaml:
+
+- name: Deploy Scaphandre for Power Metrics monitoring
+  delegate_to: localhost
+  kubernetes.core.helm:
+    name: scaph
+    chart_ref: "{{ q('pipe', 'git rev-parse --show-toplevel')[0] }}/charts/scaphandre/helm/scaphandre"
+    chart_repo_url: git+https://github.com/hubblo-org/scaphandre@helm/scaphandre?ref=main
+    release_namespace: default
+    create_namespace: true
+# Moved to Prometheus stack deployment
+# - name: Deploy additional ServiceMonitor for Scaphandre
+#   delegate_to: localhost
+#   kubernetes.core.k8s:
+#     state: present
+#     definition: "{{ lookup('ansible.builtin.template', 'scaph-ServiceMonitor.yaml.j2') | from_yaml }}"

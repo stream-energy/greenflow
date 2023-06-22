@@ -1,0 +1,69 @@
+---
+# vim: set ft=yaml:
+- name: Patch Prometheus CRD
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Update Prometheus CRD and Re-enable monitoring
+      k8s:
+        state: present
+        definition:
+          api: monitoring.coreos.com/v1
+          kind: Prometheus
+          metadata:
+            namespace: default
+            name: kp-kube-prometheus-stack-prometheus
+          spec:
+            externalLabels:
+              deployment_started_ts: "2023-06-21T23:56:22+02:00"
+              experiment_started_ts: "2023-06-22T00:01:55+02:00"
+            remoteWrite:
+              - url: "***REMOVED***"
+            replicas: 1
+
+    - name: Wait for the specified number of replicas to become ready
+      k8s_info:
+        api: monitoring.coreos.com/v1
+        kind: Prometheus
+        name: kp-kube-prometheus-stack-prometheus
+        namespace: default
+      register: deployment_info
+      until: deployment_info.resources[0].status.availableReplicas == deployment_info.resources[0].spec.replicas
+      retries: 20
+      delay: 2
+
+- name: Deploy EXP
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - "uc3-flink"
+
+- name: Wrap up Experiment
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Wait for execution to finish
+      shell: kubectl wait execution "uc3-flink" --for=jsonpath='{.status.executionState}'=Finished --timeout=1h
+
+    - name: Delete any past experiment
+      kubernetes.core.k8s:
+        state: absent
+        api_version: theodolite.rocks/v1beta1
+        kind: execution
+        namespace: default
+        name: "uc3-flink"
+
+    - name: Scale down Prometheus to 0
+      k8s:
+        state: present
+        definition:
+          api: monitoring.coreos.com/v1
+          kind: Prometheus
+          metadata:
+            namespace: default
+            name: kp-kube-prometheus-stack-prometheus
+          spec:
+            replicas: 0

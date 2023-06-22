@@ -14,9 +14,6 @@ inventory/g5k.ini
 /cachedir
 .python-grid5000.yaml
 .devcontainer/devcontainer.json
-/mitogen
-/charts
-
 # Devenv
 .devenv*
 devenv.local.nix

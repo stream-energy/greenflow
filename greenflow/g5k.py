@@ -1,10 +1,11 @@
 from functools import cached_property
 
 import enoslib as en
-import gin
 import pendulum
 import requests
 import yaml
+
+import gin
 
 from .g import g
 from .platform import Platform
@@ -68,11 +69,15 @@ class G5KPlatform(Platform):
         self.metadata["type"] = "g5k"
         self.metadata["job_id"] = self.jobs[0].uid
         self.metadata["job_site"] = self.jobs[0].site
-        self.metadata["job_started_ts"] = pendulum.from_format(
-            str(self.jobs[0].attributes["started_at"]),
-            "X",
-            tz="UTC",
-        ).in_timezone("Europe/Paris")
+        self.metadata["job_started_ts"] = (
+            pendulum.from_format(
+                str(self.jobs[0].attributes["started_at"]),
+                "X",
+                tz="UTC",
+            )
+            .in_timezone("Europe/Paris")
+            .format("YYYY-MM-DDTHH:mm:ssZ")
+        )
         self.metadata["ansible_inventory"] = {"all": {"children": {}}}
         for grp, hostset in self.roles.items():
             self.metadata["ansible_inventory"]["all"]["children"][grp] = {}
@@ -90,7 +95,9 @@ class G5KPlatform(Platform):
 
     def post_provision(self):
         self.set_platform_metadata()
-        self.enable_g5k_nfs_access()
+
+        # Not using NFS storage anymore
+        # self.enable_g5k_nfs_access()
 
     def enable_g5k_nfs_access(self):
         from os.path import expanduser
@@ -122,6 +129,7 @@ class G5KPlatform(Platform):
 
     def teardown(self):
         self.pre_teardown()
+        self.provider = en.G5k(self.get_conf())
         self.provider.destroy()
         self.post_teardown()
 

@@ -1,0 +1,7 @@
+---
+# vim: set ft=yaml:
+- name: Deploy Prometheus
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - prometheus

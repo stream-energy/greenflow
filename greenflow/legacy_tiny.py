@@ -1,20 +1,19 @@
 from functools import cached_property
 
 import pendulum
+from deepmerge import always_merger
 from tinydb import Query, TinyDB
 from tinydb.queries import QueryInstance
 from tinydb.storages import JSONStorage
 from tinydb.table import Document
 from tinydb_serialization import SerializationMiddleware, Serializer
 
-from deepmerge import always_merger
-
 from .g import g
 from .utils import (
     DateTimeSerializer,
     YAMLStorage,
-    generate_grafana_dashboard_url,
     generate_explore_url,
+    generate_grafana_dashboard_url,
     get_readable_gin_config,
 )
 
@@ -49,7 +48,6 @@ class ExpStorage:
         self.current_exp_data["inputs"]["gin_config"] = result
 
     def create_new_exp(self, platform):
-
         from .factors import factors
 
         _ = factors()
@@ -80,7 +78,9 @@ class ExpStorage:
             self.current_exp_id = self.db.__len__()
             self.current_exp_data = self.db.get(doc_id=self.current_exp_id)
             self.current_exp_data["metadata"] = {
-                "deployment_start_ts": self.current_exp_data["metadata"].get("deployment_start_ts",pendulum.now())
+                "deployment_start_ts": self.current_exp_data["metadata"].get(
+                    "deployment_start_ts", pendulum.now()
+                )
             }
             self.current_exp_data["inputs"] = {"gin_config": {}}
             self.db.insert(
@@ -135,16 +135,16 @@ class ExpStorage:
             {
                 "metadata": {
                     "explore_url": generate_explore_url(
-                        start_ts=self.current_exp_data["metadata"][
+                        started_ts=self.current_exp_data["metadata"][
                             "deployment_start_ts"
                         ],
-                        end_ts=g.deployment_end,
+                        stopped_ts=g.deployment_end,
                     ),
                     "dashboard_url": generate_grafana_dashboard_url(
-                        start_ts=self.current_exp_data["metadata"][
+                        started_ts=self.current_exp_data["metadata"][
                             "deployment_start_ts"
                         ],
-                        end_ts=g.deployment_end,
+                        stopped_ts=g.deployment_end,
                     ),
                 }
             },

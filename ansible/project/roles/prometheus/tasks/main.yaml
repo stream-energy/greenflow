@@ -1,0 +1,26 @@
+---
+# vim: set ft=yaml:
+
+- name: Deploying Prometheus
+  delegate_to: localhost
+  kubernetes.core.helm:
+    name: kp
+    chart_ref: "{{ q('pipe', 'git rev-parse --show-toplevel')[0] }}/charts/prometheus-community/charts/kube-prometheus-stack"
+    # chart_version: 39.9.0
+    # chart_repo_url: https://prometheus-community.github.io/helm-charts
+    release_namespace: default
+    # create_namespace: true
+    # force: true
+    values: "{{ lookup('ansible.builtin.template', 'kube-prometheus-stack-values.yaml.j2') | from_yaml }}"
+
+- name: Disable Prometheus monitoring (Will be re-enabled during experiment)
+  k8s:
+    state: present
+    definition:
+      apiVersion: monitoring.coreos.com/v1
+      kind: Prometheus
+      metadata:
+        namespace: default
+        name: kp-kube-prometheus-stack-prometheus
+      spec:
+        replicas: 0

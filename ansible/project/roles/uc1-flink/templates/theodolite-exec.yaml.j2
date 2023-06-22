@@ -10,27 +10,27 @@ spec:
   load:
     loadType: "NumSensors"
     loadValues:
-      - {{ uc1_flink_loadValue }}
+      - {{ load }}
   resources:
     resourceType: "Instances"
     resourceValues:
-      - {{ uc1_flink_resourceValue }}
+      - {{ instances }}
   execution:
     strategy:
       name: "RestrictionSearch"
       restrictions:
         - "LowerBound"
       searchStrategy: "FullSearch"
-    duration: {{ duration }} # in seconds
+    duration: {{ duration }}
     repetitions: 1
-    loadGenerationDelay: 5 # in seconds
+    loadGenerationDelay: 5
   configOverrides: []
   slos:
     - name: "Dummy SLO"
       properties:
         externalSloUrl: "http://kp-kube-prometheus-stack-prometheus.default.svc.cluster.local:9090"
         promQLQuery: "sum by(instance) (up)"
-        warmup: 60 # in seconds
+        warmup: {{ warmupSeconds }}
         queryAggregation: count
         repetitionAggregation: sum
         operator: gte

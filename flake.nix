@@ -57,18 +57,23 @@
                 pkgs.kubernetes-helmPlugins.helm-diff
               ];
             })
+            direnv
           ];
+          scripts.resetEnv.exec = ''
+            rm -rf .devenv
+            rm -rf .mamba
+            rm -rf .direnv
+          '';
           scripts.init.exec = ''
             git submodule update --recursive --init
             # Unset REQUESTS_CA_BUNDLE as we need to download pip packages
             export REQUESTS_CA_BUNDLE=
 
             # Python Stuff
-            # rm -rf "$PWD/.mamba"
             if ! [ -d "$PWD/.mamba" ]; then
               mkdir -p "$PWD/.mamba"
             fi
-            micromamba install -y python=3.10 poetry pip -p ./.mamba -c conda-forge
+            micromamba install -y python=3.10 pip poetry -p ./.mamba -c conda-forge
             micromamba install -y -f env.yaml
 
             # Helm stuff
@@ -92,6 +97,7 @@
           '';
 
           enterShell = ''
+            export GITROOT="$(git rev-parse --show-toplevel)"
             eval "$(micromamba shell hook --shell=posix)"
             micromamba activate
           '';

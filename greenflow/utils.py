@@ -1,13 +1,11 @@
-import yaml
 import json
+from os import environ
 
 import pendulum
-import gin
-
+import yaml
+from pendulum.datetime import DateTime
 from tinydb import Storage
 from tinydb_serialization import Serializer
-
-from .datatypes import DateTime
 
 
 def is_jsonable(x):
@@ -77,14 +75,14 @@ class DateTimeSerializer(Serializer):
         return pendulum.parse(s, strict=False)
 
 
-def generate_explore_url(*, start_ts, end_ts) -> str:
-    return f"http://h-0:3000/explore?orgId=1&left=%7B%22datasource%22:%22IS5LGzoVk%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22IS5LGzoVk%22%7D%7D%5D,%22range%22:%7B%22from%22:%22{int(start_ts.float_timestamp*1000)}%22,%22to%22:%22{int(end_ts.float_timestamp*1000)}%22%7D%7D"
+def generate_explore_url(*, started_ts: DateTime, stopped_ts: DateTime) -> str:
+    return f"{environ['EXPERIMENT_BASE_URL']}/explore?orgId=1&left=%7B%22datasource%22:%22IS5LGzoVk%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22IS5LGzoVk%22%7D%7D%5D,%22range%22:%7B%22from%22:%22{int(started_ts.float_timestamp*1000)}%22,%22to%22:%22{int(stopped_ts.float_timestamp*1000)}%22%7D%7D"
 
 
 def generate_grafana_dashboard_url(
     *,
-    start_ts,
-    end_ts,
-    base_url: str = "http://h-0:3000/d/76thsXBVk/greenflow?",
+    started_ts: DateTime,
+    stopped_ts: DateTime,
+    base_url: str = f"{environ['EXPERIMENT_BASE_URL']}/d/76thsXBVk/greenflow?",
 ) -> str:
-    return f"{base_url}from={int(start_ts.float_timestamp*1000)}&to={int(end_ts.float_timestamp*1000)}"
+    return f"{base_url}from={int(started_ts.float_timestamp*1000)}&to={int(stopped_ts.float_timestamp*1000)}"

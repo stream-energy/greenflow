@@ -1,49 +1,67 @@
 ---
+# vim: set ft=yaml:
 apiVersion: theodolite.rocks/v1beta1
 kind: execution
 metadata:
-  name: exp
+  name: {{ experiment_name }}
   namespace: default
 spec:
-  # configOverrides:
-  #   - patcher:
-  #       type: "NodeSelectorPatcher"
-  #       resource: "uc3-load-generator-deployment.yaml"
-  #       properties:
-  #         variableName: "node-role.kubernetes.io/control-plane"
-  #       value: "true"
-  #   - patcher:
-  #       type: "NodeSelectorPatcher"
-  #       resource: "taskmanager-deployment.yaml"
-  #       properties:
-  #         variableName: "node-role.kubernetes.io/worker"
-  #       value: "true"
-
-  benchmark: "uc3-flink"
+  benchmark: {{ experiment_name }}
   load:
     loadType: "NumSensors"
     loadValues:
-      - {{ uc3_flink_loadValue }}
+      - {{ experiment_params.load }}
   resources:
     resourceType: "Instances"
     resourceValues:
-      - {{ uc3_flink_resourceValue }}
+      - {{ experiment_params.instances }}
   execution:
     strategy:
       name: "RestrictionSearch"
       restrictions:
         - "LowerBound"
       searchStrategy: "FullSearch"
-    duration: {{ duration }} # in seconds
+    duration: {{ experiment_params.durationSeconds }}
     repetitions: 1
-    loadGenerationDelay: 5 # in seconds
+    loadGenerationDelay: 5
+  configOverrides: []
   slos:
     - name: "Dummy SLO"
       properties:
         externalSloUrl: "http://kp-kube-prometheus-stack-prometheus.default.svc.cluster.local:9090"
         promQLQuery: "sum by(instance) (up)"
-        warmup: 60 # in seconds
+        warmup: {{ experiment_params.warmupSeconds }}
         queryAggregation: count
         repetitionAggregation: sum
         operator: gte
         threshold: 0
+  # - patcher:
+  #     type: "NodeSelectorPatcher"
+  #     resource: "uc1-load-generator-deployment.yaml"
+  #     properties:
+  #       variableName: "env"
+  #     value: "prod"
+  # - patcher:
+  #     type: "NodeSelectorPatcher"
+  #     resource: "uc1-kstreams-deployment.yaml"
+  #     properties:
+  #       variableName: "env"
+  #   value: "prod"
+  # - patcher:
+  #     type: "ResourceLimitPatcher"
+  #     resource: "uc1-kstreams-deployment.yaml"
+  #     properties:
+  #       container: "uc-application"
+  #       limitedResource: "cpu"
+  #   value: "1000m"
+  # - patcher:
+  #     type: "ResourceLimitPatcher"
+  #     resource: "uc1-kstreams-deployment.yaml"
+  #     properties:
+  #       container: "uc-application"
+  #       limitedResource: "memory"
+  #   value: "2Gi"
+  #  - patcher:
+  #      type: "SchedulerNamePatcher"
+  #      resource: "uc1-kstreams-deployment.yaml"
+  #    value: "random-scheduler"
