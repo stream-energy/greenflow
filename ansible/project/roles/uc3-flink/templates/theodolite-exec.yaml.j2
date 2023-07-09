@@ -23,7 +23,7 @@ spec:
       searchStrategy: "FullSearch"
     duration: {{ experiment_params.durationSeconds }}
     repetitions: 1
-    loadGenerationDelay: 5
+    loadGenerationDelay: {{ experiment_params.warmupSeconds }}
   configOverrides: []
   slos:
     - name: "Dummy SLO"

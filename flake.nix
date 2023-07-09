@@ -58,6 +58,7 @@
               ];
             })
             direnv
+            pulumi-bin
           ];
           scripts.resetEnv.exec = ''
             rm -rf .devenv

@@ -9,7 +9,9 @@
       ]
     }
   },
-  "image": "ghcr.io/cachix/devenv:latest",
+  // If x86_64 use cachix/devenv
+  // TODO: Can be upgraded to multi-platform manifest
+  "image": "reisub0/devenv-arm64:latest",
   "overrideCommand": false,
   // "updateContentCommand": "nix develop --impure",
   "runArgs": [

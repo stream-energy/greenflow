@@ -9,6 +9,9 @@
     chart_repo_url: git+https://github.com/hubblo-org/scaphandre@helm/scaphandre?ref=main
     release_namespace: default
     create_namespace: true
+    # values:
+    #   image:j
+    #     name: 
 # Moved to Prometheus stack deployment
 # - name: Deploy additional ServiceMonitor for Scaphandre
 #   delegate_to: localhost

@@ -4,7 +4,6 @@ import pendulum
 import transaction
 import ZODB
 
-
 class _g:
     @cached_property
     def storage(self):
@@ -20,7 +19,7 @@ class _g:
 
     @cached_property
     def root(self):
-        connection = ZODB.connection("storage/current_deployment.fs")
+        connection = ZODB.connection(f"{self.gitroot}/storage/current_deployment.fs")
         root = connection.root
         return root
 

@@ -36,6 +36,15 @@ def prometheus(c, file_name_without_gin_extension):
     load_gin(file_name_without_gin_extension)
     playbook.prometheus()
 
+@task
+def theo(c, file_name_without_gin_extension):
+    load_gin(file_name_without_gin_extension)
+    playbook.theodolite()
+
+@task
+def scaph(c, file_name_without_gin_extension):
+    load_gin(file_name_without_gin_extension)
+    playbook.scaphandre()
 
 @task
 def e2e(c, file_name_without_gin_extension):

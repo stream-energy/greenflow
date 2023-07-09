@@ -3,18 +3,18 @@
 apiVersion: theodolite.rocks/v1beta1
 kind: execution
 metadata:
-  name: exp
+  name: {{ experiment_name }}
   namespace: default
 spec:
-  benchmark: "uc3-kstreams"
+  benchmark: {{ experiment_name }}
   load:
     loadType: "NumSensors"
     loadValues:
-      - {{ uc3_flink_loadValue }}
+      - {{ experiment_params.load }}
   resources:
     resourceType: "Instances"
     resourceValues:
-      - {{ uc3_flink_resourceValue }}
+      - {{ experiment_params.instances }}
     configOverrides:
       - patcher:
           type: "NodeSelectorPatcher"
@@ -29,9 +29,9 @@ spec:
       restrictions:
         - "LowerBound"
       searchStrategy: "FullSearch"
-    duration: {{ duration }} # in seconds
+    duration: {{ experiment_params.durationSeconds }} # in seconds
     repetitions: 1
-    loadGenerationDelay: 5 # in seconds
+    loadGenerationDelay: {{ experiment_params.warmupSeconds }}
   configOverrides: []
   slos:
     - name: "Dummy SLO"

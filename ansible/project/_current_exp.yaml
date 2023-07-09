@@ -16,8 +16,8 @@
             name: kp-kube-prometheus-stack-prometheus
           spec:
             externalLabels:
-              deployment_started_ts: "2023-06-21T23:56:22+02:00"
-              experiment_started_ts: "2023-06-22T00:01:55+02:00"
+              deployment_started_ts: "2023-07-07T15:29:09+02:00"
+              experiment_started_ts: "2023-07-07T15:37:09+02:00"
             remoteWrite:
               - url: "***REMOVED***"
             replicas: 1
