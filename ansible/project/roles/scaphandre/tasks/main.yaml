@@ -12,9 +12,8 @@
     # values:
     #   image:j
     #     name: 
-# Moved to Prometheus stack deployment
-# - name: Deploy additional ServiceMonitor for Scaphandre
-#   delegate_to: localhost
-#   kubernetes.core.k8s:
-#     state: present
-#     definition: "{{ lookup('ansible.builtin.template', 'scaph-ServiceMonitor.yaml.j2') | from_yaml }}"
+- name: Deploy additional ServiceMonitor for Scaphandre
+  delegate_to: localhost
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', 'scaph-ServiceMonitor.yaml.j2') | from_yaml }}"

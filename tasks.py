@@ -1,22 +1,21 @@
-from invoke import task
-
 import gin
+
+from invoke import task
 from greenflow import destroy, g, playbook, provision
 
-
-def load_gin(file_name_without_gin_extension):
+def load_gin(experiment_name):
     gin.parse_config_files_and_bindings(
         [
             f"{g.g.gitroot}/gin/g5k-defaults.gin",
-            f"{g.g.gitroot}/gin/{file_name_without_gin_extension}.gin",
+            f"{g.g.gitroot}/gin/{experiment_name}.gin",
         ],
         [],
     )
 
 
 @task
-def setup(c, file_name_without_gin_extension):
-    load_gin(file_name_without_gin_extension)
+def setup(c, experiment_name):
+    load_gin(experiment_name)
     provision.provision()
     playbook.deploy_k3s()
     playbook.prometheus()
@@ -26,40 +25,25 @@ def setup(c, file_name_without_gin_extension):
 
 
 @task
-def exp(c, file_name_without_gin_extension):
-    load_gin(file_name_without_gin_extension)
-    playbook.exp()
+def exp(c, experiment_name, description=''):
+    load_gin(experiment_name)
+    playbook.exp(experiment_name=experiment_name, experiment_description=description)
 
 
 @task
-def prometheus(c, file_name_without_gin_extension):
-    load_gin(file_name_without_gin_extension)
+def prometheus(c, experiment_name):
+    load_gin(experiment_name)
     playbook.prometheus()
 
 @task
-def theo(c, file_name_without_gin_extension):
-    load_gin(file_name_without_gin_extension)
+def theo(c, experiment_name):
+    load_gin(experiment_name)
     playbook.theodolite()
 
 @task
-def scaph(c, file_name_without_gin_extension):
-    load_gin(file_name_without_gin_extension)
+def scaph(c, experiment_name):
+    load_gin(experiment_name)
     playbook.scaphandre()
-
-@task
-def e2e(c, file_name_without_gin_extension):
-    load_gin(file_name_without_gin_extension)
-    provision.provision()
-    playbook.deploy_k3s()
-    playbook.prometheus()
-    playbook.scaphandre()
-    playbook.strimzi()
-    playbook.theodolite()
-
-    playbook.exp()
-
-    destroy.killjob()
-
 
 @task
 def killjob(c):
@@ -69,4 +53,10 @@ def killjob(c):
         ],
         [],
     )
+    destroy.killjob()
+
+@task(setup, exp, killjob)
+def e2e(c, experiment_name):
+    load_gin(experiment_name)
+
     destroy.killjob()

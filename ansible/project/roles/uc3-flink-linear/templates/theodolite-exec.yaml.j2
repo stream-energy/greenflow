@@ -1,0 +1,73 @@
+---
+# vim: set ft=yaml:
+apiVersion: theodolite.rocks/v1beta1
+kind: execution
+metadata:
+  name: {{ experiment_name }}
+  namespace: default
+spec:
+  benchmark: {{ experiment_name }}
+  load:
+    loadType: "NumSensors"
+    loadValues:
+      - 5000
+      - 10000
+      - 15000
+      - 20000
+      - 25000
+      - 30000
+      - 35000
+  resources:
+    resourceType: "Instances"
+    resourceValues:
+      - {{ experiment_params.instances }}
+  execution:
+    strategy:
+      name: "RestrictionSearch"
+      restrictions:
+        - "LowerBound"
+      searchStrategy: "FullSearch"
+    duration: {{ experiment_params.durationSeconds }}
+    repetitions: 1
+    loadGenerationDelay: {{ experiment_params.warmupSeconds }}
+  configOverrides: []
+  slos:
+    - name: "Dummy SLO"
+      properties:
+        externalSloUrl: "http://kp-kube-prometheus-stack-prometheus.default.svc.cluster.local:9090"
+        promQLQuery: "sum by(instance) (up)"
+        warmup: {{ experiment_params.warmupSeconds }}
+        queryAggregation: count
+        repetitionAggregation: sum
+        operator: gte
+        threshold: 0
+  # - patcher:
+  #     type: "NodeSelectorPatcher"
+  #     resource: "uc1-load-generator-deployment.yaml"
+  #     properties:
+  #       variableName: "env"
+  #     value: "prod"
+  # - patcher:
+  #     type: "NodeSelectorPatcher"
+  #     resource: "uc1-kstreams-deployment.yaml"
+  #     properties:
+  #       variableName: "env"
+  #   value: "prod"
+  # - patcher:
+  #     type: "ResourceLimitPatcher"
+  #     resource: "uc1-kstreams-deployment.yaml"
+  #     properties:
+  #       container: "uc-application"
+  #       limitedResource: "cpu"
+  #   value: "1000m"
+  # - patcher:
+  #     type: "ResourceLimitPatcher"
+  #     resource: "uc1-kstreams-deployment.yaml"
+  #     properties:
+  #       container: "uc-application"
+  #       limitedResource: "memory"
+  #   value: "2Gi"
+  #  - patcher:
+  #      type: "SchedulerNamePatcher"
+  #      resource: "uc1-kstreams-deployment.yaml"
+  #    value: "random-scheduler"

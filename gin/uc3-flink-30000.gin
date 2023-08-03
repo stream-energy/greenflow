@@ -4,8 +4,8 @@ greenflow.g5k.G5KPlatform.get_conf.walltime = "2:00:00"
 
 greenflow.factors.factors.experiment_name = "uc3-flink"
 greenflow.factors.factors.experiment_params = {
-    "warmupSeconds": 60,
-    "load": 36000,
-    "instances": 10,
+    "warmupSeconds": 0,
+    "load": 30000,
+    "instances": 20,
     "durationSeconds": 300,
 }

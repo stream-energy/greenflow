@@ -13,12 +13,9 @@ prometheus:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
   additionalServiceMonitors:
     - name: scaphandre
-      namespaceSelector:
-        matchNames:
-          - default
       selector:
         matchExpressions:
           - key: app.kubernetes.io/name
@@ -29,6 +26,10 @@ prometheus:
         - port: metrics
           interval: 5s
           relabelings:
+            - action: replace
+              sourceLabels:
+                - __meta_kubernetes_pod_node_name
+              targetLabel: node
             - action: replace
               sourceLabels:
                 - __meta_kubernetes_pod_name
@@ -43,7 +44,7 @@ prometheusOperator:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
   nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
 kubeApiServer:
@@ -52,7 +53,7 @@ kubeApiServer:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
 kubelet:
   serviceMonitor:
     relabelings:
@@ -61,49 +62,49 @@ kubelet:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
 kubeControllerManager:
   serviceMonitor:
     relabelings:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
 coreDns:
   serviceMonitor:
     relabelings:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
 kubeDns:
   serviceMonitor:
     relabelings:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
 kubeEtcd:
   serviceMonitor:
     relabelings:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
 kubeScheduler:
   serviceMonitor:
     relabelings:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
 kubeProxy:
   serviceMonitor:
     relabelings:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
 kube-state-metrics:
   nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
@@ -113,7 +114,7 @@ kube-state-metrics:
         - action: replace
           sourceLabels:
             - __meta_kubernetes_pod_node_name
-          targetLabel: instance
+          targetLabel: node
 prometheus-node-exporter:
   prometheus:
     monitor:
@@ -121,7 +122,7 @@ prometheus-node-exporter:
         - action: replace
           sourceLabels:
             - __meta_kubernetes_pod_node_name
-          targetLabel: instance
+          targetLabel: node
 alertmanager:
   alertmanagerSpec:
     nodeSelector:
@@ -131,7 +132,7 @@ alertmanager:
       - action: replace
         sourceLabels:
           - __meta_kubernetes_pod_node_name
-        targetLabel: instance
+        targetLabel: node
 grafana:
   nodeSelector:
     node-role.kubernetes.io/control-plane: "true"

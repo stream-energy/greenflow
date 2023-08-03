@@ -1,0 +1,21 @@
+# vim: set ft=yaml:
+---
+- name: Debug YAML output
+  debug:
+    msg: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    - "../templates/*.j2"
+
+- name: Deploy all resources
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    - "../templates/*.j2"
+# - name: Wait for execution to finish or fail
+#   delegate_to: localhost
+#   shell: kubectl get execution exp -o jsonpath='{.status.executionState}'
+#   register: result
+#   until: result.stdout == "Finished" or result.stdout == "Failure"
+#   retries: 70
+#   delay: 5

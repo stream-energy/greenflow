@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import ansible_runner
+from sys import exit
 
 from .factors import factors
 from .state import get_deployment_state_vars, get_experiment_state_vars
@@ -9,11 +10,19 @@ from .state import get_deployment_state_vars, get_experiment_state_vars
 def playbook(playbook, extra):
     from .g import g
 
-    ansible_runner.run(
+    rc = ansible_runner.run(
         playbook=playbook,
         private_data_dir=f"{g.gitroot}/ansible",
         extravars=extra,
-    )
+    ).rc
+    if rc > 0:
+        cleanup()  # Call cleanup function before exit
+        exit("Error: Playbook execution interrupted/failed.")
+
+def cleanup():
+    # Define cleanup actions here
+    print("Cleanup after playbook error")
+
 
 
 def base():
@@ -40,10 +49,10 @@ def theodolite():
     playbook("theodolite.yaml", extra=get_deployment_state_vars())
 
 
-def exp():
+def exp(experiment_name, experiment_description):
     from .g import g
 
-    g.init_exp()
+    g.init_exp(experiment_name, experiment_description)
     playbook(
         "generate_experiment.yaml",
         extra=get_deployment_state_vars() | get_experiment_state_vars() | factors(),

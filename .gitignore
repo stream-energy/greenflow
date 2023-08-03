@@ -22,3 +22,4 @@ devenv.local.nix
 .mamba
 .DS_Store
 .secrets.env
+ansible/project/_current_exp.yaml
