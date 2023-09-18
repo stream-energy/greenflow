@@ -13,3 +13,13 @@
 # - name: Wait for Theodolite's Kafka to be deployed
 #   delegate_to: localhost
 #   shell: kubectl wait kafka theodolite-kafka --for=condition=Ready --timeout=600s
+
+- name: Patch benchmarks
+  delegate_to: localhost
+  ansible.builtin.command:
+    cmd: >-
+      kubectl patch benchmarks {{ item }} --type json
+      --patch "[{op: replace, path: /spec/loadTypes/0/patchers/1/properties/loadGenMaxRecords, value: {{ MAX_RECORDS_PER_INSTANCE }} }]"
+  with_items: "{{ benchmarks }}"
+  register: patch_result
+  failed_when: "'error' in patch_result.stderr"

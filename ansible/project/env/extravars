@@ -1,1 +1,1 @@
-{"deployment_started_ts": "2023-06-21T18:41:46+02:00", "kubeconfig_path": "../../kubeconfig", "experiment_started_ts": "2023-06-21T19:12:41.855641+02:00", "experiment_name": "uc1-flink", "experiment_params": {"load": 10000, "resources": 20}}
+{"deployment_started_ts": "2023-06-21T18:41:46+02:00", "kubeconfig_path": "../../kubeconfig", "experiment_started_ts": "2023-06-21T19:12:41.855641+02:00", "exp_name": "uc1-flink", "exp_params": {"load": 10000, "resources": 20}}

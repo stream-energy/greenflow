@@ -5,7 +5,6 @@ from time import sleep
 
 import ansible_runner
 import pendulum
-from sh import ansible_playbook, helm, kubectl, rm, ssh
 
 import gin
 

@@ -14,6 +14,7 @@ def playbook(playbook, extra):
         playbook=playbook,
         private_data_dir=f"{g.gitroot}/ansible",
         extravars=extra,
+        # verbosity=3,
     ).rc
     if rc > 0:
         cleanup()  # Call cleanup function before exit
@@ -42,17 +43,21 @@ def deploy_k3s():
 
 
 def strimzi():
-    playbook("strimzi.yaml", extra=get_deployment_state_vars())
+    playbook("strimzi.yaml",
+        extra=get_deployment_state_vars() | factors(),
+    )
 
 
 def theodolite():
-    playbook("theodolite.yaml", extra=get_deployment_state_vars())
+    playbook("theodolite.yaml",
+        extra=get_deployment_state_vars() | factors(),
+    )
 
 
-def exp(experiment_name, experiment_description):
+def exp(exp_name, experiment_description):
     from .g import g
 
-    g.init_exp(experiment_name, experiment_description)
+    g.init_exp(exp_name, experiment_description)
     playbook(
         "generate_experiment.yaml",
         extra=get_deployment_state_vars() | get_experiment_state_vars() | factors(),

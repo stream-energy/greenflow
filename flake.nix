@@ -65,7 +65,7 @@
             rm -rf .mamba
             rm -rf .direnv
           '';
-          scripts.init.exec = ''
+          scripts.firstTimeSetup.exec = ''
             git submodule update --recursive --init
             # Unset REQUESTS_CA_BUNDLE as we need to download pip packages
             export REQUESTS_CA_BUNDLE=

@@ -1,9 +1,8 @@
 greenflow.g5k.G5KPlatform.get_conf.num_control = 1
-greenflow.g5k.G5KPlatform.get_conf.num_worker = 1
+greenflow.g5k.G5KPlatform.get_conf.num_worker = 3
 
-greenflow.factors.factors.exp_name = "uc3-flink"
+greenflow.factors.factors.exp_name = "uc3-kstreams-linear"
 greenflow.factors.exp_params.warmupSeconds = 60
-greenflow.factors.exp_params.instances = 25
+greenflow.factors.exp_params.instances = 30
 greenflow.factors.exp_params.durationSeconds = 300
 greenflow.factors.exp_params.load = 50000
-greenflow.factors.exp_params.kafkaOnWorker = True

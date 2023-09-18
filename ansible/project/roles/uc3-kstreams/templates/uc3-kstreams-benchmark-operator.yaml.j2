@@ -1,0 +1,100 @@
+apiVersion: theodolite.rocks/v1beta1
+kind: benchmark
+metadata:
+  name: uc3-kstreams
+  namespace: default
+spec:
+  infrastructure:
+    afterActions: []
+    beforeActions: []
+    resources: []
+  kafkaConfig:
+    bootstrapServer: theodolite-kafka-kafka-bootstrap:9092
+    topics:
+      - name: theodolite-.*
+        numPartitions: 0
+        removeOnly: true
+        replicationFactor: 0
+  loadGenerator:
+    afterActions: []
+    beforeActions: []
+    resources:
+      - configMap:
+          files:
+            - uc3-load-generator-deployment.yaml
+            - uc3-load-generator-service.yaml
+          name: benchmark-resources-uc3-load-generator
+  loadTypes:
+    - patchers:
+        - properties:
+            container: workload-generator
+            variableName: NUM_SENSORS
+          resource: uc3-load-generator-deployment.yaml
+          type: EnvVarPatcher
+        - properties:
+            loadGenMaxRecords: '150000'
+          resource: uc3-load-generator-deployment.yaml
+          type: NumSensorsLoadGeneratorReplicaPatcher
+      typeName: NumSensors
+    - patchers:
+        - properties:
+            container: uc-application
+            variableName: AGGREGATION_DURATION_DAYS
+          resource: uc3-kstreams-deployment.yaml
+          type: EnvVarPatcher
+      typeName: AggregationDurationDays
+  name: ''
+  resourceTypes:
+    - patchers:
+        - properties: {}
+          resource: uc3-kstreams-deployment.yaml
+          type: ReplicaPatcher
+      typeName: Instances
+    - patchers:
+        - properties:
+            container: uc-application
+            variableName: NUM_STREAM_THREADS
+          resource: uc3-kstreams-deployment.yaml
+          type: EnvVarPatcher
+        - properties:
+            container: uc-application
+            factor: 1000
+            format: m
+            limitedResource: cpu
+          resource: uc3-kstreams-deployment.yaml
+          type: ResourceLimitPatcher
+        - properties:
+            container: uc-application
+            factor: 4
+            format: Gi
+            limitedResource: memory
+          resource: uc3-kstreams-deployment.yaml
+          type: ResourceLimitPatcher
+      typeName: ThreadsAndPodResources
+  slos:
+    - name: "lag trend"
+      sloType: "generic"
+      prometheusUrl: "http://prometheus-operated:9090"
+      offset: 0
+      properties:
+        warmup: 60 # in seconds
+        promQLQuery: "sum by(instance) (up)"
+        operator: gte
+        threshold: 0
+        externalSloUrl: "http://localhost:8082"
+        queryAggregation: count
+        repetitionAggregation: sum
+  sut:
+    afterActions: []
+    beforeActions: []
+    resources:
+      - configMap:
+          files:
+            - input-topic.yaml
+            - output-topic.yaml
+            - uc3-kstreams-deployment.yaml
+            - uc3-kstreams-service.yaml
+            - uc3-jmx-configmap.yaml
+            - uc3-service-monitor.yaml
+          name: benchmark-resources-uc3-kstreams
+  waitForResourcesEnabled: false

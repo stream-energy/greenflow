@@ -38,7 +38,7 @@
   connection: local
   gather_facts: false
   roles:
-    - "{{ experiment_name }}"
+    - "{{ exp_name }}"
 
 - name: Wrap up Experiment
   hosts: localhost
@@ -46,7 +46,7 @@
   gather_facts: false
   tasks:
     - name: Wait for execution to finish
-      shell: kubectl wait execution "{{ experiment_name }}" --for=jsonpath='{.status.executionState}'=Finished --timeout=1h
+      shell: kubectl wait execution "{{ exp_name }}" --for=jsonpath='{.status.executionState}'=Finished --timeout=1h
 
     - name: Delete any past experiment
       kubernetes.core.k8s:
@@ -54,7 +54,21 @@
         api_version: theodolite.rocks/v1beta1
         kind: execution
         namespace: default
-        name: "{{ experiment_name }}"
+        name: "{{ exp_name }}"
+
+    - name: Connect to theodolite-kafka-client pod and delete 'input' topic
+      command: kubectl exec theodolite-kafka-client -- kafka-topics --bootstrap-server theodolite-kafka-kafka-bootstrap:9092 --delete --topic input
+      # register: result_input
+      # failed_when: "'DEPRECATED' in result_input.stdout or 'DEPRECATED' in result_input.stderr"
+      # changed_when: "'Topic input is marked for deletion' in result_input.stdout"
+
+    - name: Connect to theodolite-kafka-client pod and delete 'output' topic
+      command: kubectl exec theodolite-kafka-client -- kafka-topics --bootstrap-server theodolite-kafka-kafka-bootstrap:9092 --delete --topic output
+      # register: result_output
+      # failed_when: "'DEPRECATED' in result_output.stdout or 'DEPRECATED' in result_output.stderr"
+      # changed_when: "'Topic output is marked for deletion' in result_output.stdout"
+
+
 
     - name: Scale down Prometheus to 0
       k8s:

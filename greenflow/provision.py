@@ -13,6 +13,7 @@ def post_setup():
 
 @gin.configurable
 def provision(*, platform: type[Platform] = gin.REQUIRED):
+    from .g import g
     p: Platform = platform()
 
     p.pre_provision()
@@ -25,7 +26,7 @@ def provision(*, platform: type[Platform] = gin.REQUIRED):
         case MockPlatform():
             pass
         case G5KPlatform():
-            with open("./ansible/inventory/hosts.yaml", "w") as f:
+            with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:
                 yaml.dump(p.get_ansible_inventory(), f)
 
 

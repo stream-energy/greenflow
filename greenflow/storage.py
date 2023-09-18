@@ -4,11 +4,12 @@ class ExpStorage:
         from tinydb_serialization import SerializationMiddleware
 
         from .utils import DateTimeSerializer, YAMLStorage
+        from .g import g
 
         serialization = SerializationMiddleware(YAMLStorage)
         serialization.register_serializer(DateTimeSerializer(), "Pendulum")
         self.experiments = TinyDB(
-            "storage/experiment-history.yaml",
+            f"{g.gitroot}/storage/experiment-history.yaml",
             storage=serialization,
         )
 

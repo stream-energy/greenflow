@@ -6,7 +6,7 @@ metadata:
   name: {{ exp_name }}
   namespace: default
 spec:
-  benchmark: {{ exp_name }}
+  benchmark: uc3-kstreams
   load:
     loadType: "NumSensors"
     loadValues:
@@ -21,7 +21,7 @@ spec:
       restrictions:
         - "LowerBound"
       searchStrategy: "FullSearch"
-    duration: {{ exp_params.durationSeconds }} # in seconds
+    duration: {{ exp_params.durationSeconds }}
     repetitions: 1
     loadGenerationDelay: {{ exp_params.warmupSeconds }}
   configOverrides: []
@@ -30,13 +30,13 @@ spec:
       properties:
         externalSloUrl: "http://kp-kube-prometheus-stack-prometheus.default.svc.cluster.local:9090"
         promQLQuery: "sum by(instance) (up)"
-        warmup: 60 # in seconds
+        warmup: {{ exp_params.warmupSeconds }}
         queryAggregation: count
         repetitionAggregation: sum
         operator: gte
         threshold: 0
   # - patcher:
-  #     type: ""
+  #     type: "NodeSelectorPatcher"
   #     resource: "uc1-load-generator-deployment.yaml"
   #     properties:
   #       variableName: "env"

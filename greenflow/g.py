@@ -31,10 +31,10 @@ class _g:
         self.root.current_deployment.last_updated = pendulum.now()
         transaction.commit()
 
-    def init_exp(self, experiment_name, experiment_description=''):
+    def init_exp(self, exp_name, experiment_description=''):
         from .experiment import Experiment
 
-        e = Experiment(experiment_name, experiment_description)
+        e = Experiment(exp_name, experiment_description)
         self.root.current_experiment = e
         transaction.commit()
 

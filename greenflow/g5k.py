@@ -29,7 +29,7 @@ class G5KPlatform(Platform):
 
         return (
             en.G5kConf.from_settings(
-                job_type="allow_classic_ssh",
+                job_type=["allow_classic_ssh","exotic"],
                 job_name=job_name,
                 queue=queue,
                 walltime=walltime,

@@ -1,39 +1,32 @@
 {
     "version": "0.2.0",
     "configurations": [
+
         {
-            "name": "Base",
+            "name": "Setup",
             "type": "python",
             "request": "launch",
-            "module": "greenflow",
+            "module": "invoke",
             "justMyCode": false,
             "args": [
-                "base",
+                "setup",
+                "uc3-flink"
             ],
             "subProcess": false
         },
         {
-            "name": "exp",
+            "name": "Exp",
             "type": "python",
             "request": "launch",
-            "module": "greenflow",
+            "module": "invoke",
             "justMyCode": false,
             "args": [
                 "exp",
+                "uc3-flink",
+                "-l",
+                "36000"
             ],
             "subProcess": false
         },
-        {
-            "name": "E2E 1Worker",
-            "type": "python",
-            "request": "launch",
-            "module": "greenflow",
-            "justMyCode": false,
-            "args": [
-                "e2e",
-                "params/1worker-1resources-kafka.gin"
-            ],
-            "subProcess": false
-        }
     ]
 }

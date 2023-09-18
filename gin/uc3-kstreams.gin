@@ -1,11 +1,9 @@
 greenflow.g5k.G5KPlatform.get_conf.num_control = 1
-greenflow.g5k.G5KPlatform.get_conf.num_worker = 1
-greenflow.g5k.G5KPlatform.get_conf.walltime = "8:00:00"
+greenflow.g5k.G5KPlatform.get_conf.num_worker = 4
 
-greenflow.factors.factors.experiment_name = "uc3-kstreams"
-greenflow.factors.factors.experiment_params = {
-    "warmupSeconds": 60,
-    "load": 36000,
-    "instances": 20,
-    "durationSeconds": 300,
-}
+greenflow.factors.factors.exp_name = "uc3-kstreams"
+greenflow.factors.exp_params.warmupSeconds = 0
+greenflow.factors.exp_params.instances = 30
+greenflow.factors.exp_params.durationSeconds = 300
+greenflow.factors.exp_params.load = 50000
+greenflow.factors.exp_params.kafkaOnWorker = True

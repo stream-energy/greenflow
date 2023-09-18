@@ -16,8 +16,9 @@ class Platform(persistent.Persistent):
         raise NotImplementedError()
 
     def post_provision(self):
+        from .g import g
         self.set_platform_metadata()
-        with open("./ansible/inventory/hosts.yaml", "w") as f:
+        with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:
             yaml.dump(self.get_ansible_inventory(), f)
         transaction.commit()
 

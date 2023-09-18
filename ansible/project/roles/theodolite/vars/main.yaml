@@ -1,0 +1,24 @@
+---
+# vars/main.yml
+MAX_RECORDS_PER_INSTANCE: 30000
+benchmarks:
+  - uc1-beam-flink
+  - uc1-beam-samza
+  - uc1-flink
+  - uc1-hazelcastjet
+  - uc1-kstreams
+  - uc2-beam-flink
+  - uc2-beam-samza
+  - uc2-flink
+  - uc2-hazelcastjet
+  - uc2-kstreams
+  - uc3-beam-flink
+  - uc3-beam-samza
+  - uc3-flink
+  - uc3-hazelcastjet
+  - uc3-kstreams
+  - uc4-beam-flink
+  - uc4-beam-samza
+  - uc4-flink
+  - uc4-hazelcastjet
+  - uc4-kstreams

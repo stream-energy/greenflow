@@ -11,6 +11,7 @@ inventory/g5k.ini
 /ansible/cachedir
 /ansible/env
 /ansible/inventory
+/ansible/project/_current_exp.yaml
 /cachedir
 .python-grid5000.yaml
 .devcontainer/devcontainer.json
@@ -22,4 +23,3 @@ devenv.local.nix
 .mamba
 .DS_Store
 .secrets.env
-ansible/project/_current_exp.yaml

@@ -3,34 +3,34 @@
 apiVersion: theodolite.rocks/v1beta1
 kind: execution
 metadata:
-  name: {{ experiment_name }}
+  name: {{ exp_name }}
   namespace: default
 spec:
-  benchmark: {{ experiment_name }}
+  benchmark: {{ exp_name }}
   load:
     loadType: "NumSensors"
     loadValues:
-      - {{ experiment_params.load }}
+      - {{ exp_params.load }}
   resources:
     resourceType: "Instances"
     resourceValues:
-      - {{ experiment_params.instances }}
+      - {{ exp_params.instances }}
   execution:
     strategy:
       name: "RestrictionSearch"
       restrictions:
         - "LowerBound"
       searchStrategy: "FullSearch"
-    duration: {{ experiment_params.durationSeconds }}
+    duration: {{ exp_params.durationSeconds }}
     repetitions: 1
-    loadGenerationDelay: {{ experiment_params.warmupSeconds }}
+    loadGenerationDelay: {{ exp_params.warmupSeconds }}
   configOverrides: []
   slos:
     - name: "Dummy SLO"
       properties:
         externalSloUrl: "http://kp-kube-prometheus-stack-prometheus.default.svc.cluster.local:9090"
         promQLQuery: "sum by(instance) (up)"
-        warmup: {{ experiment_params.warmupSeconds }}
+        warmup: {{ exp_params.warmupSeconds }}
         queryAggregation: count
         repetitionAggregation: sum
         operator: gte

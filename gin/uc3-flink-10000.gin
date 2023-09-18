@@ -2,8 +2,8 @@ greenflow.g5k.G5KPlatform.get_conf.num_control = 1
 greenflow.g5k.G5KPlatform.get_conf.num_worker = 1
 greenflow.g5k.G5KPlatform.get_conf.walltime = "2:00:00"
 
-greenflow.factors.factors.experiment_name = "uc3-flink"
-greenflow.factors.factors.experiment_params = {
+greenflow.factors.factors.exp_name = "uc3-flink"
+greenflow.factors.factors.exp_params = {
     "warmupSeconds": 0,
     "load": 10000,
     "instances": 20,
