@@ -40,6 +40,12 @@ spec:
     jvmOptions:
       "-Xmx": "4G"
       "-Xms": "4G"
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: theodolite-kafka-metrics
+          key: kafka-metrics-config.yml
     config:
       "message.max.bytes": "134217728" # 128 MB
       "replica.fetch.max.bytes": "134217728" #128 MB
@@ -74,12 +80,6 @@ spec:
                         - "true"
     storage:
       type: ephemeral
-    metricsConfig:
-      type: jmxPrometheusExporter
-      valueFrom:
-        configMapKeyRef:
-          name: theodolite-kafka-metrics
-          key: kafka-metrics-config.yml
     entityOperator:
       template:
         pod:

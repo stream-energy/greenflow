@@ -1,5 +1,5 @@
-greenflow.g5k.G5KPlatform.get_conf.num_control = 1
-greenflow.g5k.G5KPlatform.get_conf.num_worker = 1
+# greenflow.g5k.G5KPlatform.get_conf.num_control = 1
+# greenflow.g5k.G5KPlatform.get_conf.num_worker = 10
 
 greenflow.factors.factors.exp_name = "uc3-flink"
 greenflow.factors.exp_params.warmupSeconds = 60

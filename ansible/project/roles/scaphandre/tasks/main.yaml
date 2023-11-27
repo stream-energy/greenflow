@@ -9,9 +9,11 @@
     chart_repo_url: git+https://github.com/hubblo-org/scaphandre@helm/scaphandre?ref=main
     release_namespace: default
     create_namespace: true
-    # values:
-    #   image:j
-    #     name: 
+    values:
+      image:
+        name: registry.gitlab.inria.fr/gkovilkk/greenflow/scaphandre
+        tag: latest
+
 - name: Deploy additional ServiceMonitor for Scaphandre
   delegate_to: localhost
   kubernetes.core.k8s:
