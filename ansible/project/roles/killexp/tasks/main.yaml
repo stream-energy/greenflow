@@ -1,0 +1,12 @@
+# vim: set ft=yaml:
+---
+- name: Get all Executions
+  kubernetes.core.k8s_info:
+    kind: execution
+    api_version: theodolite.rocks/v1beta1
+  register: result 
+- name: Remove all Executions
+  kubernetes.core.k8s:
+    state: absent
+    definition: "{{ item }}"
+  loop: "{{ result.resources }}"

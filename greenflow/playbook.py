@@ -26,6 +26,9 @@ def cleanup():
 
 
 
+def blowaway():
+    playbook("blowaway.yaml", extra=get_deployment_state_vars())
+
 def base():
     playbook("base.yaml", extra=get_deployment_state_vars())
 
@@ -50,6 +53,11 @@ def strimzi():
 
 def theodolite():
     playbook("theodolite.yaml",
+        extra=get_deployment_state_vars() | factors(),
+    )
+
+def killexp():
+    playbook("killexp.yaml",
         extra=get_deployment_state_vars() | factors(),
     )
 

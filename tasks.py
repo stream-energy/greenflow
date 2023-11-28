@@ -70,6 +70,16 @@ def kafka(c, exp_name):
     load_gin(exp_name)
     playbook.strimzi()
 
+@task
+def blowaway(c, exp_name):
+    load_gin(exp_name)
+    playbook.blowaway()
+
+
+@task
+def killexp(c, exp_name):
+    load_gin(exp_name)
+    playbook.killexp()
 
 @task
 def killjob(c):

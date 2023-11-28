@@ -1,0 +1,7 @@
+---
+# vim: set ft=yaml:
+- name: Killing all executions
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - killexp

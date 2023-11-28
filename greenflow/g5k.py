@@ -24,6 +24,7 @@ class G5KPlatform(Platform):
         num_worker: int = gin.REQUIRED,
         walltime: str = gin.REQUIRED,
         queue: str = gin.REQUIRED,
+        project: str = gin.REQUIRED,
     ):
         network = en.G5kNetworkConf(type="prod", roles=["my_network"], site=site)
 
@@ -33,6 +34,7 @@ class G5KPlatform(Platform):
                 job_name=job_name,
                 queue=queue,
                 walltime=walltime,
+                project=project,
             )
             .add_network_conf(network)
             .add_machine(
