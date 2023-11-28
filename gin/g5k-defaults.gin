@@ -2,9 +2,10 @@ greenflow.provision.provision.platform = @greenflow.g5k.G5KPlatform
 greenflow.destroy.destroy.platform = @greenflow.g5k.G5KPlatform
 greenflow.destroy.killjob.platform = @greenflow.g5k.G5KPlatform
 
-greenflow.g5k.G5KPlatform.get_conf.site = "lyon"
-greenflow.g5k.G5KPlatform.get_conf.cluster = "nova"
+greenflow.g5k.G5KPlatform.get_conf.site = "rennes"
+greenflow.g5k.G5KPlatform.get_conf.cluster = "paravance"
 greenflow.g5k.G5KPlatform.get_conf.queue = "default"
 greenflow.g5k.G5KPlatform.get_conf.num_control = 1
-greenflow.g5k.G5KPlatform.get_conf.num_worker = 5
+greenflow.g5k.G5KPlatform.get_conf.num_worker = 10
 greenflow.g5k.G5KPlatform.get_conf.walltime = "5:00:00"
+greenflow.g5k.G5KPlatform.get_conf.project = "myriads"

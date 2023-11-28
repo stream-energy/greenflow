@@ -13,6 +13,7 @@ spec:
   podMetricsEndpoints:
   - path: /metrics
     port: tcp-prometheus
+    interval: 5s
     metricRelabelings:
       - action: replace
         sourceLabels:

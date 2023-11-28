@@ -65,7 +65,8 @@ spec:
         tls: false
     replicas: 3
     storage:
-      type: ephemeral
+      type: persistent-claim
+      size: "100Gi"
   kafkaExporter:
     template:
       pod:

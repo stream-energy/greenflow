@@ -2,8 +2,8 @@
 # greenflow.g5k.G5KPlatform.get_conf.num_worker = 10
 
 greenflow.factors.factors.exp_name = "uc3-flink"
-greenflow.factors.exp_params.warmupSeconds = 60
-greenflow.factors.exp_params.instances = 25
+greenflow.factors.exp_params.warmupSeconds = 30
+greenflow.factors.exp_params.instances = 50
 greenflow.factors.exp_params.durationSeconds = 300
-greenflow.factors.exp_params.load = 50000
+greenflow.factors.exp_params.load = 500000
 greenflow.factors.exp_params.kafkaOnWorker = True

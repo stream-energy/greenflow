@@ -19,6 +19,25 @@
       tags: [always]
       ansible.builtin.command:
         cmd: modprobe intel_rapl_common
+    - name: Check if /dev/sda5 exists
+      ansible.builtin.stat:
+        path: /dev/sda5
+      register: sda5
+    - name: Check if /dev/sdb5 exists
+      ansible.builtin.stat:
+        path: /dev/sdb5
+      register: sdb5
+    - name: Set src variable
+      set_fact:
+        src_dev: "{% if sda5.stat.exists %}/dev/sda5{% elif sdb5.stat.exists %}/dev/sdb5{% else %}''{% endif %}"
+    - name: Mount source disk to /var/lib/rancher
+      ansible.builtin.mount:
+        path: /var/lib/rancher
+        src: "{{ src_dev }}"
+        fstype: ext4
+        state: mounted
+      when: src_dev != ""
+
     # - name: Skip the rest of the playbook if the deployment was successful and there was no change
     #   meta: skip_tags=all
     #   when: result is success and result is not changed
@@ -95,7 +114,7 @@
     - name: Install k3s on controller
       environment:
         # INSTALL_K3S_EXEC: --disable=traefik --disable=local-storage
-        INSTALL_K3S_EXEC: --docker --disable=traefik --disable=local-storage --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
+        INSTALL_K3S_EXEC: --docker --disable=traefik --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
         # INSTALL_K3S_EXEC: --disable=traefik --disable=local-storage --container-runtime-endpoint unix:///run/containerd/containerd.sock
         INSTALL_K3S_VERSION: v1.24.8+k3s1
         # K3S_TOKEN: K10787911fcda12ddecf7e216979de14959f7d521e09045647400b6daf21d16bd8b::server:dd400bd9-93dd-4402-8512-4cec59e5cf24
