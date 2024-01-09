@@ -1,9 +1,8 @@
 apiVersion: theodolite.rocks/v1beta1
 kind: benchmark
 metadata:
-  name: uc3-flink
+  name: {{ exp_name }}
   namespace: default
-#TODO: Merge uc1-flink ><> uc3-flink
 spec:
   infrastructure:
     afterActions: []
@@ -55,9 +54,9 @@ spec:
   name: ""
   resourceTypes:
     - patchers:
-        - properties: {}
-          resource: taskmanager-deployment.yaml
-          type: ReplicaPatcher
+        # - properties: {}
+        #   resource: taskmanager-deployment.yaml
+        #   type: ReplicaPatcher
         - properties:
             container: jobmanager
             variableName: PARALLELISM

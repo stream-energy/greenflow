@@ -1,5 +1,4 @@
 from invoke import task
-ntfy_url = "https://ntfy.govind.cloud/test"
 import requests
 
 import gin
@@ -15,6 +14,13 @@ def load_gin(exp_name):
         []
     )
 
+def send_notification(text):
+    ntfy_url = "https://ntfy.sh/4d5a7713-8b2a-46c8-8407-0014b19aa54a-greenflow"
+    requests.post(ntfy_url, headers={"priority": "low"}, data=text)
+
+@task
+def test_message_delivery(c):
+    send_notification("Test message")
 
 @task
 def setup(c, exp_name, workers=None):
@@ -29,7 +35,7 @@ def setup(c, exp_name, workers=None):
     playbook.strimzi()
     playbook.theodolite()
 
-    requests.post(ntfy_url, data="Setup complete")
+    send_notification("Setup complete")
 
 
 @task
@@ -45,7 +51,8 @@ def exp(c, exp_name, description="", load=None, instances=None, workers=None):
         with gin.unlock_config():
             gin.bind_parameter("greenflow.factors.exp_params.instances", instances)
     playbook.exp(exp_name=exp_name, experiment_description=description)
-    requests.post(ntfy_url, data="Experiment complete")
+
+    send_notification("Experiment complete. On to the next.")
 
 
 @task
@@ -55,8 +62,7 @@ def prometheus(c, exp_name):
 
 
 @task
-def theo(c, exp_name):
-    load_gin(exp_name)
+def theo(c):
     playbook.theodolite()
 
 

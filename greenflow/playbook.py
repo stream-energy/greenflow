@@ -53,7 +53,7 @@ def strimzi():
 
 def theodolite():
     playbook("theodolite.yaml",
-        extra=get_deployment_state_vars() | factors(),
+    extra={}
     )
 
 def killexp():

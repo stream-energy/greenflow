@@ -70,14 +70,14 @@
 
 
 
-    - name: Scale down Prometheus to 0
-      k8s:
-        state: present
-        definition:
-          api: monitoring.coreos.com/v1
-          kind: Prometheus
-          metadata:
-            namespace: default
-            name: kp-kube-prometheus-stack-prometheus
-          spec:
-            replicas: 0
+    # - name: Scale down Prometheus to 0
+    #   k8s:
+    #     state: present
+    #     definition:
+    #       api: monitoring.coreos.com/v1
+    #       kind: Prometheus
+    #       metadata:
+    #         namespace: default
+    #         name: kp-kube-prometheus-stack-prometheus
+    #       spec:
+    #         replicas: 0

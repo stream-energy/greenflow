@@ -3,48 +3,40 @@
 apiVersion: theodolite.rocks/v1beta1
 kind: execution
 metadata:
-  name: exp
+  name: {{ exp_name }}
   namespace: default
 spec:
-  benchmark: "uc3-flink"
+  benchmark: {{ exp_name }}
   load:
     loadType: "NumSensors"
     loadValues:
-      - {{ uc3_flink_loadValue }}
+      - {{ exp_params.load }}
   resources:
     resourceType: "Instances"
     resourceValues:
-      - {{ uc3_flink_resourceValue }}
-    configOverrides:
-      - patcher:
-          type: "NodeSelectorPatcher"
-          resource: "uc3-flink-deployment.yaml"
-          properties:
-            variableName: "env"
-          value: "prod"
-
+      - {{ exp_params.instances }}
   execution:
     strategy:
       name: "RestrictionSearch"
       restrictions:
         - "LowerBound"
       searchStrategy: "FullSearch"
-    duration: {{ duration }} # in seconds
+    duration: {{ exp_params.durationSeconds }}
     repetitions: 1
-    loadGenerationDelay: 5 # in seconds
+    loadGenerationDelay: {{ exp_params.warmupSeconds }}
   configOverrides: []
   slos:
     - name: "Dummy SLO"
       properties:
         externalSloUrl: "http://kp-kube-prometheus-stack-prometheus.default.svc.cluster.local:9090"
         promQLQuery: "sum by(instance) (up)"
-        warmup: 60 # in seconds
+        warmup: {{ exp_params.warmupSeconds }}
         queryAggregation: count
         repetitionAggregation: sum
         operator: gte
         threshold: 0
   # - patcher:
-  #     type: ""
+  #     type: "NodeSelectorPatcher"
   #     resource: "uc1-load-generator-deployment.yaml"
   #     properties:
   #       variableName: "env"

@@ -85,4 +85,13 @@ def generate_grafana_dashboard_url(
     stopped_ts: DateTime,
     base_url: str = f"{environ['EXPERIMENT_BASE_URL']}/d/76thsXBVk/greenflow?",
 ) -> str:
-    return f"{base_url}from={int(started_ts.float_timestamp*1000)}&to={int(stopped_ts.float_timestamp*1000)}"
+    from .g import g
+
+    deployment_id = g.root.current_deployment.started_ts.format("YYYY-MM-DDTHH:mm:ssZ")
+    experiment_id = g.root.current_experiment.started_ts.format("YYYY-MM-DDTHH:mm:ssZ")
+    deployment_id = deployment_id.replace("+","%2B")
+    experiment_id = experiment_id.replace("+","%2B")
+
+
+
+    return f"{base_url}from={int(started_ts.float_timestamp*1000)}&to={int(stopped_ts.float_timestamp*1000)}&var-Deployment={deployment_id}&var-Experiment={experiment_id}"
