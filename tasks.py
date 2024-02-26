@@ -64,6 +64,7 @@ def prometheus(c, exp_name):
 
 @task
 def theo(c):
+    load_gin("uc3-flink-kafka")
     playbook.theodolite()
 
 
@@ -78,7 +79,7 @@ def kafka(c, exp_name):
     playbook.strimzi()
 
 @task
-def redpanda(c, exp_name):
+def redpanda(c, exp_name="uc3-flink-redpanda"):
     load_gin(exp_name)
     playbook.redpanda()
 

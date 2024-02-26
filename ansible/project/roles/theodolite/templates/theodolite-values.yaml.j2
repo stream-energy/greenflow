@@ -1,17 +1,25 @@
 # vim: set ft=yaml:
 ---
 kafkaClient:
-  enabled: true
+  enabled: false
   nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
 strimzi:
   # Disabling strimzi in favour of deploying chart manually
   enabled: False
+  schemaRegistry:
+    enabled: true
+    image: registry.gitlab.inria.fr/gkovilkk/greenflow/schema-registry
+    tag: 5.4.0
+  zookeeper:
+    zooEntrance:
+        zookeeperClient:
+          enabled: false
 prometheus:
   enabled: false
 kube-prometheus-stack:
   grafana:
-    enabled: true
+    enabled: false
   prometheusOperator:
     enabled: false
     nodeSelector:
@@ -27,6 +35,9 @@ kube-state-metrics:
   nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
 operator:
+  resultsVolume:
+    accessSidecar:
+      enabled: false
   nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
   theodoliteBenchmarks:

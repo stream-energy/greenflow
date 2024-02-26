@@ -110,7 +110,6 @@
             export MAMBA_ROOT_PREFIX="''${GITROOT}/.mamba"
             eval "$(micromamba shell hook --shell=posix)"
             micromamba activate
-            eval "$(atuin init bash)"
           '';
         };
       };

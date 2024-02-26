@@ -13,6 +13,13 @@ listeners:
     port: 9092
     tls:
       enabled: false
+image:
+  repository: registry.gitlab.inria.fr/gkovilkk/greenflow/redpanda
+  tag: v23.3.6
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+pullSecrets:
+  - name: regcred
 statefulset:
   replicas: 3
   podAntiAffinity:
