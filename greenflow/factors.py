@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from typing import Any
 import gin
 
 
@@ -7,7 +8,7 @@ import gin
 def factors(
     *,
     exp_name: str = gin.REQUIRED,
-) -> dict:
+) -> dict[str, Any]:
     return {
         "exp_name": exp_name,
         "exp_params": exp_params(),

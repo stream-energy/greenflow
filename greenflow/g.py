@@ -3,6 +3,7 @@ from functools import cached_property
 import pendulum
 import transaction
 import ZODB
+import gin
 
 class _g:
     @cached_property
@@ -28,7 +29,7 @@ class _g:
 
         d = Deployment(platform.metadata)
         self.root.current_deployment = d
-        self.root.current_deployment.last_updated = pendulum.now()
+        self.root.current_deployment.last_updated = pendulum.now().to_iso8601_string()
         transaction.commit()
 
     def init_exp(self, exp_name, experiment_description=''):
@@ -40,10 +41,12 @@ class _g:
 
     def end_exp(self):
         exp = self.root.current_experiment
-        exp.stopped_ts = pendulum.now()
+        stopped_ts = pendulum.now()
+        exp.stopped_ts = stopped_ts.to_iso8601_string()
+
 
         # To avoid polluting, do not write to disk if shorter than 2 minutes
-        if exp.stopped_ts.diff(exp.started_ts).minutes < 2:
+        if stopped_ts.diff(pendulum.parse(exp.started_ts)).minutes < 2:
             self.root.current_experiment = None
             transaction.commit()
             return
@@ -51,3 +54,23 @@ class _g:
 
 
 g: _g = _g()
+
+# if __name__ == "__main__":
+#     import greenflow.platform
+#     def load_gin(exp_name):
+#         gin.parse_config_files_and_bindings(
+#             [
+#                 f"{g.gitroot}/gin/g5k-defaults.gin",
+#                 f"{g.gitroot}/gin/{exp_name}.gin",
+#             ],
+#             []
+#         )
+
+#     load_gin("uc3-flink")
+#     # You can call the various class methods here. Examples:
+#     # g.reinit_deployment(platform)
+#     g.init_exp("uc3-flink")
+#     g.end_exp()
+
+#     # Note: The necessary arguments must be provided to the methods.
+#     pass

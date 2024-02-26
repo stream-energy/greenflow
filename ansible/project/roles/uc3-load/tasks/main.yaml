@@ -1,0 +1,72 @@
+- name: Debug YAML output
+  debug:
+    msg: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    - "../templates/*.j2"
+
+- name: Deploy all resources
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    - "../templates/*.j2"
+# Create a deployment with
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: titan-ccp-load-generator-7b9c9f8b5c-5zgpq
+#   namespace: default
+# spec:
+#   containers:
+#     - name: workload-generator
+#       image: ghcr.io/cau-se/theodolite-uc3-workload-generator:latest
+#       ports:
+#         - name: coordination
+#           containerPort: 5701
+#           protocol: TCP
+#       env:
+#         - name: KUBERNETES_NAMESPACE
+#           valueFrom:
+#             fieldRef:
+#               apiVersion: v1
+#               fieldPath: metadata.namespace
+#         - name: KUBERNETES_DNS_NAME
+#           value: titan-ccp-load-generator.$(KUBERNETES_NAMESPACE).svc.cluster.local
+#         - name: KAFKA_BOOTSTRAP_SERVERS
+#           value: redpanda.redpanda.svc.cluster.local:9092
+#         - name: SCHEMA_REGISTRY_URL
+#           value: http://theodolite-kafka-schema-registry:8081
+#         - name: NUM_SENSORS
+#           value: '500000'
+#   terminationGracePeriodSeconds: 0
+# - name: Wait for execution to finish or fail
+#   delegate_to: localhost
+#   shell: kubectl get execution exp -o jsonpath='{.status.executionState}'
+#   register: result
+#   until: result.stdout == "Finished" or result.stdout == "Failure"
+#   retries: 70
+#   delay: 5
+
+# - name: Debug YAML output
+#   debug:
+#     msg: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+#   with_fileglob:
+#     - "../templates/*.j2"
+
+# - name: Deploy all resources
+#   kubernetes.core.k8s:
+#     state: present
+#     definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+#   with_fileglob:
+#     - "../templates/*.j2"
+
+# - name: Wait for execution to finish
+#   delegate_to: localhost
+#   shell: kubectl wait execution exp --for=jsonpath='{.status.executionState}'=Finished --timeout=1h
+
+# - name: Delete any past experiment
+#   kubernetes.core.k8s:
+#     state: absent
+#     definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+#   with_fileglob:
+#     - "../templates/*.j2"

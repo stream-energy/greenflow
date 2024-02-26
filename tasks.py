@@ -1,4 +1,5 @@
 from invoke import task
+ntfy_url = "https://ntfy.sh/test-greenflow"
 import requests
 
 import gin
@@ -75,6 +76,11 @@ def scaph(c, exp_name):
 def kafka(c, exp_name):
     load_gin(exp_name)
     playbook.strimzi()
+
+@task
+def redpanda(c, exp_name):
+    load_gin(exp_name)
+    playbook.redpanda()
 
 @task
 def blowaway(c, exp_name):

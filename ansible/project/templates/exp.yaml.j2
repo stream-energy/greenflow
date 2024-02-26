@@ -58,16 +58,19 @@
 
     - name: Connect to theodolite-kafka-client pod and delete 'input' topic
       command: kubectl exec theodolite-kafka-client -- kafka-topics --bootstrap-server theodolite-kafka-kafka-bootstrap:9092 --delete --topic input
-      # register: result_input
-      # failed_when: "'DEPRECATED' in result_input.stdout or 'DEPRECATED' in result_input.stderr"
-      # changed_when: "'Topic input is marked for deletion' in result_input.stdout"
+      ignore_errors: true
 
     - name: Connect to theodolite-kafka-client pod and delete 'output' topic
       command: kubectl exec theodolite-kafka-client -- kafka-topics --bootstrap-server theodolite-kafka-kafka-bootstrap:9092 --delete --topic output
-      # register: result_output
-      # failed_when: "'DEPRECATED' in result_output.stdout or 'DEPRECATED' in result_output.stderr"
-      # changed_when: "'Topic output is marked for deletion' in result_output.stdout"
+      ignore_errors: true
 
+    - name: Connect to Redpanda pod and delete 'input' topic
+      command: kubectl exec theodolite-kafka-client -- kafka-topics --bootstrap-server redpanda.redpanda.svc.cluster.local:9092 --delete --topic input
+      ignore_errors: true
+
+    - name: Connect to Redpanda pod and delete 'output' topic
+      command: kubectl exec theodolite-kafka-client -- kafka-topics --bootstrap-server redpanda.redpanda.svc.cluster.local:9092 --delete --topic output
+      ignore_errors: true
 
 
     # - name: Scale down Prometheus to 0

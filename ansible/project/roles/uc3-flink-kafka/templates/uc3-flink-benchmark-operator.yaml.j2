@@ -8,6 +8,7 @@ spec:
     afterActions: []
     beforeActions: []
     resources: []
+  # shouldn't use this because no crds
   kafkaConfig:
     bootstrapServer: theodolite-kafka-kafka-bootstrap:9092
     topics:
@@ -15,14 +16,14 @@ spec:
         numPartitions: 100
         removeOnly: false
         replicationFactor: 1
-      - name: output
-        numPartitions: 100
-        removeOnly: false
-        replicationFactor: 1
-      - name: theodolite-.*
-        numPartitions: 0
-        removeOnly: true
-        replicationFactor: 0
+    #   - name: output
+    #     numPartitions: 100
+    #     removeOnly: false
+    #     replicationFactor: 1
+    #   - name: theodolite-.*
+    #     numPartitions: 0
+    #     removeOnly: true
+    #     replicationFactor: 0
   loadGenerator:
     afterActions: []
     beforeActions: []
@@ -44,13 +45,13 @@ spec:
           resource: uc3-load-generator-deployment.yaml
           type: NumSensorsLoadGeneratorReplicaPatcher
       typeName: NumSensors
-    - patchers:
-        - properties:
-            container: jobmanager
-            variableName: AGGREGATION_DURATION_DAYS
-          resource: jobmanager-deployment.yaml
-          type: EnvVarPatcher
-      typeName: AggregationDurationDays
+    # - patchers:
+    #     - properties:
+    #         container: jobmanager
+    #         variableName: AGGREGATION_DURATION_DAYS
+    #       resource: jobmanager-deployment.yaml
+    #       type: EnvVarPatcher
+    #   typeName: AggregationDurationDays
   name: ""
   resourceTypes:
     - patchers:

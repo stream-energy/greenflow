@@ -42,6 +42,7 @@
           packages = with pkgs; [
             micromamba
             alejandra
+            nil
             kubectl
             kubernetes-helm
             ruff
@@ -81,13 +82,20 @@
             helm repo add strimzi https://strimzi.io/charts/
             helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
             helm repo add grafana https://grafana.github.io/helm-charts
+            helm repo add jetstack https://charts.jetstack.io
+            helm repo add redpanda https://charts.redpanda.com
+            helm repo update
 
+            pushd $PWD/charts/redpanda-helm-charts/charts/redpanda
+              helm dep build
+            popd
             pushd $PWD/charts/prometheus-community/charts/kube-prometheus-stack
               helm dep build
             popd
             pushd $PWD/charts/theodolite/helm
               helm dep build
             popd
+            ansible-galaxy collection install kubernetes.core
 
             # Create grid5000 creds file
             echo "
@@ -99,8 +107,11 @@
 
           enterShell = ''
             export GITROOT="$(git rev-parse --show-toplevel)"
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/run/opengl-driver/lib
+            export MAMBA_ROOT_PREFIX="$(pwd)/.mamba"
             eval "$(micromamba shell hook --shell=posix)"
             micromamba activate
+            eval "$(atuin init bash)"
           '';
         };
       };

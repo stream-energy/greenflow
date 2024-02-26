@@ -22,6 +22,7 @@ class G5KPlatform(Platform):
         cluster: str = gin.REQUIRED,
         num_control: int = gin.REQUIRED,
         num_worker: int = gin.REQUIRED,
+        num_broker: int = gin.REQUIRED,
         walltime: str = gin.REQUIRED,
         queue: str = gin.REQUIRED,
         project: str = gin.REQUIRED,
@@ -47,6 +48,12 @@ class G5KPlatform(Platform):
                 roles=["worker"],
                 cluster=cluster,
                 nodes=num_worker,
+                primary_network=network,
+            )
+            .add_machine(
+                roles=["broker"],
+                cluster=cluster,
+                nodes=num_broker,
                 primary_network=network,
             )
             .finalize()
@@ -93,6 +100,10 @@ class G5KPlatform(Platform):
                     self.metadata["ansible_inventory"]["all"]["children"][grp]["hosts"][
                         host.alias
                     ] = {"kubernetes_role": "node"}
+                elif grp == "broker":
+                    self.metadata["ansible_inventory"]["all"]["children"][grp]["hosts"][
+                        host.alias
+                    ] = {"kubernetes_role": "broker"}
         g.reinit_deployment(self)
 
     def post_provision(self):

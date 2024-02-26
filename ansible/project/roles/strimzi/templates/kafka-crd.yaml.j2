@@ -18,11 +18,7 @@ spec:
             requiredDuringSchedulingIgnoredDuringExecution:
               nodeSelectorTerms:
                 - matchExpressions:
-{% if exp_params.kafkaOnWorker %}
-                    - key: node-role.kubernetes.io/worker
-{% else %}
-                    - key: node-role.kubernetes.io/control-plane
-{% endif %}
+                    - key: node.kubernetes.io/broker
                       operator: In
                       values:
                         - "true"
@@ -101,7 +97,7 @@ spec:
             requiredDuringSchedulingIgnoredDuringExecution:
               nodeSelectorTerms:
                 - matchExpressions:
-                    - key: node-role.kubernetes.io/control-plane
+                    - key: node.kubernetes.io/broker
                       operator: In
                       values:
                         - "true"
@@ -113,31 +109,3 @@ spec:
       zookeeperClient:
         nodeSelector:
           node-role.kubernetes.io/control-plane: "true"
-  # schemaRegistry:
-  #   enabled: true
-  #   replicaCount: 1
-  #   ## ref: https://hub.docker.com/r/confluentinc/cp-schema-registry/
-  #   image: confluentinc/cp-schema-registry
-  #   #imageTag: 6.1.0
-  #   imageTag: 5.4.0
-  #   imagePullPolicy: IfNotPresent
-  #   servicePort: 8081
-  #   heapOptions: "-Xms512M -Xmx512M"
-  #   resources: {}
-  #   nodeSelector:
-  #     node-role.kubernetes.io/control-plane: "true"
-  #   tolerations: []
-  #   affinity:
-  #     nodeAffinity:
-  #       requiredDuringSchedulingIgnoredDuringExecution:
-  #         nodeSelectorTerms:
-  #           - matchExpressions:
-  #               - key: node-role.kubernetes.io/control-plane
-  #                 operator: In
-  #                 values:
-  #                   - "true"
-  #   securityContext:
-  #     runAsUser: 10001
-  #     runAsGroup: 10001
-  #     fsGroup: 10001
-  #     runAsNonRoot: true

@@ -22,3 +22,6 @@
 [submodule "charts/redpanda-helm-charts"]
 	path = charts/redpanda-helm-charts
 	url = https://github.com/redpanda-data/helm-charts
+[submodule "charts/redpanda-operator-helm"]
+	path = charts/redpanda-operator-helm
+	url = https://github.com/redpanda-data/helm-charts

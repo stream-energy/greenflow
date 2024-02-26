@@ -1,0 +1,27 @@
+version: '3.3'
+services:
+  grafana:
+    image: grafana/grafana
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: grafana/storage
+        target: /var/lib/grafana
+      - type: bind
+        source: grafana/etc-grafana
+        target: /etc/grafana
+    user: '1000'
+  vm:
+    image: victoriametrics/victoria-metrics
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /root/energystream1-mirror/default-vm-pvc
+        target: /victoria-metrics-data
+
+
+volumes:
+  grafana-local-storage:
+  vm-local-storage:

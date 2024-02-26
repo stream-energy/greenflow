@@ -11,7 +11,7 @@
   },
   // If x86_64 use cachix/devenv
   // TODO: Can be upgraded to multi-platform manifest
-  "image": "reisub0/devenv-arm64:latest",
+  "image": "ghcr.io/cachix/devenv:latest",
   "overrideCommand": false,
   // "updateContentCommand": "nix develop --impure",
   "runArgs": [
@@ -26,6 +26,8 @@
   "mounts": [
     "source=nix-cache,target=/nix,type=volume,consistency=cached",
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    "source=/home/g/.local/share,target=/home/vscode/.local/share,type=bind",
+    "source=/home/g/.config,target=/home/vscode/.config,type=bind",
     "source=/home/g/.ssh,target=/home/vscode/.ssh,type=bind",
     "source=/home/g/.kube,target=/home/vscode/.kube,type=bind",
     "source=/home/g/storage,target=/workspaces/greenflow/storage,type=bind",

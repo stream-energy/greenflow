@@ -1,0 +1,59 @@
+---
+# vim: set ft=yaml:
+# Source: scaphandre/templates/daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: scaphandre
+  namespace: default
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: scaphandre
+  template:
+    metadata:
+      name: scaphandre
+    spec:
+      nodeSelector:
+        node.kubernetes.io/broker: "true"
+      containers:
+      - name:  scaphandre
+        image: registry.gitlab.inria.fr/gkovilkk/greenflow/scaphandre
+        args:
+            - prometheus
+        env:
+        ports:
+        - name: metrics
+          containerPort: 8080
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 75m
+            memory: 100Mi
+        volumeMounts:
+        - mountPath: /proc
+          name: proc
+          readOnly: false
+        - mountPath: /sys/class/powercap
+          name: powercap
+          readOnly: false
+        securityContext:
+          privileged: true
+          runAsUser: 0
+          runAsGroup: 
+      serviceAccountName: scaphandre
+      tolerations:
+      # Tolerate all taints for observability
+      - operator: "Exists"
+      volumes:
+      - hostPath:
+          path: /proc
+          type: "Directory"
+        name: proc
+      - hostPath:
+          path: /sys/class/powercap
+          type: "Directory"
+        name: powercap

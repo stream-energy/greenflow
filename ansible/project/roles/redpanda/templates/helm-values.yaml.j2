@@ -1,0 +1,48 @@
+nodeSelector:
+  node.kubernetes.io/broker: "true"
+config:
+  cluster:
+    auto_create_topics_enabled: true
+monitoring:
+  enabled: true
+  scrapeInterval: 5s
+listeners:
+  schemaRegistry:
+    port: 8081
+  kafka:
+    port: 9092
+    tls:
+      enabled: false
+statefulset:
+  replicas: 3
+  podAntiAffinity:
+    topologyKey: kubernetes.io/hostname
+    type: soft
+    weight: 1
+    custom: {}
+  #TODO: Figure out how to make affinity optional and not required, this is not working and documentation between redpanda helm is broken
+# affinity:
+#   podAntiAffinity:
+#     preferredDuringSchedulingIgnoredDuringExecution:
+#       - labelSelector:
+#           matchLabels:
+#             app.kubernetes.io/component: redpanda-statefulset
+#             app.kubernetes.io/instance: redpanda
+#             app.kubernetes.io/name: redpanda
+#         topologyKey: kubernetes.io/hostname
+#         weight: 100
+#     requiredDuringSchedulingIgnoredDuringExecution: []
+
+  #   # topologyKey: kubernetes.io/hostname
+  #   # type: custom
+  #   # weight: 100
+  #   # custom:
+  #   #   podAntiAffinity:
+  #   #     preferredDuringSchedulingIgnoredDuringExecution:
+  #   #       - labelSelector:
+  #   #           matchLabels:
+  #   #             app.kubernetes.io/component: redpanda-statefulset
+  #   #             app.kubernetes.io/instance: redpanda
+  #   #             app.kubernetes.io/name: redpanda
+  #   #         topologyKey: kubernetes.io/hostname
+  #   #         weight: 100

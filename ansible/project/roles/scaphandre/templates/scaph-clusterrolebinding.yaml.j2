@@ -1,0 +1,19 @@
+---
+# vim: set ft=yaml:
+# Source: scaphandre/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: scaphandre
+  labels:
+    app.kubernetes.io/name: "scaphandre"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: scaphandre-0.1.0
+subjects:
+- kind: ServiceAccount
+  name: scaphandre
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: scaphandre
+  apiGroup: rbac.authorization.k8s.io

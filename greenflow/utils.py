@@ -76,7 +76,7 @@ class DateTimeSerializer(Serializer):
 
 
 def generate_explore_url(*, started_ts: DateTime, stopped_ts: DateTime) -> str:
-    return f"{environ['EXPERIMENT_BASE_URL']}/explore?orgId=1&left=%7B%22datasource%22:%22IS5LGzoVk%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22IS5LGzoVk%22%7D%7D%5D,%22range%22:%7B%22from%22:%22{int(started_ts.float_timestamp*1000)}%22,%22to%22:%22{int(stopped_ts.float_timestamp*1000)}%22%7D%7D"
+    return f"{environ['EXPERIMENT_BASE_URL']}/explore?orgId=1&left=%7B%22datasource%22:%22IS5LGzoVk%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22IS5LGzoVk%22%7D%7D%5D,%22range%22:%7B%22from%22:%22{int(pendulum.parse(started_ts).float_timestamp*1000)}%22,%22to%22:%22{int(pendulum.parse(stopped_ts).float_timestamp*1000)}%22%7D%7D"
 
 
 def generate_grafana_dashboard_url(

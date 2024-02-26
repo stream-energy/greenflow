@@ -1,7 +1,7 @@
 ---
 # vim: set ft=yaml:
 - name: Common setup for both workers and controller
-  hosts: control, worker
+  hosts: control, worker, broker
   become: true
   gather_facts: true
   tasks:
@@ -104,7 +104,8 @@
     - name: Install Docker
       tags: [always]
       shell:
-        cmd: /grid5000/code/bin/g5k-setup-docker -t
+        # cmd: /grid5000/code/bin/g5k-setup-docker -t
+        cmd: curl -sSL https://get.docker.com/ | sh -s -- --version 24
 
 - name: Install K3S and post-install config
   hosts: control
@@ -115,8 +116,9 @@
       environment:
         # INSTALL_K3S_EXEC: --disable=traefik --disable=local-storage
         INSTALL_K3S_EXEC: --docker --disable=traefik --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
+        # INSTALL_K3S_EXEC: --disable=traefik --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
         # INSTALL_K3S_EXEC: --disable=traefik --disable=local-storage --container-runtime-endpoint unix:///run/containerd/containerd.sock
-        INSTALL_K3S_VERSION: v1.24.8+k3s1
+        INSTALL_K3S_VERSION: v1.29.1+k3s2
         # K3S_TOKEN: K10787911fcda12ddecf7e216979de14959f7d521e09045647400b6daf21d16bd8b::server:dd400bd9-93dd-4402-8512-4cec59e5cf24
       shell:
         cmd: "curl -sfL https://get.k3s.io | sh -s -"
@@ -175,49 +177,34 @@
   become: true
   gather_facts: false
   strategy: free
-  tags:
-    - worker
   tasks:
     - name: Install k3s on workers
       environment:
         K3S_URL: https://{{ hostvars['CONTROLLER_DETAILS']['controller_ip'] }}:6443
         K3S_TOKEN: "{{ hostvars['CONTROLLER_DETAILS']['token'] }}"
-        INSTALL_K3S_EXEC: --docker --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
+        # INSTALL_K3S_EXEC: --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
+        INSTALL_K3S_EXEC: --docker --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1% --node-label node.kubernetes.io/worker=true
         # INSTALL_K3S_EXEC: --container-runtime-endpoint unix:///run/containerd/containerd.sock
-        INSTALL_K3S_VERSION: v1.24.8+k3s1
+        INSTALL_K3S_VERSION: v1.29.1+k3s2
       shell:
         cmd: curl -sfL https://get.k3s.io | sh -s -
 
-    # - name: Link cni folders
-    #   ansible.builtin.file:
-    #     src: /var/lib/rancher/k3s/data/current/bin
-    #     dest: /usr/lib/cni
-    #     owner: root
-    #     group: root
-    #     state: link
-
-    # - name: Remove /etc/cni
-    #   ansible.builtin.file:
-    #     path: /etc/cni
-    #     state: absent
-
-    # - name: Link cni folders
-    #   ansible.builtin.file:
-    #     src: /var/lib/rancher/k3s/agent/etc/cni
-    #     dest: /etc/cni
-    #     owner: root
-    #     group: root
-    #     state: link
-
-    # - name: Restart k3s-agent
-    #   ansible.builtin.service:
-    #     name: k3s-agent
-    #     state: restarted
-
-    # - name: Restart containerd
-    #   ansible.builtin.service:
-    #     name: containerd
-    #     state: restarted
+- name: Setup brokers
+  hosts: broker
+  become: true
+  gather_facts: false
+  strategy: free
+  tasks:
+    - name: Install k3s on workers
+      environment:
+        K3S_URL: https://{{ hostvars['CONTROLLER_DETAILS']['controller_ip'] }}:6443
+        K3S_TOKEN: "{{ hostvars['CONTROLLER_DETAILS']['token'] }}"
+        # INSTALL_K3S_EXEC: --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
+        INSTALL_K3S_EXEC: --docker --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1% --node-label node.kubernetes.io/broker=true
+        # INSTALL_K3S_EXEC: --container-runtime-endpoint unix:///run/containerd/containerd.sock
+        INSTALL_K3S_VERSION: v1.29.1+k3s2
+      shell:
+        cmd: curl -sfL https://get.k3s.io | sh -s -
 
 - name: Post-install localhost configuration
   hosts: localhost
@@ -274,8 +261,8 @@
         path: "{{ kubeconfig_path }}"
         mode: "0600"
 
-    - name: Label worker nodes # https://github.com/k3s-io/k3s/issues/1289
-      shell: kubectl get nodes -oname -l 'node-role.kubernetes.io/control-plane notin (true)' | xargs -n1 -I@ kubectl label @ node-role.kubernetes.io/worker=true
+    # - name: Label worker nodes # https://github.com/k3s-io/k3s/issues/1289
+    #   shell: kubectl get nodes -oname -l 'node-role.kubernetes.io/control-plane notin (true)' | xargs -n1 -I@ kubectl label @ node-role.kubernetes.io/worker=true
 
     - name: Wait for all k3s nodes to be ready
       shell: kubectl wait --for=condition=Ready nodes --all --timeout=600s

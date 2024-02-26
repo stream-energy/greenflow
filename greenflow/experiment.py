@@ -9,7 +9,7 @@ class Experiment(persistent.Persistent):
 
         self.factors = factors()
         self.deployment_metadata = g.root.current_deployment.metadata
-        self.started_ts = pendulum.now()
+        self.started_ts = pendulum.now().to_iso8601_string()
         self.exp_name = exp_name
         self.experiment_description = experiment_description
 

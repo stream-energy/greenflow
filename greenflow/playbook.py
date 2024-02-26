@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
-import ansible_runner
 from sys import exit
+from typing import Any
+
+import ansible_runner
 
 from .factors import factors
 from .state import get_deployment_state_vars, get_experiment_state_vars
 
 
-def playbook(playbook, extra):
+def playbook(playbook, extra: dict[str, Any]):
     from .g import g
 
     rc = ansible_runner.run(
@@ -20,14 +22,15 @@ def playbook(playbook, extra):
         cleanup()  # Call cleanup function before exit
         exit("Error: Playbook execution interrupted/failed.")
 
+
 def cleanup():
     # Define cleanup actions here
     print("Cleanup after playbook error")
 
 
-
 def blowaway():
     playbook("blowaway.yaml", extra=get_deployment_state_vars())
+
 
 def base():
     playbook("base.yaml", extra=get_deployment_state_vars())
@@ -46,18 +49,29 @@ def deploy_k3s():
 
 
 def strimzi():
-    playbook("strimzi.yaml",
+    playbook(
+        "strimzi.yaml",
+        extra=get_deployment_state_vars() | factors(),
+    )
+
+
+def redpanda():
+    playbook(
+        "redpanda.yaml",
         extra=get_deployment_state_vars() | factors(),
     )
 
 
 def theodolite():
-    playbook("theodolite.yaml",
-    extra={}
+    playbook(
+        "theodolite.yaml",
+        extra=get_deployment_state_vars() | factors(),
     )
 
+
 def killexp():
-    playbook("killexp.yaml",
+    playbook(
+        "killexp.yaml",
         extra=get_deployment_state_vars() | factors(),
     )
 

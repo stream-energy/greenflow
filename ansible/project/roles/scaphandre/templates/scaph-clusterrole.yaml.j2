@@ -1,0 +1,26 @@
+# Source: scaphandre/templates/rbac.yaml
+# vim: set ft=yaml:
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: scaphandre
+  labels:
+    app.kubernetes.io/name: "scaphandre"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: scaphandre-0.1.0
+rules:
+  - apiGroups:
+      - extensions
+    resources:
+      - podsecuritypolicies
+    resourceNames:
+      - scaphandre
+    verbs:
+      - "use"
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list
+      - watch

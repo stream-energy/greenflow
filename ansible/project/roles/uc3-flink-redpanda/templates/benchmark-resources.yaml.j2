@@ -95,7 +95,7 @@ data:
               image: ghcr.io/cau-se/theodolite-uc3-flink:latest
               env:
                 - name: KAFKA_BOOTSTRAP_SERVERS
-                  value: "theodolite-kafka-kafka-bootstrap:9092"
+                  value: "redpanda.redpanda.svc.cluster.local:9092"
                 - name: SCHEMA_REGISTRY_URL
                   value: "http://theodolite-kafka-schema-registry:8081"
                 - name: CHECKPOINTING
@@ -207,7 +207,7 @@ data:
             component: taskmanager
         spec:
           nodeSelector:
-            node-role.kubernetes.io/worker: "true"
+            node.kubernetes.io/worker: "true"
           terminationGracePeriodSeconds: 0
           containers:
             - name: taskmanager

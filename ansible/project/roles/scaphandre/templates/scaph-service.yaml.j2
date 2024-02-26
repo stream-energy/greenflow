@@ -1,0 +1,19 @@
+---
+# vim: set ft=yaml:
+# Source: scaphandre/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: scaphandre
+  namespace: default
+  annotations:
+    prometheus.io/port: "8080"
+    prometheus.io/scheme: "http"
+    prometheus.io/scrape: "true"
+spec:
+  ports:
+  - port: 8080
+    name: metrics
+    targetPort: metrics
+  selector:
+    app.kubernetes.io/name: scaphandre

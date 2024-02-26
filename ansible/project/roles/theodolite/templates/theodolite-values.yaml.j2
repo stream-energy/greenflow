@@ -1,5 +1,5 @@
----
 # vim: set ft=yaml:
+---
 kafkaClient:
   enabled: true
   nodeSelector:
@@ -7,71 +7,6 @@ kafkaClient:
 strimzi:
   # Disabling strimzi in favour of deploying chart manually
   enabled: False
-  kafka:
-    replicas: 3
-    kafkaExporter:
-      template:
-        pod:
-          affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                  - matchExpressions:
-                      - key: node-role.kubernetes.io/control-plane
-                        operator: In
-                        values:
-                          - "true"
-    # config:
-    #   offsets.topic.replication.factor: 1
-    #   transaction.state.log.replication.factor: 1
-    #   transaction.state.log.min.isr: 1
-    #   default.replication.factor: 1
-    #   min.insync.replicas: 1
-    # inter.broker.protocol.version: "3.3"
-    entityOperator:
-      template:
-        topicOperatorContainer:
-          env:
-            - name: "STRIMZI_USE_ZOOKEEPER_TOPIC_STORE"
-              value: "true"
-        pod:
-          affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                  - matchExpressions:
-                      - key: node-role.kubernetes.io/control-plane
-                        operator: In
-                        values:
-                          - "true"
-    template:
-      pod:
-        affinity:
-          nodeAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              nodeSelectorTerms:
-                - matchExpressions:
-                    - key: node-role.kubernetes.io/worker
-                      operator: In
-                      values:
-                        - "true"
-  zookeeper:
-    replicas: 3
-    zooEntrance:
-      enabled: true
-      zookeeperClient:
-        nodeSelector:
-          node-role.kubernetes.io/control-plane: "true"
-    nodeselectorterms:
-      - matchexpressions:
-          - key: node-role.kubernetes.io/worker
-            operator: In
-            values:
-              - "true"
-  schemaRegistry:
-    enabled: true
-    nodeSelector:
-      node-role.kubernetes.io/worker: "true"
 prometheus:
   enabled: false
 kube-prometheus-stack:
@@ -108,10 +43,12 @@ operator:
       uc2Flink: false
       uc2BeamFlink: false
       uc2BeamSamza: false
-      uc3LoadGenerator: true
+      uc3LoadGenerator: false
+      # uc3LoadGenerator: true
       uc3Hazelcast: true
       uc3Kstreams: true
-      uc3Flink: true
+      uc3Flink: false
+      # uc3Flink: true
       uc3BeamFlink: false
       uc3BeamSamza: true
       uc4LoadGenerator: false
@@ -132,7 +69,8 @@ operator:
       uc2BeamSamza: false
       uc2Hazelcast: false
       uc3Kstreams: true
-      uc3Flink: true
+      # uc3Flink: true
+      uc3Flink: false
       uc3BeamFlink: false
       uc3BeamSamza: true
       uc3Hazelcast: true
