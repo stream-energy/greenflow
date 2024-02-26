@@ -107,8 +107,7 @@
 
           enterShell = ''
             export GITROOT="$(git rev-parse --show-toplevel)"
-            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/run/opengl-driver/lib
-            export MAMBA_ROOT_PREFIX="$(pwd)/.mamba"
+            export MAMBA_ROOT_PREFIX="''${GITROOT}/.mamba"
             eval "$(micromamba shell hook --shell=posix)"
             micromamba activate
             eval "$(atuin init bash)"
