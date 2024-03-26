@@ -32,6 +32,31 @@
       until: deployment_info.resources[0].status.availableReplicas == deployment_info.resources[0].spec.replicas
       retries: 20
       delay: 2
+# {% if 'kafka' in exp_name  %}
+#     - name: Disable redpanda
+#       k8s:
+#         state: present
+#         definition:
+#           api: apps/v1
+#           kind: StatefulSet
+#           metadata:
+#             namespace: redpanda
+#             name: redpanda
+#           spec:
+#             replicas: 0
+# {% elif 'redpanda' not in exp_name %}
+#     - name: Disable redpanda
+#       k8s:
+#         state: present
+#         definition:
+#           api: apps/v1
+#           kind: StatefulSet
+#           metadata:
+#             namespace: redpanda
+#             name: redpanda
+#           spec:
+#             replicas: 0
+# {% endif %}
 
 - name: Deploy EXP
   hosts: localhost
@@ -45,6 +70,7 @@
   connection: local
   gather_facts: false
   tasks:
+{% if 'ingest' not in exp_name  %}
     - name: Wait for execution to finish
       shell: kubectl wait execution "{{ exp_name }}" --for=jsonpath='{.status.executionState}'=Finished --timeout=1h
 
@@ -55,32 +81,39 @@
         kind: execution
         namespace: default
         name: "{{ exp_name }}"
+{% else %}
+    - name: Sleep for 5 minutes
+      pause:
+        seconds: 300
+    - name: Delete Load generator deployment
+      kubernetes.core.k8s:
+        state: absent
+        api_version: apps/v1
+        kind: Deployment
+        namespace: default
+        name: titan-ccp-load-generator
+{% endif %}
 
-    - name: Connect to theodolite-kafka-client pod and delete 'input' topic
-      command: kubectl exec theodolite-kafka-client -- kafka-topics --bootstrap-server theodolite-kafka-kafka-bootstrap:9092 --delete --topic input
+    - name: Scale down Prometheus to 0
+      k8s:
+        state: present
+        definition:
+          api: monitoring.coreos.com/v1
+          kind: Prometheus
+          metadata:
+            namespace: default
+            name: kp-kube-prometheus-stack-prometheus
+          spec:
+            replicas: 0
+
+    - name: Give it 10 seconds to cool down
+      pause:
+        seconds: 10
+
+    - name: Delete input topic
+      command: kubectl run -it --image redpandadata/redpanda --rm test -- -X brokers={{ exp_params.kafka_bootstrap_servers }} topic delete input
       ignore_errors: true
 
-    - name: Connect to theodolite-kafka-client pod and delete 'output' topic
-      command: kubectl exec theodolite-kafka-client -- kafka-topics --bootstrap-server theodolite-kafka-kafka-bootstrap:9092 --delete --topic output
+    - name: Delete output topic
+      command: kubectl run -it --image redpandadata/redpanda --rm test -- -X brokers={{ exp_params.kafka_bootstrap_servers }} topic delete input
       ignore_errors: true
-
-    - name: Connect to Redpanda pod and delete 'input' topic
-      command: kubectl exec theodolite-kafka-client -- kafka-topics --bootstrap-server redpanda.redpanda.svc.cluster.local:9092 --delete --topic input
-      ignore_errors: true
-
-    - name: Connect to Redpanda pod and delete 'output' topic
-      command: kubectl exec theodolite-kafka-client -- kafka-topics --bootstrap-server redpanda.redpanda.svc.cluster.local:9092 --delete --topic output
-      ignore_errors: true
-
-
-    # - name: Scale down Prometheus to 0
-    #   k8s:
-    #     state: present
-    #     definition:
-    #       api: monitoring.coreos.com/v1
-    #       kind: Prometheus
-    #       metadata:
-    #         namespace: default
-    #         name: kp-kube-prometheus-stack-prometheus
-    #       spec:
-    #         replicas: 0

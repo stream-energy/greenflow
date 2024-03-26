@@ -1,5 +1,10 @@
 import pendulum
 import persistent
+from prometheus_api_client import PrometheusConnect, MetricRangeDataFrame
+from prometheus_api_client.utils import parse_datetime
+import pandas as pd
+import pendulum
+from os import getenv
 
 
 class Experiment(persistent.Persistent):
@@ -9,12 +14,36 @@ class Experiment(persistent.Persistent):
 
         self.factors = factors()
         self.deployment_metadata = g.root.current_deployment.metadata
+        self.started_ts = pendulum.now()
         self.started_ts = pendulum.now().to_iso8601_string()
         self.exp_name = exp_name
         self.experiment_description = experiment_description
 
+    def calculate_results(self):
+        self.results = {}
+        started_ts = pendulum.parse(self.started_ts)
+        stopped_ts = pendulum.parse(self.stopped_ts)
+
+        url = getenv("PROMETHEUS_URL")
+
+        prom = PrometheusConnect(url=url)
+        data = MetricRangeDataFrame(prom.get_metric_range_data(
+            f'scaph_host_energy_microjoules{{experiment_started_ts="{started_ts.to_iso8601_string()}"}}',
+            start_time=started_ts.subtract(hours=96),
+            end_time=started_ts.add(hours=96),
+        ))
+        grouped_max = data.groupby('instance')['value'].max()
+        grouped_min = data.groupby('instance')['value'].min()
+        joules = sum(grouped_max - grouped_min) / 10**6
+
+        duration = stopped_ts.diff(started_ts).seconds
+        self.results["duration"] = duration
+        self.results["total_host_energy"] = joules
+        self.results["avg_host_power"] = joules / duration
+
     def to_dict(self) -> dict:
         from .utils import generate_explore_url, generate_grafana_dashboard_url
+        self.calculate_results()
 
         return dict(
             {
@@ -24,6 +53,7 @@ class Experiment(persistent.Persistent):
                 "stopped_ts": self.stopped_ts.format("YYYY-MM-DDTHH:mm:ssZ"),
                 "experiment_metadata": {
                     "factors": self.factors,
+                    "results": self.results,
                     "deployment_metadata": self.deployment_metadata,
                     "dashboard_url": generate_grafana_dashboard_url(
                         started_ts=self.started_ts, stopped_ts=self.stopped_ts

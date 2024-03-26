@@ -1,8 +1,14 @@
 nodeSelector:
   node.kubernetes.io/broker: "true"
+console:
+  enabled: false
+resources:
+  cores: 2
+  memory: 4Gi
 config:
   cluster:
     auto_create_topics_enabled: true
+    default_topic_partitions: 300
 monitoring:
   enabled: true
   scrapeInterval: 5s

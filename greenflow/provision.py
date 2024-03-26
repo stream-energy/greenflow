@@ -4,6 +4,7 @@ import gin
 import yaml
 
 from .g5k import G5KPlatform
+from .vmon import *
 from .platform import MockPlatform, Platform
 
 
@@ -26,6 +27,9 @@ def provision(*, platform: type[Platform] = gin.REQUIRED):
         case MockPlatform():
             pass
         case G5KPlatform():
+            with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:
+                yaml.dump(p.get_ansible_inventory(), f)
+        case VMonG5KPlatform():
             with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:
                 yaml.dump(p.get_ansible_inventory(), f)
 

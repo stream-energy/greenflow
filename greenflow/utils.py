@@ -92,6 +92,10 @@ def generate_grafana_dashboard_url(
     deployment_id = deployment_id.replace("+","%2B")
     experiment_id = experiment_id.replace("+","%2B")
 
+    if isinstance(started_ts, str):
+        started_ts = pendulum.parse(started_ts)
+    if isinstance(stopped_ts, str):
+        stopped_ts = pendulum.parse(stopped_ts)
 
 
     return f"{base_url}from={int(started_ts.float_timestamp*1000)}&to={int(stopped_ts.float_timestamp*1000)}&var-Deployment={deployment_id}&var-Experiment={experiment_id}"

@@ -9,6 +9,7 @@ from greenflow import destroy, g, playbook, provision
 def load_gin(exp_name):
     gin.parse_config_files_and_bindings(
         [
+            f"{g.g.gitroot}/gin/vmon-defaults.gin",
             f"{g.g.gitroot}/gin/g5k-defaults.gin",
             f"{g.g.gitroot}/gin/{exp_name}.gin",
         ],
@@ -186,3 +187,10 @@ def csv(c):
     # Copy to clipboard
     pyperclip.copy(output.getvalue())
     output.close()
+
+
+@task
+def screen(c):
+    from greenflow.screen import ExperimentApp
+    TA = ExperimentApp()
+    TA.run()
