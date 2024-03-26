@@ -4,7 +4,10 @@ console:
   enabled: false
 resources:
   cores: 2
-  memory: 4Gi
+  memory:
+    container:
+      min: 4Gi
+      max: 4Gi
 config:
   cluster:
     auto_create_topics_enabled: true
