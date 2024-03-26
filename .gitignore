@@ -19,6 +19,7 @@ inventory/g5k.ini
 .devenv*
 devenv.local.nix
 .ipynb_checkpoints
+grafana
 
 .devenv
 .mamba
