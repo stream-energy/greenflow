@@ -15,7 +15,8 @@ spec:
     spec:
       terminationGracePeriodSeconds: 0
       nodeSelector:
-        node-role.kubernetes.io/control-plane: "true"
+        node.kubernetes.io/worker: "true"
+
       containers:
         - name: workload-generator
           image: ghcr.io/cau-se/theodolite-uc3-workload-generator:latest
@@ -35,3 +36,8 @@ spec:
               value: "http://theodolite-kafka-schema-registry:8081"
             - name: NUM_SENSORS
               value: "{{ exp_params.load }}"
+          # resources:
+          #   requests:
+          #     ephemeral-storage: "10Gi"
+          #   limits:
+          #     ephemeral-storage: "10Gi"

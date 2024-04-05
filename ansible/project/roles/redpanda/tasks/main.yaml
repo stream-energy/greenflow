@@ -1,17 +1,6 @@
 ---
 # vim: set ft=yaml:
 
-- name: Deploy Cert-Manager
-  delegate_to: localhost
-  kubernetes.core.helm:
-    name: cert-manager
-    chart_ref: jetstack/cert-manager
-    create_namespace: yes
-    # chart_version: 0.8.2
-    wait: true
-    release_namespace: cert-manager
-    values: "{{ lookup('ansible.builtin.template', 'cert-manager-values.yaml.j2') | from_yaml }}"
-
 # # TODO: Also need to install CRDs
 # kubectl kustomize "https://github.com/redpanda-data/redpanda-operator//src/go/k8s/config/crd?ref=v2.1.14-23.3.4" \
 # | kubectl apply -f -
@@ -36,12 +25,10 @@
     wait: true
     release_namespace: redpanda
     values: "{{ lookup('ansible.builtin.template', 'helm-values.yaml.j2') | from_yaml }}"
-# - name: Deploy Kafka
-#   kubernetes.core.k8s:
-#     state: present
-#     definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
-#   with_fileglob:
-#     - "../templates/redpanda-*.j2"
-# - name: Wait for Kafka to be deployed
+# instead of using kubernetes.core.k8s
+# Deploy with cmd kubectl apply -f
+# - name: Deploy Redpanda
 #   delegate_to: localhost
-#   shell: kubectl wait kafka theodolite-kafka --for=condition=Ready --timeout=600s
+#   shell: kubectl apply -f "{{ item }}"
+#   with_fileglob:
+#     - "../templates/redpanda*"

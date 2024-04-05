@@ -13,6 +13,7 @@ class Experiment(persistent.Persistent):
         from .g import g
 
         self.factors = factors()
+        self.results = {}
         self.deployment_metadata = g.root.current_deployment.metadata
         self.started_ts = pendulum.now()
         self.started_ts = pendulum.now().to_iso8601_string()
@@ -27,22 +28,28 @@ class Experiment(persistent.Persistent):
         url = getenv("PROMETHEUS_URL")
 
         prom = PrometheusConnect(url=url)
-        data = MetricRangeDataFrame(prom.get_metric_range_data(
-            f'scaph_host_energy_microjoules{{experiment_started_ts="{started_ts.to_iso8601_string()}"}}',
-            start_time=started_ts.subtract(hours=96),
-            end_time=started_ts.add(hours=96),
-        ))
-        grouped_max = data.groupby('instance')['value'].max()
-        grouped_min = data.groupby('instance')['value'].min()
+        data = MetricRangeDataFrame(
+            prom.get_metric_range_data(
+                f'scaph_host_energy_microjoules{{experiment_started_ts="{started_ts.to_iso8601_string()}"}}',
+                start_time=started_ts.subtract(hours=96),
+                end_time=started_ts.add(hours=96),
+            )
+        )
+        grouped_max = data.groupby("instance")["value"].max()
+        grouped_min = data.groupby("instance")["value"].min()
         joules = sum(grouped_max - grouped_min) / 10**6
 
-        duration = stopped_ts.diff(started_ts).seconds
+        duration = (
+            stopped_ts.diff(started_ts).seconds
+            + stopped_ts.diff(started_ts).microseconds / 10**6
+        )
         self.results["duration"] = duration
         self.results["total_host_energy"] = joules
         self.results["avg_host_power"] = joules / duration
 
     def to_dict(self) -> dict:
         from .utils import generate_explore_url, generate_grafana_dashboard_url
+
         self.calculate_results()
 
         return dict(

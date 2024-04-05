@@ -3,11 +3,17 @@ nodeSelector:
 console:
   enabled: false
 resources:
-  cores: 2
+  cpu:
+    cores: "4"
+    overprovisioned: true
   memory:
+    # enable_memory_locking: true
     container:
-      min: 4Gi
-      max: 4Gi
+      max: 10Gi
+    redpanda:
+      memory: 8Gi
+      reserveMemory: 1Gi
+
 config:
   cluster:
     auto_create_topics_enabled: true
@@ -24,7 +30,7 @@ listeners:
       enabled: false
 image:
   repository: registry.gitlab.inria.fr/gkovilkk/greenflow/redpanda
-  tag: v23.3.6
+  tag: v23.3.10
   pullPolicy: IfNotPresent
   pullSecrets: []
 pullSecrets:
@@ -33,9 +39,18 @@ statefulset:
   replicas: 3
   podAntiAffinity:
     topologyKey: kubernetes.io/hostname
-    type: soft
+    type: custom
     weight: 1
-    custom: {}
+    custom:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: redpanda
+                app.kubernetes.io/instance: "redpanda"
+                app.kubernetes.io/component: redpanda-statefulset
   #TODO: Figure out how to make affinity optional and not required, this is not working and documentation between redpanda helm is broken
 # affinity:
 #   podAntiAffinity:

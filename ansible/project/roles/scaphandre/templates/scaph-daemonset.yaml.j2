@@ -6,6 +6,8 @@ kind: DaemonSet
 metadata:
   name: scaphandre
   namespace: default
+  labels:
+    app.kubernetes.io/name: "scaphandre"
 spec:
   updateStrategy:
     type: RollingUpdate

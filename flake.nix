@@ -96,6 +96,7 @@
               helm dep build
             popd
             ansible-galaxy collection install kubernetes.core
+            ansible-galaxy collection install community.general
 
             # Create grid5000 creds file
             echo "

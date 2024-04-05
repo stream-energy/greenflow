@@ -61,6 +61,12 @@ def redpanda():
         extra=get_deployment_state_vars() | factors(),
     )
 
+def kafka():
+    playbook(
+        "kafka.yaml",
+        extra=get_deployment_state_vars() | factors(),
+    )
+
 
 def theodolite():
     playbook(

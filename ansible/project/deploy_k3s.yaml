@@ -19,24 +19,79 @@
       tags: [always]
       ansible.builtin.command:
         cmd: modprobe intel_rapl_common
+
     - name: Check if /dev/sda5 exists
       ansible.builtin.stat:
         path: /dev/sda5
       register: sda5
+
     - name: Check if /dev/sdb5 exists
       ansible.builtin.stat:
         path: /dev/sdb5
       register: sdb5
+
     - name: Set src variable
       set_fact:
-        src_dev: "{% if sda5.stat.exists %}/dev/sda5{% elif sdb5.stat.exists %}/dev/sdb5{% else %}''{% endif %}"
-    - name: Mount source disk to /var/lib/rancher
+        src_dev: "{% if sda5.stat.exists %}/dev/sdb{% elif sdb5.stat.exists %}/dev/sda{% else %}''{% endif %}"
+        # src_dev: /dev/sdb
+    - name: Make GPT label on {{ src_dev }}
+      community.general.parted:
+        device: "{{ src_dev }}"
+        label: gpt
+
+    - name: Partition /dev/sdb into two equal parts
+      community.general.parted:
+        device: "{{ src_dev }}"
+        number: "{{ item.number }}"
+        part_start: "{{ item.part_start }}"
+        part_end: "{{ item.part_end }}"
+        state: present
+      loop:
+        - number: 1
+          part_start: 0%
+          part_end: 50%
+        - number: 2
+          part_start: 50%
+          part_end: 100%
+
+    - name: Add filesystem 1
+      community.general.filesystem:
+        dev: "{{ src_dev }}1"
+        fstype: ext4
+
+    - name: Add filesystem 2
+      community.general.filesystem:
+        dev: "{{ src_dev }}2"
+        fstype: ext4
+
+    - name: Mount first partition to /var/lib/docker
       ansible.builtin.mount:
-        path: /var/lib/rancher
-        src: "{{ src_dev }}"
+        path: /var/lib/docker
+        src: "{{ src_dev }}1"
         fstype: ext4
         state: mounted
-      when: src_dev != ""
+
+    - name: Mount second partition to /var/lib/rancher
+      ansible.builtin.mount:
+        path: /var/lib/rancher
+        src: "{{ src_dev }}2"
+        fstype: ext4
+        state: mounted
+
+    # - name: Mount source disk to /var/lib/rancher
+    #   ansible.builtin.mount:
+    #     path: /var/lib/rancher
+    #     src: "{{ src_dev }}"
+    #     fstype: ext4
+    #     state: mounted
+    #   when: src_dev != ""
+    # - name: Mount source disk to /var/lib/kubelet
+    #   ansible.builtin.mount:
+    #     path: /var/lib/kubelet
+    #     src: "{{ src_dev }}"
+    #     fstype: ext4
+    #     state: mounted
+    #   when: src_dev != ""
 
     # - name: Skip the rest of the playbook if the deployment was successful and there was no change
     #   meta: skip_tags=all
@@ -118,7 +173,7 @@
         INSTALL_K3S_EXEC: --docker --disable=traefik --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
         # INSTALL_K3S_EXEC: --disable=traefik --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
         # INSTALL_K3S_EXEC: --disable=traefik --disable=local-storage --container-runtime-endpoint unix:///run/containerd/containerd.sock
-        INSTALL_K3S_VERSION: v1.29.1+k3s2
+        INSTALL_K3S_VERSION: v1.24.17+k3s1
         # K3S_TOKEN: K10787911fcda12ddecf7e216979de14959f7d521e09045647400b6daf21d16bd8b::server:dd400bd9-93dd-4402-8512-4cec59e5cf24
       shell:
         cmd: "curl -sfL https://get.k3s.io | sh -s -"
@@ -185,7 +240,7 @@
         # INSTALL_K3S_EXEC: --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
         INSTALL_K3S_EXEC: --docker --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1% --node-label node.kubernetes.io/worker=true
         # INSTALL_K3S_EXEC: --container-runtime-endpoint unix:///run/containerd/containerd.sock
-        INSTALL_K3S_VERSION: v1.29.1+k3s2
+        INSTALL_K3S_VERSION: v1.24.17+k3s1
       shell:
         cmd: curl -sfL https://get.k3s.io | sh -s -
 
@@ -202,7 +257,7 @@
         # INSTALL_K3S_EXEC: --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%
         INSTALL_K3S_EXEC: --docker --kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1% --node-label node.kubernetes.io/broker=true
         # INSTALL_K3S_EXEC: --container-runtime-endpoint unix:///run/containerd/containerd.sock
-        INSTALL_K3S_VERSION: v1.29.1+k3s2
+        INSTALL_K3S_VERSION: v1.24.17+k3s1
       shell:
         cmd: curl -sfL https://get.k3s.io | sh -s -
 

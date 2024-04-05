@@ -5,6 +5,8 @@ kind: ServiceMonitor
 metadata:
   name: scaphandre
   namespace: default
+  labels:
+    app.kubernetes.io/name: "scaphandre"
 spec:
   jobLabel: scaphandre
   selector:

@@ -4,9 +4,40 @@
   kubernetes.core.k8s_info:
     kind: execution
     api_version: theodolite.rocks/v1beta1
-  register: result 
+  register: result
 - name: Remove all Executions
   kubernetes.core.k8s:
     state: absent
     definition: "{{ item }}"
   loop: "{{ result.resources }}"
+- name: Delete Load generator deployment
+  kubernetes.core.k8s:
+    state: absent
+    api_version: apps/v1
+    kind: Deployment
+    namespace: default
+    name: titan-ccp-load-generator
+  ignore_errors: true
+
+- name: Scale down Prometheus to 0
+  k8s:
+    state: present
+    definition:
+      api: monitoring.coreos.com/v1
+      kind: Prometheus
+      metadata:
+        namespace: default
+        name: kp-kube-prometheus-stack-prometheus
+      spec:
+        replicas: 0
+# - name: Give it 10 seconds to cool down
+#   pause:
+#     seconds: 10
+
+# - name: Delete input topic
+#   command: kubectl run -it --image redpandadata/redpanda --rm test -- -X brokers=redpanda.redpanda.svc.cluster.local:9092 topic delete input
+#   ignore_errors: true
+
+# - name: Delete output topic
+#   command: kubectl run -it --image redpandadata/redpanda --rm test -- -X brokers=redpanda.redpanda.svc.cluster.local:9092 topic delete input
+#   ignore_errors: true

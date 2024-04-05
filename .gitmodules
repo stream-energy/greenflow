@@ -25,3 +25,6 @@
 [submodule "charts/redpanda-operator-helm"]
 	path = charts/redpanda-operator-helm
 	url = https://github.com/redpanda-data/helm-charts
+[submodule "charts/benchmark"]
+	path = charts/benchmark
+	url = https://github.com/openmessaging/benchmark

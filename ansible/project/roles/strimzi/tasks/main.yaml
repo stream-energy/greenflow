@@ -17,7 +17,6 @@
     definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
   with_fileglob:
     - "../templates/kafka-*.j2"
-
-- name: Wait for Kafka to be deployed
-  delegate_to: localhost
-  shell: kubectl wait kafka theodolite-kafka --for=condition=Ready --timeout=600s
+# - name: Wait for Kafka to be deployed
+#   delegate_to: localhost
+#   shell: kubectl wait kafka theodolite-kafka --for=condition=Ready --timeout=600s
