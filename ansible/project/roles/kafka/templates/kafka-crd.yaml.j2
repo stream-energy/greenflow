@@ -1,0 +1,122 @@
+---
+# vim: set ft=yaml:
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: theodolite-kafka
+  namespace: default
+spec:
+  kafka:
+    resources:
+      requests:
+        memory: 16Gi
+        cpu: "4"
+      limits:
+        memory: 16Gi
+        cpu: "4"
+    template:
+      pod:
+        resources:
+          requests:
+            memory: 16Gi
+            cpu: "4"
+          limits:
+            memory: 16Gi
+            cpu: "4"
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node.kubernetes.io/broker
+                      operator: In
+                      values:
+                        - "true"
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchLabels:
+                      strimzi.io/cluster: theodolite-kafka
+                      strimzi.io/kind: Kafka
+                      strimzi.io/name: theodolite-kafka-kafka
+                  topologyKey: kubernetes.io/hostname
+
+    jvmOptions:
+      "-Xmx": "12G"
+      "-Xms": "12G"
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: theodolite-kafka-metrics
+          key: kafka-metrics-config.yml
+    config:
+      "auto.create.topics.enable": true
+      "num.partitions": "300"
+      # "message.max.bytes": "134217728" # 128 MB
+      # "replica.fetch.max.bytes": "134217728" #128 MB
+      # "log.retention.ms": "7200000" # 2h
+      # "metrics.sample.window.ms": "5000" #5s
+      # "unclean.leader.election.enable": "true"
+      # "min.insync.replicas": "1"
+      # "default.replication.factor": "1"
+      # "offsets.topic.replication.factor": "1"
+      # "offsets.topic.num.partitions": "300"
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+    replicas: 3
+    storage:
+      type: persistent-claim
+      size: "100Gi"
+      deleteClaim: true
+  kafkaExporter:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node-role.kubernetes.io/control-plane
+                      operator: In
+                      values:
+                        - "true"
+    storage:
+      type: ephemeral
+    entityOperator:
+      template:
+        pod:
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: In
+                        values:
+                          - "true"
+  zookeeper:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node.kubernetes.io/broker
+                      operator: In
+                      values:
+                        - "true"
+    storage:
+      type: ephemeral
+    replicas: 3
+    zooEntrance:
+      enabled: false
+      zookeeperClient:
+        nodeSelector:
+          node-role.kubernetes.io/control-plane: "true"
