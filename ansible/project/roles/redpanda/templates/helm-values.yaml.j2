@@ -1,23 +1,23 @@
 nodeSelector:
   node.kubernetes.io/broker: "true"
 console:
-  enabled: false
+  enabled: true
 resources:
   cpu:
-    cores: "4"
+    cores: "8"
     overprovisioned: true
   memory:
-    # enable_memory_locking: true
+    enable_memory_locking: true
     container:
-      max: 10Gi
-    redpanda:
-      memory: 8Gi
-      reserveMemory: 1Gi
+      max: 16Gi
+    # redpanda:
+    #   memory: 14Gi
+    #   reserveMemory: 1Gi
 
 config:
   cluster:
     auto_create_topics_enabled: true
-    default_topic_partitions: 300
+    default_topic_partitions: 5
 monitoring:
   enabled: true
   scrapeInterval: 5s

@@ -1,4 +1,5 @@
 ---
+
 - name: Deploy Scaphandre
   hosts: localhost
   connection: local
@@ -6,7 +7,7 @@
   roles:
     - "scaphandre"
 
-# vim: set ft=yaml:
+
 - name: Patch Prometheus CRD
   hosts: localhost
   connection: local
@@ -47,6 +48,33 @@
       retries: 20
       delay: 2
 
+    - name: Create Kafka Topic via Job
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        definition:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: create-kafka-topic
+          spec:
+            ttlSecondsAfterFinished: 5
+            backoffLimit: 1
+            template:
+              spec:
+                containers:
+                  - name: create-topic
+                    image: redpandadata/redpanda
+                    command: ["rpk"]
+                    args:
+                      - "topic"
+                      - "create"
+                      - "input"
+                      - "-X"
+                      - "brokers={{ exp_params.kafka_bootstrap_servers }}"
+                restartPolicy: Never
+
+
 - name: Deploy EXP
   hosts: localhost
   connection: local
@@ -80,18 +108,40 @@
         api_version: apps/v1
         kind: Deployment
         namespace: default
-        name: titan-ccp-load-generator
-    - name: Delete input topic
-      command: kubectl run --attach -it --image redpandadata/redpanda --rm test -- -X brokers={{ exp_params.kafka_bootstrap_servers }} topic delete input
-      ignore_errors: true
-
-    - name: Delete test pod
-      command: kubectl delete pod test
-      ignore_errors: true
-
-    # - name: Delete output topic
-    #   command: kubectl run -it --image redpandadata/redpanda --rm test -- -X brokers={{ exp_params.kafka_bootstrap_servers }} topic delete input
+        name: throughput
+    # - name: Delete Kafka Topic via Job
+    #   kubernetes.core.k8s:
+    #     state: present
+    #     namespace: default
+    #     definition:
+    #       apiVersion: batch/v1
+    #       kind: Job
+    #       metadata:
+    #         name: delete-kafka-topic
+    #       spec:
+    #         ttlSecondsAfterFinished: 5
+    #         backoffLimit: 4
+    #         template:
+    #           spec:
+    #             containers:
+    #               - name: create-topic
+    #                 image: redpandadata/redpanda
+    #                 command: ["rpk"]
+    #                 args:
+    #                   - "topic"
+    #                   - "delete"
+    #                   - "input"
+    #                   - "-X"
+    #                   - "brokers={{ exp_params.kafka_bootstrap_servers }}"
+    #             restartPolicy: Never
+    # - name: Delete input topic
+    #   command: kubectl run --attach -it --image redpandadata/redpanda --rm test -- -X brokers={{ exp_params.kafka_bootstrap_servers }} topic delete input
     #   ignore_errors: true
+
+    # - name: Delete test pod
+    #   command: kubectl delete pod test
+    #   ignore_errors: true
+
 {% endif %}
 
     # Scale down the daemonset
@@ -103,17 +153,18 @@
       pause:
         seconds: 10
 
-    - name: Scale down Prometheus to 0
-      k8s:
-        state: present
-        definition:
-          api: monitoring.coreos.com/v1
-          kind: Prometheus
-          metadata:
-            namespace: default
-            name: kp-kube-prometheus-stack-prometheus
-          spec:
-            replicas: 0
+# TODO: Once everything is well understood, we can start scaling down Prometheus once again
+    # - name: Scale down Prometheus to 0
+    #   k8s:
+    #     state: present
+    #     definition:
+    #       api: monitoring.coreos.com/v1
+    #       kind: Prometheus
+    #       metadata:
+    #         namespace: default
+    #         name: kp-kube-prometheus-stack-prometheus
+    #       spec:
+    #         replicas: 0
 
     - name: Give it 10 seconds to cool down
       pause:

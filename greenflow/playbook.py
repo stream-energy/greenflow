@@ -1,97 +1,82 @@
 #!/usr/bin/env python3
 
 from sys import exit
-from typing import Any
-
 import ansible_runner
 
 from .factors import factors
 from .state import get_deployment_state_vars, get_experiment_state_vars
+from .g import g
+
+# extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
 
 
-def playbook(playbook, extra: dict[str, Any]):
-    from .g import g
-
+def playbook(playbook_name, extra=None):
+    extra = extra or {}
     rc = ansible_runner.run(
-        playbook=playbook,
+        playbook=playbook_name,
         private_data_dir=f"{g.gitroot}/ansible",
         extravars=extra,
-        # verbosity=3,
     ).rc
     if rc > 0:
-        cleanup()  # Call cleanup function before exit
         exit("Error: Playbook execution interrupted/failed.")
 
 
-def cleanup():
-    # Define cleanup actions here
-    print("Cleanup after playbook error")
-
-
 def blowaway():
-    playbook("blowaway.yaml", extra=get_deployment_state_vars())
+    playbook("blowaway.yaml", get_deployment_state_vars())
 
 
 def base():
-    playbook("base.yaml", extra=get_deployment_state_vars())
+    playbook("base.yaml", get_deployment_state_vars())
 
 
 def prometheus():
-    playbook("prometheus.yaml", extra=get_deployment_state_vars())
+    playbook("prometheus.yaml", get_deployment_state_vars())
 
 
 def scaphandre():
-    playbook("scaphandre.yaml", extra=get_deployment_state_vars())
+    playbook("scaphandre.yaml", get_deployment_state_vars())
 
 
 def deploy_k3s():
-    playbook("deploy_k3s.yaml", extra=get_deployment_state_vars())
+    playbook("deploy_k3s.yaml", get_deployment_state_vars())
 
 
-def strimzi():
-    playbook(
-        "strimzi.yaml",
-        extra=get_deployment_state_vars() | factors(),
-    )
-
-
-def redpanda():
-    playbook(
-        "redpanda.yaml",
-        extra=get_deployment_state_vars() | factors(),
-    )
-
-def kafka():
-    playbook(
-        "kafka.yaml",
-        extra=get_deployment_state_vars() | factors(),
-    )
-
-
-def theodolite():
-    playbook(
-        "theodolite.yaml",
-        extra=get_deployment_state_vars() | factors(),
-    )
-
-
-def killexp():
-    playbook(
-        "killexp.yaml",
-        extra=get_deployment_state_vars() | factors(),
-    )
+def run_playbook(playbook_name):
+    extra_vars = get_deployment_state_vars() | factors()
+    playbook(playbook_name, extra_vars)
 
 
 def exp(exp_name, experiment_description):
-    from .g import g
-
+    extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
     g.init_exp(exp_name, experiment_description)
-    playbook(
-        "generate_experiment.yaml",
-        extra=get_deployment_state_vars() | get_experiment_state_vars() | factors(),
-    )
-    playbook(
-        "_current_exp.yaml",
-        extra=get_deployment_state_vars() | get_experiment_state_vars() | factors(),
-    )
+    playbook("generate_experiment.yaml", extra_vars)
+    playbook("_current_exp.yaml", extra_vars)
     g.end_exp()
+
+
+def strimzi():
+    run_playbook("strimzi.yaml")
+
+
+def kafka():
+    run_playbook("kafka.yaml")
+
+
+def theodolite():
+    run_playbook("theodolite.yaml")
+
+def kminion():
+    run_playbook("kminion.yaml")
+
+def redpanda():
+    run_playbook("redpanda.yaml")
+
+
+# for playbook_name in [
+#     "redpanda.yaml",
+#     "kafka.yaml",
+#     "theodolite.yaml",
+#     "killexp.yaml",
+#     "redpanda_test.yaml",
+# ]:
+#     globals()[playbook_name.split(".")[0]] = lambda: run_playbook(playbook_name)

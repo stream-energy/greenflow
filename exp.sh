@@ -13,7 +13,7 @@
 set -euxo pipefail
 
 # Start with a load of 500,000
-load=20000
+load=5000
 # Dummy experiment to warm up the cluster
 inv exp ingest-redpanda -l "${load}"
 
@@ -25,11 +25,11 @@ inv exp ingest-redpanda -l "${load}"
 # kubectl scale deployment theodolite-kafka --replicas=0 || true
 
 # Run experiments with increasing load values
-for _ in {1..20}; do
+for _ in {1..25}; do
 	echo "Running experiment with load ${load}"
 	inv exp ingest-redpanda -l "${load}"
 	inv exp ingest-kafka -l "${load}"
-	load=$((load + 20000))
+	load=$((load + 5000))
 done
 
 # helm uninstall -n redpanda redpanda

@@ -22,12 +22,14 @@ def exp_params(
     durationSeconds: int = gin.REQUIRED,
     instances: int = gin.REQUIRED,
     load: int = gin.REQUIRED,
+    messageSize: int = gin.REQUIRED,
     kafka_bootstrap_servers: str = "theodolite-kafka-kafka-bootstrap:9092",
 ):
     return {
         "warmupSeconds": warmupSeconds,
         "durationSeconds": durationSeconds,
         "instances": instances,
+        "messageSize": messageSize,
         "kafka_bootstrap_servers": kafka_bootstrap_servers,
         "load": load,
     }

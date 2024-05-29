@@ -1,43 +1,80 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: titan-ccp-load-generator
+  name: throughput
   namespace: default
 spec:
   selector:
     matchLabels:
-      app: titan-ccp-load-generator
+      app: throughput
   replicas: {{ exp_params.instances }}
   template:
     metadata:
       labels:
-        app: titan-ccp-load-generator
+        app: throughput
     spec:
+      pullPolicy: always
       terminationGracePeriodSeconds: 0
       nodeSelector:
         node.kubernetes.io/worker: "true"
 
       containers:
         - name: workload-generator
-          image: ghcr.io/cau-se/theodolite-uc3-workload-generator:latest
-          ports:
-            - containerPort: 5701
-              name: coordination
+          image: registry.gitlab.inria.fr/gkovilkk/greenflow/throughput
           env:
-            - name: KUBERNETES_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: KUBERNETES_DNS_NAME
-              value: "titan-ccp-load-generator.$(KUBERNETES_NAMESPACE).svc.cluster.local"
-            - name: KAFKA_BOOTSTRAP_SERVERS
+            - name: THROUGHPUT_BROKERS
               value: "{{ exp_params.kafka_bootstrap_servers }}"
-            - name: SCHEMA_REGISTRY_URL
-              value: "http://theodolite-kafka-schema-registry:8081"
-            - name: NUM_SENSORS
+            - name: THROUGHPUT_TOPIC
+              value: "input"
+            - name: THROUGHPUT_MESSAGE_RATE
               value: "{{ exp_params.load }}"
-          # resources:
-          #   requests:
-          #     ephemeral-storage: "10Gi"
-          #   limits:
-          #     ephemeral-storage: "10Gi"
+            - name: THROUGHPUT_DURATION
+              value: "{{ exp_params.durationSeconds }}s"
+            - name: THROUGHPUT_MESSAGE_SIZE
+              value: "{{ exp_params.messageSize }}"
+            - name: THROUGHPUT_PUSHGATEWAY_URL
+              value: "{{ prometheus_pushgateway_url }}"
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: titan-ccp-load-generator
+#   namespace: default
+# spec:
+#   selector:
+#     matchLabels:
+#       app: titan-ccp-load-generator
+#   replicas: {{ exp_params.instances }}
+#   template:
+#     metadata:
+#       labels:
+#         app: titan-ccp-load-generator
+#     spec:
+#       terminationGracePeriodSeconds: 0
+#       nodeSelector:
+#         node.kubernetes.io/worker: "true"
+
+#       containers:
+#         - name: workload-generator
+#           image: ghcr.io/cau-se/theodolite-uc3-workload-generator:latest
+#           ports:
+#             - containerPort: 5701
+#               name: coordination
+#           env:
+#             - name: KUBERNETES_NAMESPACE
+#               valueFrom:
+#                 fieldRef:
+#                   fieldPath: metadata.namespace
+#             - name: KUBERNETES_DNS_NAME
+#               value: "titan-ccp-load-generator.$(KUBERNETES_NAMESPACE).svc.cluster.local"
+#             - name: KAFKA_BOOTSTRAP_SERVERS
+#               value: "{{ exp_params.kafka_bootstrap_servers }}"
+#             - name: SCHEMA_REGISTRY_URL
+#               value: "http://theodolite-kafka-schema-registry:8081"
+#             - name: NUM_SENSORS
+#               value: "{{ exp_params.load }}"
+#           # resources:
+#           #   requests:
+#           #     ephemeral-storage: "10Gi"
+#           #   limits:
+#           #     ephemeral-storage: "10Gi"

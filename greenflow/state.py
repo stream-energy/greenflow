@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import os
+
+
 def get_deployment_state_vars():
     from .g import g
 
@@ -18,4 +21,5 @@ def get_experiment_state_vars():
         "experiment_started_ts": (
             g.root.current_experiment.started_ts.format("YYYY-MM-DDTHH:mm:ssZ")
         ),
+        "prometheus_pushgateway_url": os.getenv("EXPERIMENT_PUSHGATEWAY_URL"),
     }

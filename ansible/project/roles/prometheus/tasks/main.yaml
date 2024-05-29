@@ -24,15 +24,14 @@
     # create_namespace: true
     # force: true
     values: "{{ lookup('ansible.builtin.template', 'kube-prometheus-stack-values.yaml.j2') | from_yaml }}"
-
-- name: Disable Prometheus monitoring (Will be re-enabled during experiment)
-  k8s:
-    state: present
-    definition:
-      apiVersion: monitoring.coreos.com/v1
-      kind: Prometheus
-      metadata:
-        namespace: default
-        name: kp-kube-prometheus-stack-prometheus
-      spec:
-        replicas: 0
+# - name: Disable Prometheus monitoring (Will be re-enabled during experiment)
+#   k8s:
+#     state: present
+#     definition:
+#       apiVersion: monitoring.coreos.com/v1
+#       kind: Prometheus
+#       metadata:
+#         namespace: default
+#         name: kp-kube-prometheus-stack-prometheus
+#       spec:
+#         replicas: 0

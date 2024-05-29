@@ -7,22 +7,15 @@ metadata:
   namespace: default
 spec:
   kafka:
-    resources:
-      requests:
-        memory: 16Gi
-        cpu: "4"
-      limits:
-        memory: 16Gi
-        cpu: "4"
+    # resources:
+    #   requests:
+    #     memory: 16Gi
+    #     cpu: "8"
+    #   limits:
+    #     memory: 16Gi
+    #     cpu: "8"
     template:
       pod:
-        resources:
-          requests:
-            memory: 16Gi
-            cpu: "4"
-          limits:
-            memory: 16Gi
-            cpu: "4"
         affinity:
           nodeAffinity:
             requiredDuringSchedulingIgnoredDuringExecution:
@@ -43,9 +36,9 @@ spec:
                       strimzi.io/name: theodolite-kafka-kafka
                   topologyKey: kubernetes.io/hostname
 
-    jvmOptions:
-      "-Xmx": "12G"
-      "-Xms": "12G"
+    # jvmOptions:
+    #   "-Xmx": "12G"
+    #   "-Xms": "12G"
     metricsConfig:
       type: jmxPrometheusExporter
       valueFrom:
@@ -54,7 +47,7 @@ spec:
           key: kafka-metrics-config.yml
     config:
       "auto.create.topics.enable": true
-      "num.partitions": "300"
+      "num.partitions": "5"
       # "message.max.bytes": "134217728" # 128 MB
       # "replica.fetch.max.bytes": "134217728" #128 MB
       # "log.retention.ms": "7200000" # 2h

@@ -51,6 +51,7 @@
             gcc
             kube3d
             atuin
+            kafkactl
             fish
             (pkgs.wrapHelm pkgs.kubernetes-helm {
               plugins = [
