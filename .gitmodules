@@ -28,6 +28,3 @@
 [submodule "charts/benchmark"]
 	path = charts/benchmark
 	url = https://github.com/openmessaging/benchmark
-[submodule "charts/kminion"]
-	path = charts/kminion
-	url = https://github.com/redpanda-data/kminion
