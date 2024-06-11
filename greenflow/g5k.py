@@ -43,18 +43,21 @@ class G5KPlatform(Platform):
                 cluster=cluster,
                 nodes=num_control,
                 primary_network=network,
+                reservable_disks=True,
             )
             .add_machine(
                 roles=["worker"],
                 cluster=cluster,
                 nodes=num_worker,
                 primary_network=network,
+                reservable_disks=True,
             )
             .add_machine(
                 roles=["broker"],
                 cluster=cluster,
                 nodes=num_broker,
                 primary_network=network,
+                reservable_disks=True,
             )
             .finalize()
         )

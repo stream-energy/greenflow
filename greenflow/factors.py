@@ -23,6 +23,7 @@ def exp_params(
     instances: int = gin.REQUIRED,
     load: int = gin.REQUIRED,
     messageSize: int = gin.REQUIRED,
+    partitions: int = gin.REQUIRED,
     kafka_bootstrap_servers: str = "theodolite-kafka-kafka-bootstrap:9092",
 ):
     return {
@@ -30,6 +31,7 @@ def exp_params(
         "durationSeconds": durationSeconds,
         "instances": instances,
         "messageSize": messageSize,
+        "partitions": partitions,
         "kafka_bootstrap_servers": kafka_bootstrap_servers,
         "load": load,
     }

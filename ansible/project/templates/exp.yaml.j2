@@ -70,6 +70,8 @@
                       - "topic"
                       - "create"
                       - "input"
+                      - "-p"
+                      - "{{ exp_params.partitions }}"
                       - "-X"
                       - "brokers={{ exp_params.kafka_bootstrap_servers }}"
                 restartPolicy: Never
@@ -109,39 +111,32 @@
         kind: Deployment
         namespace: default
         name: throughput
-    # - name: Delete Kafka Topic via Job
-    #   kubernetes.core.k8s:
-    #     state: present
-    #     namespace: default
-    #     definition:
-    #       apiVersion: batch/v1
-    #       kind: Job
-    #       metadata:
-    #         name: delete-kafka-topic
-    #       spec:
-    #         ttlSecondsAfterFinished: 5
-    #         backoffLimit: 4
-    #         template:
-    #           spec:
-    #             containers:
-    #               - name: create-topic
-    #                 image: redpandadata/redpanda
-    #                 command: ["rpk"]
-    #                 args:
-    #                   - "topic"
-    #                   - "delete"
-    #                   - "input"
-    #                   - "-X"
-    #                   - "brokers={{ exp_params.kafka_bootstrap_servers }}"
-    #             restartPolicy: Never
-    # - name: Delete input topic
-    #   command: kubectl run --attach -it --image redpandadata/redpanda --rm test -- -X brokers={{ exp_params.kafka_bootstrap_servers }} topic delete input
-    #   ignore_errors: true
 
-    # - name: Delete test pod
-    #   command: kubectl delete pod test
-    #   ignore_errors: true
-
+    - name: Delete Kafka Topic via Job
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        definition:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: delete-kafka-topic
+          spec:
+            ttlSecondsAfterFinished: 5
+            backoffLimit: 4
+            template:
+              spec:
+                containers:
+                  - name: delete-topic
+                    image: redpandadata/redpanda
+                    command: ["rpk"]
+                    args:
+                      - "topic"
+                      - "delete"
+                      - "input"
+                      - "-X"
+                      - "brokers={{ exp_params.kafka_bootstrap_servers }}"
+                restartPolicy: Never
 {% endif %}
 
     # Scale down the daemonset
@@ -154,17 +149,17 @@
         seconds: 10
 
 # TODO: Once everything is well understood, we can start scaling down Prometheus once again
-    # - name: Scale down Prometheus to 0
-    #   k8s:
-    #     state: present
-    #     definition:
-    #       api: monitoring.coreos.com/v1
-    #       kind: Prometheus
-    #       metadata:
-    #         namespace: default
-    #         name: kp-kube-prometheus-stack-prometheus
-    #       spec:
-    #         replicas: 0
+    - name: Scale down Prometheus to 0
+      k8s:
+        state: present
+        definition:
+          api: monitoring.coreos.com/v1
+          kind: Prometheus
+          metadata:
+            namespace: default
+            name: kp-kube-prometheus-stack-prometheus
+          spec:
+            replicas: 0
 
     - name: Give it 10 seconds to cool down
       pause:

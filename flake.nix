@@ -52,6 +52,7 @@
             kube3d
             atuin
             kafkactl
+            redpanda-client
             fish
             (pkgs.wrapHelm pkgs.kubernetes-helm {
               plugins = [

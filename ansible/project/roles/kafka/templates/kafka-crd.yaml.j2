@@ -39,15 +39,15 @@ spec:
     # jvmOptions:
     #   "-Xmx": "12G"
     #   "-Xms": "12G"
-    metricsConfig:
-      type: jmxPrometheusExporter
-      valueFrom:
-        configMapKeyRef:
-          name: theodolite-kafka-metrics
-          key: kafka-metrics-config.yml
+    # metricsConfig:
+    #   type: jmxPrometheusExporter
+    #   valueFrom:
+    #     configMapKeyRef:
+    #       name: theodolite-kafka-metrics
+    #       key: kafka-metrics-config.yml
     config:
-      "auto.create.topics.enable": true
-      "num.partitions": "5"
+      # "auto.create.topics.enable": true
+      "num.partitions": "1"
       # "message.max.bytes": "134217728" # 128 MB
       # "replica.fetch.max.bytes": "134217728" #128 MB
       # "log.retention.ms": "7200000" # 2h

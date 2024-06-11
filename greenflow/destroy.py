@@ -12,11 +12,11 @@ from .factors import factors
 from .g import g
 from .g5k import G5KPlatform
 from .platform import MockPlatform, Platform
-from .playbook import playbook
+from .playbook import _playbook
 
 
 def blowaway():
-    playbook("blowaway.yaml")
+    _playbook("blowaway.yaml")
 
 
 def pre_destroy():
