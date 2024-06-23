@@ -4,14 +4,20 @@ import os
 
 def get_deployment_state_vars():
     from .g import g
-
-    return {
-        "deployment_started_ts": (
-            g.root.current_deployment.started_ts.format("YYYY-MM-DDTHH:mm:ssZ")
-        ),
-        "kubeconfig_path": "../../kubeconfig",
-        "gitroot": g.gitroot,
-    }
+    if g.root.current_deployment is None:
+        return {
+            "deployment_started_ts": "1970-01-01T00:00:00Z",
+            "kubeconfig_path": "../../kubeconfig",
+            "gitroot": g.gitroot,
+        }
+    else:
+        return {
+            "deployment_started_ts": (
+                g.root.current_deployment.started_ts.format("YYYY-MM-DDTHH:mm:ssZ")
+            ),
+            "kubeconfig_path": "../../kubeconfig",
+            "gitroot": g.gitroot,
+        }
 
 
 def get_experiment_state_vars():
