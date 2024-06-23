@@ -5,9 +5,9 @@ console:
 resources:
   cpu:
     cores: "8"
-    overprovisioned: true
+    # overprovisioned: true
   memory:
-    enable_memory_locking: true
+    # enable_memory_locking: true
     container:
       max: 16Gi
     # redpanda:
@@ -19,9 +19,12 @@ config:
     auto_create_topics_enabled: false
     default_topic_partitions: 1
 monitoring:
-  enabled: true
+  enabled: false
   scrapeInterval: 5s
 listeners:
+  admin:
+    tls:
+      enabled: false
   schemaRegistry:
     port: 8081
   kafka:
@@ -30,7 +33,7 @@ listeners:
       enabled: false
 image:
   repository: registry.gitlab.inria.fr/gkovilkk/greenflow/redpanda
-  tag: v23.3.10
+  tag: v24.1.8
   pullPolicy: IfNotPresent
   pullSecrets: []
 pullSecrets:

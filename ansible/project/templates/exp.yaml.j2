@@ -1,11 +1,11 @@
 ---
 
-- name: Deploy Scaphandre
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  roles:
-    - "scaphandre"
+# - name: Deploy Scaphandre
+#   hosts: localhost
+#   connection: local
+#   gather_facts: false
+#   roles:
+#     - "scaphandre"
 
 
 - name: Patch Prometheus CRD
@@ -30,12 +30,12 @@
               - url: "{{ lookup('ansible.builtin.env', 'EXPERIMENT_STORAGE_URL') }}"
             replicas: 1
 
-    - name: Wait until Scaphandre Daemonset is online
-      shell: "kubectl -n default rollout status ds/scaphandre"
-      register: output
-      until: output.stdout.find("successfully rolled out") != -1
-      retries: 20
-      delay: 15
+    # - name: Wait until Scaphandre Daemonset is online
+    #   shell: "kubectl -n default rollout status ds/scaphandre"
+    #   register: output
+    #   until: output.stdout.find("successfully rolled out") != -1
+    #   retries: 20
+    #   delay: 15
 
     - name: Wait for the specified number of replicas to become ready
       k8s_info:
@@ -140,13 +140,13 @@
 {% endif %}
 
     # Scale down the daemonset
-    - name: Delete all scaphandre
-      shell: kubectl delete -l app.kubernetes.io/name=scaphandre serviceaccount,daemonset,servicemonitor,clusterrole,clusterrolebinding,service --force --grace-period=0
-      ignore_errors: true
+    # - name: Delete all scaphandre
+    #   shell: kubectl delete -l app.kubernetes.io/name=scaphandre serviceaccount,daemonset,servicemonitor,clusterrole,clusterrolebinding,service --force --grace-period=0
+    #   ignore_errors: true
 
-    - name: Give it 10 seconds to cool down
-      pause:
-        seconds: 10
+    # - name: Give it 10 seconds to cool down
+    #   pause:
+    #     seconds: 10
 
 # TODO: Once everything is well understood, we can start scaling down Prometheus once again
     - name: Scale down Prometheus to 0

@@ -24,6 +24,7 @@ def exp_params(
     load: int = gin.REQUIRED,
     messageSize: int = gin.REQUIRED,
     partitions: int = gin.REQUIRED,
+    redpanda_write_caching: bool = True,
     kafka_bootstrap_servers: str = "theodolite-kafka-kafka-bootstrap:9092",
 ):
     return {
@@ -33,5 +34,6 @@ def exp_params(
         "messageSize": messageSize,
         "partitions": partitions,
         "kafka_bootstrap_servers": kafka_bootstrap_servers,
+        "redpanda_write_caching": redpanda_write_caching,
         "load": load,
     }

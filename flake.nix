@@ -54,10 +54,10 @@
             kafkactl
             redpanda-client
             fish
-            (pkgs.wrapHelm pkgs.kubernetes-helm {
-              plugins = [
-                pkgs.kubernetes-helmPlugins.helm-git
-                pkgs.kubernetes-helmPlugins.helm-diff
+            (wrapHelm kubernetes-helm {
+              plugins = with pkgs.kubernetes-helmPlugins; [
+                helm-git
+                helm-diff
               ];
             })
             direnv

@@ -26,6 +26,53 @@
     release_namespace: redpanda
     values: "{{ lookup('ansible.builtin.template', 'helm-values.yaml.j2') | from_yaml }}"
 
+- name: Enable write caching
+  when: exp_params.redpanda_write_caching
+  ansible.builtin.k8s:
+    definition:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: enable-write-caching
+        namespace: redpanda
+      spec:
+        template:
+          spec:
+            containers:
+              - name: rpk
+                image: vectorized/redpanda:v24.1.8
+                command: ["/bin/sh", "-c"]
+                args:
+                  - rpk cluster config -X admin.hosts="redpanda.redpanda.svc.cluster.local:9644" set write_caching_default=true
+            restartPolicy: Never
+        backoffLimit: 4
+
+- name: Wait for write caching job to complete
+  when: exp_params.redpanda_write_caching
+  ansible.builtin.k8s_info:
+    api_version: batch/v1
+    kind: Job
+    name: enable-write-caching
+    namespace: redpanda
+  register: job_status
+  until: >
+    'status' in job_status.resources[0] and
+    'succeeded' in job_status.resources[0].status and
+    job_status.resources[0].status.succeeded == 1
+  retries: 24
+  delay: 5
+
+- name: Delete write caching job
+  when: exp_params.redpanda_write_caching
+  ansible.builtin.k8s:
+    state: absent
+    definition:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: enable-write-caching
+        namespace: redpanda
+
 - name: Deploy Kminion
   delegate_to: localhost
   kubernetes.core.helm:
