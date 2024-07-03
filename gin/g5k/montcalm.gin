@@ -1,0 +1,2 @@
+greenflow.g5k.G5KPlatform.get_conf.site = "toulouse"
+greenflow.g5k.G5KPlatform.get_conf.cluster = "montcalm"

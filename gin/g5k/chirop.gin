@@ -1,0 +1,3 @@
+greenflow.g5k.G5KPlatform.get_conf.site = "lille"
+greenflow.g5k.G5KPlatform.get_conf.cluster = "chirop"
+greenflow.g5k.G5KPlatform.get_conf.queue = "testing"

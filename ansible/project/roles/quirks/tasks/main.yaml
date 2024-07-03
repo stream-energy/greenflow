@@ -1,0 +1,211 @@
+---
+# vim: set ft=yaml:
+# Block to handle hardware quirks (Paravance cluster)
+- name: Install parted
+  ansible.builtin.package:
+    name: parted
+    state: present
+
+- name: Temporary mount points
+  when: "'chiclet' in inventory_hostname or 'montcalm' in inventory_hostname or 'chirop' in inventory_hostname"
+  block:
+    - name: Create all directories
+      command:
+        cmd: mkdir -p {{ item.dir }}
+      loop:
+        - dir: /tmp/mounts/docker
+        - dir: /tmp/mounts/rancher
+        - dir: /var/lib/docker
+        - dir: /var/lib/rancher
+    - name: Create bind mounts for /var/lib/docker and /var/lib/rancher to /tmp/mounts
+      command:
+        cmd: mount --bind {{ item.src }} {{ item.dest }}
+      loop:
+        - src: /tmp/mounts/docker
+          dest: /var/lib/docker
+        - src: /tmp/mounts/rancher
+          dest: /var/lib/rancher
+
+- name: Paravance cluster quirks
+  when: "'paravance' in inventory_hostname"
+  block:
+    - name: Check if /dev/sda5 exists
+      ansible.builtin.stat:
+        path: /dev/sda5
+      register: sda5
+
+    - name: Check if /dev/sdb5 exists
+      ansible.builtin.stat:
+        path: /dev/sdb5
+      register: sdb5
+
+    - name: Set src variable
+      set_fact:
+        src_dev: "{% if sda5.stat.exists %}/dev/sdb{% elif sdb5.stat.exists %}/dev/sda{% else %}''{% endif %}"
+        # src_dev: /dev/sdb
+
+    - name: Unmount partitions on {{ src_dev }}
+      command:
+        cmd: umount -l {{ src_dev }}1
+      ignore_errors: yes
+    - name: Unmount partitions on {{ src_dev }}
+      command:
+        cmd: umount -l {{ src_dev }}2
+      ignore_errors: yes
+
+    # - name: Wipe filesystem signatures on {{ src_dev }}
+    #   command:
+    #     cmd: wipefs -a {{ src_dev }}
+
+    - name: Delete partition table on {{ src_dev }}
+      command:
+        cmd: parted -s {{ src_dev }} mklabel gpt
+
+    - name: Partition {{src_dev}} into two equal parts
+      community.general.parted:
+        device: "{{ src_dev }}"
+        number: "{{ item.number }}"
+        part_start: "{{ item.part_start }}"
+        part_end: "{{ item.part_end }}"
+        state: present
+      loop:
+        - number: 1
+          part_start: 0%
+          part_end: 50%
+        - number: 2
+          part_start: 50%
+          part_end: 100%
+
+    # - name: Delete partition table on {{ src_dev }}
+    #   community.general.parted:
+    #     device: "{{ src_dev }}"
+    #     # number: 1
+    #     state: absent
+    #   ignore_errors: yes
+
+    # - name: Make GPT label on {{ src_dev }}
+    #   community.general.parted:
+    #     device: "{{ src_dev }}"
+    #     label: gpt
+
+    # - name: Wipe filesystem signature
+    #   command:
+    #     cmd: wipefs -a {{ src_dev }}1
+    # - name: Wipe filesystem signature
+    #   command:
+    #     cmd: wipefs -a {{ src_dev }}2
+
+    # TODO: USE sgdisk instead
+    # #!/bin/bash
+    # # Format all reserved disks
+
+    # apt-get install -y lvm2 gdisk
+
+    # for i in ${join(" ", disks)}; do
+    #   echo "--> Prepare disk $i"
+    #   echo 'label: gpt' | sfdisk /dev/$${i}
+    #   sgdisk --zap-all /dev/$${i}
+    # done
+
+    # ls /dev/mapper/ceph-* | xargs -I% -- dmsetup remove %
+    # rm -rf /dev/ceph-*
+    - name: Wipe filesystem signature
+      command:
+        cmd: wipefs -a {{ src_dev }}1
+    - name: Wipe filesystem signature
+      command:
+        cmd: wipefs -a {{ src_dev }}2
+
+    - name: Add filesystem 1
+      community.general.filesystem:
+        dev: "{{ src_dev }}1"
+        fstype: ext4
+
+    - name: Add filesystem 2
+      community.general.filesystem:
+        dev: "{{ src_dev }}2"
+        fstype: ext4
+
+    - name: Mount first partition to /var/lib/docker
+      ansible.builtin.mount:
+        path: /var/lib/docker
+        src: "{{ src_dev }}1"
+        fstype: ext4
+        state: mounted
+
+    - name: Mount second partition to /var/lib/rancher
+      ansible.builtin.mount:
+        path: /var/lib/rancher
+        src: "{{ src_dev }}2"
+        fstype: ext4
+        state: mounted
+
+- name: Parasilo cluster quirks
+  when: "'parasilo' in inventory_hostname"
+  block:
+    # - name: Find the hard disk that has less than 300GB
+    #   shell: "lsblk -b | grep disk | awk '{print $4}' | sort -n | head -n 1"
+    #   register: disk_size
+
+    - name: Set src variable to this disk
+      set_fact:
+        src_dev: /dev/sdf
+
+    - name: Unmount partitions on {{ src_dev }}
+      command:
+        cmd: umount -l {{ src_dev }}1
+      ignore_errors: yes
+    - name: Unmount partitions on {{ src_dev }}
+      command:
+        cmd: umount -l {{ src_dev }}2
+      ignore_errors: yes
+
+    - name: Delete partition table on {{ src_dev }}
+      command:
+        cmd: parted -s {{ src_dev }} mklabel gpt
+
+    - name: Partition {{src_dev}} into two equal parts
+      community.general.parted:
+        device: "{{ src_dev }}"
+        number: "{{ item.number }}"
+        part_start: "{{ item.part_start }}"
+        part_end: "{{ item.part_end }}"
+        state: present
+      loop:
+        - number: 1
+          part_start: 0%
+          part_end: 50%
+        - number: 2
+          part_start: 50%
+          part_end: 100%
+
+    - name: Wipe filesystem signature
+      command:
+        cmd: wipefs -a {{ src_dev }}1
+    - name: Wipe filesystem signature
+      command:
+        cmd: wipefs -a {{ src_dev }}2
+
+    - name: Add filesystem 1
+      community.general.filesystem:
+        dev: "{{ src_dev }}1"
+        fstype: ext4
+
+    - name: Add filesystem 2
+      community.general.filesystem:
+        dev: "{{ src_dev }}2"
+        fstype: ext4
+
+    - name: Mount first partition to /var/lib/docker
+      ansible.builtin.mount:
+        path: /var/lib/docker
+        src: "{{ src_dev }}1"
+        fstype: ext4
+        state: mounted
+
+    - name: Mount second partition to /var/lib/rancher
+      ansible.builtin.mount:
+        path: /var/lib/rancher
+        src: "{{ src_dev }}2"
+        fstype: ext4
+        state: mounted

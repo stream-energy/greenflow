@@ -1,0 +1,8 @@
+---
+# vim: set ft=yaml:
+- name: Handle Hardware Quirks
+  hosts: all
+  gather_facts: false
+  become: true
+  roles:
+    - quirks
