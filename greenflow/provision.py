@@ -23,15 +23,14 @@ def provision(*, platform: type[Platform] = gin.REQUIRED):
 
     p.post_provision()
 
-    match p:
-        case MockPlatform():
-            pass
-        case G5KPlatform():
-            with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:
-                yaml.dump(p.get_ansible_inventory(), f)
-        case VMonG5KPlatform():
-            with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:
-                yaml.dump(p.get_ansible_inventory(), f)
+    # match p:
+    #     case MockPlatform():
+    #         pass
+    #     case G5KPlatform():
+    #     case VMonG5KPlatform():
+    #         with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:
+    #             yaml.dump(p.get_ansible_inventory(), f)
+
 
 
 if __name__ == "__main__":

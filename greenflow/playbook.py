@@ -56,6 +56,11 @@ def p(playbook_name_without_yaml):
     _playbook(f"{playbook_name_without_yaml}.yaml", extra_vars)
 
 
+def quirks(flavour):
+    extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
+    extra_vars["flavour"] = flavour
+    _playbook("quirks.yaml", extra_vars)
+
 def deploy_k3s():
     _playbook("deploy_k3s.yaml", get_deployment_state_vars())
 

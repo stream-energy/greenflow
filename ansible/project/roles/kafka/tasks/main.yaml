@@ -6,8 +6,8 @@
     state: present
     definition: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
   with_fileglob:
-    # - "../templates/kafka*.j2"
-    - "../templates/kafka-crd.yaml.j2"
+    - "../templates/kafka*.j2"
+    # - "../templates/kafka-crd.yaml.j2"
 
 - name: Wait for Kafka to be deployed
   delegate_to: localhost
@@ -23,3 +23,7 @@
     wait: true
     release_namespace: default
     values: "{{ lookup('ansible.builtin.template', 'kminion-values.yaml.j2') | from_yaml }}"
+
+- name: Restart kminion deployment
+  delegate_to: localhost
+  shell: "kubectl rollout restart deployments/kminion"

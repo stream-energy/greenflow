@@ -27,7 +27,7 @@ spec:
             - name: THROUGHPUT_TOPIC
               value: "input"
             - name: THROUGHPUT_MESSAGE_RATE
-              value: "{{ exp_params.load }}"
+              value: "{{ exp_params.load//exp_params.instances }}"
             - name: THROUGHPUT_DURATION
               value: "{{ exp_params.durationSeconds }}s"
             - name: THROUGHPUT_MESSAGE_SIZE

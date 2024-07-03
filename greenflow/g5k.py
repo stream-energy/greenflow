@@ -108,9 +108,21 @@ class G5KPlatform(Platform):
                         host.alias
                     ] = {"kubernetes_role": "broker"}
         g.reinit_deployment(self)
+    
+    def handle_hardware_quirks(self):
+        # if self.get_conf().cluster == "paravance":
+        from .playbook import quirks
+        quirks("paravance")
+            # Run the parasilo playbook
+        
 
     def post_provision(self):
         self.set_platform_metadata()
+
+        with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:
+            yaml.dump(self.get_ansible_inventory(), f)
+
+        self.handle_hardware_quirks()
 
         # Not using NFS storage anymore
         # self.enable_g5k_nfs_access()

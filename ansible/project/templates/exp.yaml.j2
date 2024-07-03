@@ -70,11 +70,29 @@
                       - "topic"
                       - "create"
                       - "input"
+                      - "-r"
+                      - "{{ exp_params.replicationFactor }}"
                       - "-p"
                       - "{{ exp_params.partitions }}"
                       - "-X"
                       - "brokers={{ exp_params.kafka_bootstrap_servers }}"
+{% if "redpanda" in exp_name and exp_params.redpanda_write_caching %}
+                      - "-c"
+                      - "write.caching=true"
+{% endif %}
                 restartPolicy: Never
+    - name: Sleep for 10 seconds
+      pause:
+        seconds: 10
+
+    - name: Delete topic creation job
+      ansible.builtin.k8s:
+        state: absent
+        definition:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: create-kafka-topic
 
 
 - name: Deploy EXP
