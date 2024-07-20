@@ -52,7 +52,7 @@
             kube3d
             atuin
             kafkactl
-            redpanda-client
+            # redpanda-client
             fish
             (wrapHelm kubernetes-helm {
               plugins = with pkgs.kubernetes-helmPlugins; [
@@ -77,8 +77,8 @@
             if ! [ -d "$PWD/.mamba" ]; then
               mkdir -p "$PWD/.mamba"
             fi
-            micromamba install -y python=3.10 pip poetry -p ./.mamba -c conda-forge
-            micromamba install -y -f env.yaml
+            micromamba install --platform linux-64 -y python=3.10 pip poetry -p ./.mamba -c conda-forge
+            micromamba install --platform linux-64 -y -f env.yaml
 
             # Helm stuff
             helm repo add strimzi https://strimzi.io/charts/
@@ -88,17 +88,17 @@
             helm repo add redpanda https://charts.redpanda.com
             helm repo update
 
-            pushd $PWD/charts/redpanda-helm-charts/charts/redpanda
-              helm dep build
-            popd
-            pushd $PWD/charts/prometheus-community/charts/kube-prometheus-stack
-              helm dep build
-            popd
-            pushd $PWD/charts/theodolite/helm
-              helm dep build
-            popd
-            ansible-galaxy collection install kubernetes.core
-            ansible-galaxy collection install community.general
+            # pushd $PWD/charts/redpanda-helm-charts/charts/redpanda
+            #   helm dep build
+            # popd
+            # pushd $PWD/charts/prometheus-community/charts/kube-prometheus-stack
+            #   helm dep build
+            # popd
+            # pushd $PWD/charts/theodolite/helm
+            #   helm dep build
+            # popd
+            # ansible-galaxy collection install kubernetes.core
+            # ansible-galaxy collection install community.general
 
             # Create grid5000 creds file
             echo "
