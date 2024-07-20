@@ -23,7 +23,7 @@
     cmd: curl -sSL https://get.docker.com/ | sh -s -- --version 24
 
 - name: Setup tmpfs for /var/lib/docker and /var/lib/rancher
-  when: "'chirop' in inventory_hostname"
+  when: "'impossible' in inventory_hostname"
   block:
     - name: Create all directories
       command:

@@ -42,8 +42,8 @@ def load_gin(exp_name="ingest-kafka"):
                 f"{g.g.gitroot}/gin/g5k/defaults.gin",
                 # f"{g.g.gitroot}/gin/g5k/paravance.gin",
                 # f"{g.g.gitroot}/gin/g5k/parasilo.gin",
-                f"{g.g.gitroot}/gin/g5k/montcalm.gin",
-                # f"{g.g.gitroot}/gin/g5k/chirop.gin",
+                # f"{g.g.gitroot}/gin/g5k/montcalm.gin",
+                f"{g.g.gitroot}/gin/g5k/chirop.gin",
                 # f"{g.g.gitroot}/gin/g5k/neowise.gin",
                 f"{g.g.gitroot}/gin/{exp_name}.gin",
             ],
@@ -182,7 +182,7 @@ def threshold(exp_name: str, exp_description: str, message_size: int = 1024):
 def ingest(exp_name, **kwargs):
     from greenflow.playbook import exp
 
-    exp_description = "Montcalm threshold"
+    exp_description = "Chirop threshold"
 
     try:
         with kafka_context():
