@@ -1,6 +1,8 @@
+import pendulum
 import requests
 import gin
-from greenflow import destroy, g, playbook, provision, factors
+from greenflow import destroy, g, provision
+from greenflow.adaptive import Result, State, ThresholdLoadTest
 from greenflow.playbook import (
     deploy_k3s,
     p,
@@ -9,17 +11,25 @@ from greenflow.playbook import (
     scaphandre,
     strimzi,
     redpanda,
-    redpanda_test,
-    kminion,
 )
 from dataclasses import dataclass
 from bpdb import set_trace, post_mortem
-from ptpython.repl import embed
 from sh import kubectl, helm
-
-# from bpython.cli import main as oldbpython
 import click
 from shlex import split
+from contextlib import contextmanager
+
+
+def embed(globals, locals):
+    from ptpython.repl import embed
+    from os import getenv
+
+    embed(
+        history_filename=f"{getenv('DEVENV_ROOT')}/.devenv/.ptpython-history",
+        globals=globals,
+        locals=locals,
+    )
+
 
 ntfy_url = "https://ntfy.sh/4d5a7713-8b2a-46c8-8407-0014b19aa54a-greenflow"
 
@@ -32,8 +42,9 @@ def load_gin(exp_name="ingest-kafka"):
                 f"{g.g.gitroot}/gin/g5k/defaults.gin",
                 # f"{g.g.gitroot}/gin/g5k/paravance.gin",
                 # f"{g.g.gitroot}/gin/g5k/parasilo.gin",
-                # f"{g.g.gitroot}/gin/g5k/montcalm.gin",
-                f"{g.g.gitroot}/gin/g5k/chirop.gin",
+                f"{g.g.gitroot}/gin/g5k/montcalm.gin",
+                # f"{g.g.gitroot}/gin/g5k/chirop.gin",
+                # f"{g.g.gitroot}/gin/g5k/neowise.gin",
                 f"{g.g.gitroot}/gin/{exp_name}.gin",
             ],
             [],
@@ -45,14 +56,35 @@ def rebind_parameters(**kwargs):
         "load": "greenflow.factors.exp_params.load",
         "instances": "greenflow.factors.exp_params.instances",
         "message_size": "greenflow.factors.exp_params.messageSize",
+        "partitions": "greenflow.factors.exp_params.partitions",
         "bootstrap_servers": "greenflow.factors.kafka_bootstrap_servers",
         "redpanda_write_caching": "greenflow.factors.exp_params.redpanda_write_caching",
+        "durationSeconds": "greenflow.factors.exp_params.durationSeconds",
     }
 
     with gin.unlock_config():
         for key, value in kwargs.items():
             if value is not None and key in parameter_mapping:
                 gin.bind_parameter(parameter_mapping[key], value)
+
+
+# Context manager for kafka setup and teardown
+@contextmanager
+def kafka_context():
+    load_gin("ingest-kafka")
+    p(kafka)
+    yield
+    kubectl(split("delete kafka theodolite-kafka"))
+    helm(split("uninstall -n default kminion"))
+
+
+@contextmanager
+def redpanda_context():
+    load_gin("ingest-redpanda")
+    p(redpanda)
+    yield
+    helm(split("uninstall -n redpanda redpanda"))
+    helm(split("uninstall -n redpanda kminion"))
 
 
 @click.command("setup")
@@ -72,121 +104,73 @@ def setup(exp_name, workers):
         p(scaphandre)
         p(strimzi)
         # # Warm-up Kafka and Redpanda in the first time setup
-        p(kafka)
-        kubectl(split("delete kafka theodolite-kafka"))
-        helm(split("uninstall kminion"))
-        p(redpanda)
-        helm(split("uninstall -n redpanda redpanda"))
-        helm(split("uninstall -n redpanda kminion"))
+        with kafka_context():
+            pass
+        with redpanda_context():
+            pass
     except:
         send_notification("Error in setup. Dropped into shell")
         post_mortem()
-        # embed(globals(), locals())
-    # playbook.kafka()
-    # playbook.redpanda()
-    # playbook.theodolite()
 
     send_notification("Setup complete")
 
 
-@click.command("i")
-@click.argument("exp_name", type=str, default="ingest-redpanda")
-@click.option("--load", type=str)
-@click.option("--message_size", type=int)
-@click.option("--instances", type=int)
-@click.option("--partitions", type=int)
-def i(exp_name, **kwargs):
-    load_gin(exp_name)
-    rebind_parameters(**kwargs)
-    embed(globals(), locals())
-
-
-def ingest_kafka():
+def find_threshold_load(*, exp_name, message_size, description):
     from greenflow.playbook import exp
 
-    instance = 16
-    exp_name = "ingest-kafka"
-    load_gin(exp_name)
-    p(kafka)
+    def experiment(state: State) -> Result:
+        from greenflow.playbook import exp
+        from greenflow.analysis import get_observed_throughput_of_last_experiment
+
+        params = state.params
+
+        load = params["load"]
+        message_size = params["message_size"]
+        start_time = pendulum.now()
+        print(f"Starting with load {load} and message size {message_size}")
+        rebind_parameters(load=load, message_size=message_size)
+        exp(
+            exp_name=params["exp_name"],
+            experiment_description=params["exp_description"],
+        )
+        throughput = get_observed_throughput_of_last_experiment(
+            minimum_current_ts=start_time
+        )
+        print(f"Done with load {load}. Observed throughput: {throughput}")
+        return Result(metrics={"throughput": throughput}, time=state.time)
+
+    initial_params = {
+        "load": 1 * 10**4,
+        "message_size": message_size,
+        "exp_name": exp_name,
+        "exp_description": description,
+    }
+    rebind_parameters(durationSeconds=100)
+    # Run a warmup
     exp(exp_name=exp_name, experiment_description="Warmup")
-
-    # description = "Montcalm to determine impact of partitions"
-    # load = 5 * 10**5
-    # for partitions in [1, 3, 30]:
-    #     for message_size in [128,  1024, 10240]:
-    #         print("Starting with load", load, "and message size", message_size)
-    #         rebind_parameters(load=load, message_size=message_size, instances=instance, partitions=partitions)
-    #         exp(exp_name=exp_name, experiment_description=description)
-    #         print("Done with load", load, "and message size", message_size)
-
-    description = "Chirop nvme"
-    for message_size in [
-        128,
-        512,
-        1024,
-        2048,
-        3072,
-        4096,
-        5120,
-        6144,
-        7168,
-        8192,
-        9216,
-        10240,
-    ]:
-        for load in [x * 10**4 for x in range(1, 9)]:
-            # for load in [x * 10**4 for x in [3, 4.5]]:
-            print("Starting with load", load, "and message size", message_size)
-            rebind_parameters(
-                load=load, message_size=message_size, instances=instance, partitions=30
-            )
-            exp(exp_name=exp_name, experiment_description=description)
-            print("Done with load", load, "and message size", message_size)
-
-    kubectl(split("delete kafka theodolite-kafka"))
-    helm(split("uninstall -n default kminion"))
+    test = ThresholdLoadTest(
+        exp_name=exp_name,
+        exp_description=description,
+        executor=experiment,
+        initial_params=initial_params,
+    )
+    final_history = test.execute()
+    final_state = final_history.states[-1]
+    final_result = final_history.results[-1]
+    return final_state.params["load"], final_result.metrics["throughput"]
 
 
-def ingest_redpanda():
-    from greenflow.playbook import exp
+def threshold(exp_name: str, exp_description: str, message_size: int = 1024):
+    threshold_load, observed_throughput = find_threshold_load(
+        exp_name=exp_name,
+        message_size=message_size,
+        description=exp_description,
+    )
 
-    instance = 16
-    exp_name = "ingest-redpanda"
-    load_gin(exp_name)
-    rebind_parameters(redpanda_write_caching=True)
-    p(redpanda)
-    exp(exp_name=exp_name, experiment_description="Warmup")
-
-    # description = "Montcalm to determine impact of partitions"
-    # load = 5 * 10**5
-    # for partitions in [1, 3, 30]:
-    #     for message_size in [128,  1024, 10240]:
-    #         print("Starting with load", load, "and message size", message_size)
-    #         rebind_parameters(load=load, message_size=message_size, instances=instance, partitions=partitions)
-    #         exp(exp_name=exp_name, experiment_description=description)
-    #         print("Done with load", load, "and message size", message_size)
-
-    description = "Chirop nvme"
-    for message_size in [
-        128,
-        512,
-    ] + range(1024, 10241, 1024):
-        for load in [
-            x * 10**4
-            for x in [
-                1,
-            ]
-        ]:
-            # for load in [x * 10**4 for x in [3, 4.5]]:
-            print("Starting with load", load, "and message size", message_size)
-            rebind_parameters(
-                load=load, message_size=message_size, instances=instance, partitions=30
-            )
-            exp(exp_name=exp_name, experiment_description=description)
-            print("Done with load", load, "and message size", message_size)
-
-    helm(split("uninstall -n redpanda redpanda"))
-    helm(split("uninstall -n redpanda kminion"))
+    print(f"\nThreshold results for {exp_name}:")
+    print(f"Message size: {message_size} bytes")
+    print(f"Threshold load: {threshold_load} messages/second")
+    print(f"Observed throughput: {observed_throughput} messages/second")
 
 
 @click.command("ingest")
@@ -198,9 +182,21 @@ def ingest_redpanda():
 def ingest(exp_name, **kwargs):
     from greenflow.playbook import exp
 
+    exp_description = "Montcalm threshold"
+
     try:
-        # ingest_kafka()
-        ingest_redpanda()
+        with kafka_context():
+            for message_size in [
+                128,
+                512,
+            ] + list(range(1024, 10241, 1024)):
+                threshold("ingest-kafka", exp_description, message_size)
+        with redpanda_context():
+            for message_size in [
+                128,
+                512,
+            ] + list(range(1024, 10241, 1024)):
+                threshold("ingest-redpanda", exp_description, message_size)
     except:
         send_notification("Error in experiment. Debugging with shell")
         post_mortem()
@@ -218,42 +214,16 @@ def send_notification(text, priority="low"):
     requests.post(ntfy_url, headers={"priority": priority}, data=text, timeout=10)
 
 
-def test_message_delivery():
-    send_notification("Test message")
-
-
-@click.command("test")
-@click.argument("exp_name", type=str)
-@click.option("--workers", type=int)
-def test(exp_name, workers):
+@click.command("i")
+@click.argument("exp_name", type=str, default="ingest-redpanda")
+@click.option("--load", type=str)
+@click.option("--message_size", type=int)
+@click.option("--instances", type=int)
+@click.option("--partitions", type=int)
+def i(exp_name, **kwargs):
     load_gin(exp_name)
-    if workers is not None:
-        with gin.unlock_config():
-            gin.bind_parameter(
-                "greenflow.g5k.G5KPlatform.get_conf.num_worker", int(workers)
-            )
-    try:
-        p(prometheus)
-        p(scaphandre)
-        p(strimzi)
-        # # Warm-up Kafka and Redpanda in the first time setup
-        p(kafka)
-        kubectl(split("delete kafka theodolite-kafka"))
-        helm(split("uninstall kminion"))
-        p(redpanda)
-        helm(split("uninstall -n redpanda redpanda"))
-        helm(split("uninstall -n redpanda kminion"))
-        send_notification("Base Setup complete. Dropped into shell")
-        embed(globals(), locals())
-    except:
-        send_notification("Error in setup. Dropped into shell")
-        post_mortem()
-        # embed(globals(), locals())
-    # playbook.kafka()
-    # playbook.redpanda()
-    # playbook.theodolite()
-
-    send_notification("Setup complete")
+    rebind_parameters(**kwargs)
+    embed(globals(), locals())
 
 
 @click.group()
@@ -264,7 +234,6 @@ def cli():
 cli.add_command(setup)
 cli.add_command(ingest)
 cli.add_command(i)
-cli.add_command(test)
 cli.add_command(killjob)
 
 

@@ -1,7 +1,9 @@
+from typing import Any, Callable
 from prometheus_api_client import PrometheusConnect, MetricRangeDataFrame
 from prometheus_api_client.utils import parse_datetime
 import pandas as pd
 import pendulum
+from tinydb.table import Document
 from greenflow.g import g
 from tinydb import TinyDB, Query
 from os import getenv
@@ -12,6 +14,129 @@ import seaborn as sns
 
 url = getenv("PROMETHEUS_URL")
 prom = PrometheusConnect(url=url)
+
+
+def get_experiments():
+    experiments = {exp.doc_id: exp for exp in g.storage.experiments.all()}
+    return experiments
+
+
+def sort_by_time(exp_id, experiments):
+    date_time_str = experiments[exp_id]["started_ts"]
+    return pendulum.parse(date_time_str)
+
+
+def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.DateTime):
+    # Get the most recent experiment
+    experiments = {exp.doc_id: exp for exp in g.storage.experiments.all()}
+
+    # Filter experiments that started after the minimum_current_ts
+    valid_experiments = {
+        exp_id: exp
+        for exp_id, exp in experiments.items()
+        if pendulum.parse(exp["started_ts"]) >= minimum_current_ts
+    }
+
+    if not valid_experiments:
+        print(f"No experiments found after {minimum_current_ts}")
+        return float("NaN")
+
+    latest_exp_id = max(
+        valid_experiments.keys(),
+        key=lambda x: pendulum.parse(valid_experiments[x]["started_ts"]),
+    )
+    latest_exp = valid_experiments[latest_exp_id]
+
+    # Extract timestamps
+    started_ts = pendulum.parse(latest_exp["started_ts"])
+    stopped_ts = pendulum.parse(latest_exp["stopped_ts"])
+
+    # Sanity check
+    if started_ts < minimum_current_ts:
+        print(
+            f"Warning: Latest experiment started at {started_ts}, which is before the minimum timestamp {minimum_current_ts}"
+        )
+        return float("NaN")
+
+    # Determine the namespace
+    namespace = "redpanda" if "redpanda" in latest_exp["exp_name"] else "default"
+
+    # Construct the query
+    query = f'kminion_kafka_topic_high_water_mark_sum{{namespace="{namespace}", topic_name="input", experiment_started_ts="{latest_exp["started_ts"]}"}}'
+
+    try:
+        # Get the data from Prometheus
+        data = MetricRangeDataFrame(
+            prom.get_metric_range_data(
+                query,
+                start_time=started_ts,
+                end_time=stopped_ts,
+            )
+        )
+
+        # Calculate the observed throughput
+        max_watermark = data["value"].max()
+        duration = (stopped_ts - started_ts).total_seconds()
+        try:
+            duration = latest_exp["experiment_metadata"]["factors"]["exp_params"][
+                "durationSeconds"
+            ]
+        except KeyError:
+            pass
+
+        observed_throughput = max_watermark / duration
+
+        print(f"Observed throughput: {observed_throughput:.2f} messages/second")
+        print(f"Experiment duration: {duration:.2f} seconds")
+        print(f"Max watermark: {max_watermark}")
+
+        return observed_throughput
+
+    except KeyError:
+        print("No data found for the latest experiment")
+        return 0
+
+
+def filter_experiments(
+    experiments: dict[int, Document],
+    filter_condition: Callable[[Document], bool],
+    cutoff: str,
+) -> pd.DataFrame:
+    cutoff_date = pendulum.parse(cutoff)
+
+    def is_valid_experiment(exp: Document) -> bool:
+        return (pendulum.parse(exp["started_ts"]) >= cutoff_date) and filter_condition(
+            exp
+        )
+
+    filtered_experiments = [
+        process_experiment(exp)
+        for exp in sorted(
+            experiments.values(),
+            key=lambda x: pendulum.parse(x["started_ts"]),
+            reverse=True,
+        )
+        if pendulum.parse(exp["started_ts"]) >= cutoff_date and filter_condition(exp)
+    ]
+
+    return pd.DataFrame(filtered_experiments).set_index("exp_id")
+
+
+def process_experiment(exp: Document) -> dict[str, Any]:
+    metadata = exp["experiment_metadata"]
+    params = metadata["factors"]["exp_params"]
+    relevant_params = ["load", "durationSeconds", "messageSize"]
+    filtered_params = {k: v for k, v in params.items() if k in relevant_params}
+
+    return {
+        "exp_id": exp.doc_id,
+        "exp_name": exp["exp_name"],
+        "exp_description": exp["experiment_description"],
+        "started_ts": exp["started_ts"],
+        "stopped_ts": exp["stopped_ts"],
+        **metadata.get("results", {}),
+        **filtered_params,
+    }
 
 
 def get_time_range(row: pd.Series, buffer_minutes: int = 1):
@@ -154,13 +279,22 @@ def calculate_average_power(row: pd.Series):
 
 
 def enrich_dataframe(df):
-    # Calculate observed throughput for each row
-    df = df.apply(calculate_observed_throughput, axis=1)
+    calculations = [
+        calculate_observed_throughput,
+        calculate_throughput_gap,
+        calculate_latency,
+        calculate_average_power,
+        calculate_throughput_MBps,
+        calculate_throughput_per_watt,
+    ]
 
-    # Calculate throughput gap for each row
-    df = df.apply(calculate_throughput_gap, axis=1)
-
-    df = df.apply(calculate_latency, axis=1)
-    df = df.apply(calculate_average_power, axis=1)
+    for calc in calculations:
+        df = df.apply(calc, axis=1)
 
     return df
+
+
+if __name__ == "__main__":
+    cutoff = "2024-07-09T21:36:18.761822+02:00"
+    experiments: dict[int, Document] = get_experiments()
+    data: pd.DataFrame = filter_experiments(experiments, cutoff)

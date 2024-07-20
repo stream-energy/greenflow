@@ -2,6 +2,9 @@ ntfy_url := env_var_or_default('NTFY_URL', "https://ntfy.sh/your_url_here")
 gitroot := env_var_or_default('GITROOT', "./")
 set positional-arguments
 
+ingest *args:
+    python entrypoint.py ingest "$@"
+
 send_notification message:
     #!/usr/bin/env python
     import requests
@@ -16,8 +19,6 @@ setup *args:
 test *args:
     python entrypoint.py test "$@"
 
-ingest *args:
-    python entrypoint.py ingest "$@"
 
 i *args:
     python entrypoint.py i "$@"

@@ -16,21 +16,11 @@
         src: registries.yaml.j2
         dest: /etc/rancher/k3s/registries.yaml
       register: result
-    - name: Modprobe
-      tags: [always]
-      ansible.builtin.command:
-        cmd: modprobe intel_rapl_common
-    - name: Disable node exporter
-      tags: [always]
+
+    - name: Restart Docker service
       ansible.builtin.service:
-        name: prometheus-node-exporter
-        state: stopped
-        enabled: false
-    - name: Install Docker
-      tags: [always]
-      shell:
-        # cmd: /grid5000/code/bin/g5k-setup-docker -t
-        cmd: curl -sSL https://get.docker.com/ | sh -s -- --version 24
+        name: docker
+        state: restarted
 
 - name: Install K3S and post-install config
   hosts: control
