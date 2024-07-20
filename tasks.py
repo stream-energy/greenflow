@@ -25,7 +25,7 @@ def load_gin(exp_name):
     gin.parse_config_files_and_bindings(
         [
             f"{g.g.gitroot}/gin/vmon-defaults.gin",
-            f"{g.g.gitroot}/gin/g5k-defaults.gin",
+            f"{g.g.gitroot}/gin/g5k/defaults.gin",
             f"{g.g.gitroot}/gin/{exp_name}.gin",
         ],
         [],
@@ -41,6 +41,10 @@ def send_notification(text):
 def test_message_delivery(c):
     send_notification("Test message")
 
+@task
+def redpanda(c):
+    load_gin("ingest-kafka")
+    p(redpanda)
 
 @task
 def setup(c, exp_name, workers=None):

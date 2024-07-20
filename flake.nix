@@ -88,17 +88,17 @@
             helm repo add redpanda https://charts.redpanda.com
             helm repo update
 
-            # pushd $PWD/charts/redpanda-helm-charts/charts/redpanda
-            #   helm dep build
-            # popd
-            # pushd $PWD/charts/prometheus-community/charts/kube-prometheus-stack
-            #   helm dep build
-            # popd
-            # pushd $PWD/charts/theodolite/helm
-            #   helm dep build
-            # popd
-            # ansible-galaxy collection install kubernetes.core
-            # ansible-galaxy collection install community.general
+            pushd $PWD/charts/redpanda-operator-helm/charts/redpanda
+              helm dep build
+            popd
+            pushd $PWD/charts/prometheus-community/charts/kube-prometheus-stack
+              helm dep build
+            popd
+            pushd $PWD/charts/theodolite/helm
+              helm dep build
+            popd
+            ansible-galaxy collection install kubernetes.core
+            ansible-galaxy collection install community.general
 
             # Create grid5000 creds file
             echo "
