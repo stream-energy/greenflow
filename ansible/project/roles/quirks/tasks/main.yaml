@@ -39,7 +39,7 @@
         cmd: mount -t tmpfs -o size=100G none /var/lib/rancher
 
 - name: Temporary mount points
-  when: "'chiclet' in inventory_hostname or 'montcalm' in inventory_hostname or 'neowise' in inventory_hostname"
+  when: "'chiclet' in inventory_hostname or 'montcalm' in inventory_hostname or 'neowise' in inventory_hostname or 'chirop' in inventory_hostname"
   block:
     - name: Create all directories
       command:
