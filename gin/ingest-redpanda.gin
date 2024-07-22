@@ -1,5 +1,5 @@
 greenflow.factors.exp_params.durationSeconds = 240
-greenflow.factors.exp_params.instances = 1
+greenflow.factors.exp_params.instances = 10
 greenflow.factors.exp_params.kafka_bootstrap_servers = "redpanda.redpanda.svc.cluster.local:9092"
 greenflow.factors.exp_params.load = 50000
 greenflow.factors.exp_params.messageSize = 64

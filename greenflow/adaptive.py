@@ -3,6 +3,7 @@ import pendulum
 from abc import ABC, abstractmethod
 
 
+
 class State(NamedTuple):
     params: dict[str, Any]
     time: pendulum.DateTime
@@ -105,3 +106,86 @@ class ThresholdLoadTest(AdaptiveExperiment):
         return Decision(
             next_params={**current, "load": next_load, "low": low, "high": high}
         )
+
+
+def find_threshold_load(*, exp_name, message_size, description, previous_results=None):
+    from greenflow.playbook import exp
+    from entrypoint import rebind_parameters
+
+    def experiment(state: State) -> Result:
+        from greenflow.playbook import exp
+        from greenflow.analysis import get_observed_throughput_of_last_experiment
+
+        params = state.params
+
+        load = params["load"]
+        message_size = params["message_size"]
+        start_time = pendulum.now()
+        print(f"Starting with load {load} and message size {message_size}")
+        rebind_parameters(load=load, message_size=message_size)
+        exp(
+            exp_name=params["exp_name"],
+            experiment_description=params["exp_description"],
+        )
+        throughput = get_observed_throughput_of_last_experiment(
+            minimum_current_ts=start_time
+        )
+        print(f"Done with load {load}. Observed throughput: {throughput}")
+        return Result(metrics={"throughput": throughput}, time=state.time)
+
+    # Adjust initial load based on previous results
+    if previous_results:
+        prev_message_size, prev_threshold_load, _ = previous_results[-1]
+        if message_size > prev_message_size:
+            initial_load = prev_threshold_load
+    else:
+        # Adjust initial load based on message size
+        if message_size <= 1024:
+            initial_load = 1 * 10**5
+        elif message_size <= 4096:
+            initial_load = 5 * 10**4
+        else:
+            initial_load = 2 * 10**4
+
+    # initial_params = {
+    #     "load": initial_load,
+
+    initial_load = 1 * 10**5 if message_size <= 4096 else 1 * 10**4
+
+    initial_params = {
+        "load": initial_load,
+        "message_size": message_size,
+        "exp_name": exp_name,
+        "exp_description": description,
+    }
+    rebind_parameters(durationSeconds=100)
+    # Run a warmup
+    exp(exp_name=exp_name, experiment_description="Warmup")
+    test = ThresholdLoadTest(
+        exp_name=exp_name,
+        exp_description=description,
+        executor=experiment,
+        initial_params=initial_params,
+    )
+    final_history = test.execute()
+    final_state = final_history.states[-1]
+    final_result = final_history.results[-1]
+    return final_state.params["load"], final_result.metrics["throughput"]
+
+
+def threshold(exp_name: str, exp_description: str, message_sizes: list[int]) -> list[tuple[int, int]]:
+    results = []
+    for message_size in message_sizes:
+        threshold_load, observed_throughput = find_threshold_load(
+            exp_name=exp_name,
+            message_size=message_size,
+            description=exp_description,
+        )
+        results.append((threshold_load, observed_throughput))
+
+        print(f"\nThreshold results for {exp_name}:")
+        print(f"Message size: {message_size} bytes")
+        print(f"Threshold load: {threshold_load} messages/second")
+        print(f"Observed throughput: {observed_throughput} messages/second")
+
+    return results

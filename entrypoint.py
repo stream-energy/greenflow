@@ -1,8 +1,7 @@
-import pendulum
 import requests
 import gin
 from greenflow import destroy, g, provision
-from greenflow.adaptive import Result, State, ThresholdLoadTest
+from greenflow.adaptive import threshold
 from greenflow.playbook import (
     deploy_k3s,
     p,
@@ -114,65 +113,6 @@ def setup(exp_name, workers):
 
     send_notification("Setup complete")
 
-
-def find_threshold_load(*, exp_name, message_size, description):
-    from greenflow.playbook import exp
-
-    def experiment(state: State) -> Result:
-        from greenflow.playbook import exp
-        from greenflow.analysis import get_observed_throughput_of_last_experiment
-
-        params = state.params
-
-        load = params["load"]
-        message_size = params["message_size"]
-        start_time = pendulum.now()
-        print(f"Starting with load {load} and message size {message_size}")
-        rebind_parameters(load=load, message_size=message_size)
-        exp(
-            exp_name=params["exp_name"],
-            experiment_description=params["exp_description"],
-        )
-        throughput = get_observed_throughput_of_last_experiment(
-            minimum_current_ts=start_time
-        )
-        print(f"Done with load {load}. Observed throughput: {throughput}")
-        return Result(metrics={"throughput": throughput}, time=state.time)
-
-    initial_params = {
-        "load": 1 * 10**4,
-        "message_size": message_size,
-        "exp_name": exp_name,
-        "exp_description": description,
-    }
-    rebind_parameters(durationSeconds=100)
-    # Run a warmup
-    exp(exp_name=exp_name, experiment_description="Warmup")
-    test = ThresholdLoadTest(
-        exp_name=exp_name,
-        exp_description=description,
-        executor=experiment,
-        initial_params=initial_params,
-    )
-    final_history = test.execute()
-    final_state = final_history.states[-1]
-    final_result = final_history.results[-1]
-    return final_state.params["load"], final_result.metrics["throughput"]
-
-
-def threshold(exp_name: str, exp_description: str, message_size: int = 1024):
-    threshold_load, observed_throughput = find_threshold_load(
-        exp_name=exp_name,
-        message_size=message_size,
-        description=exp_description,
-    )
-
-    print(f"\nThreshold results for {exp_name}:")
-    print(f"Message size: {message_size} bytes")
-    print(f"Threshold load: {threshold_load} messages/second")
-    print(f"Observed throughput: {observed_throughput} messages/second")
-
-
 @click.command("ingest")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
 @click.option("--load", type=str)
@@ -182,21 +122,17 @@ def threshold(exp_name: str, exp_description: str, message_size: int = 1024):
 def ingest(exp_name, **kwargs):
     from greenflow.playbook import exp
 
-    exp_description = "Chirop threshold"
+    exp_description = "cluster=chirop type=threshold-explore instances=10"
 
+    message_sizes = [
+        128,
+        512,
+    ] + list(range(1024, 10241, 1024))
     try:
         with kafka_context():
-            for message_size in [
-                128,
-                512,
-            ] + list(range(1024, 10241, 1024)):
-                threshold("ingest-kafka", exp_description, message_size)
+            print(threshold("ingest-kafka", exp_description, message_sizes))
         with redpanda_context():
-            for message_size in [
-                128,
-                512,
-            ] + list(range(1024, 10241, 1024)):
-                threshold("ingest-redpanda", exp_description, message_size)
+            print(threshold("ingest-redpanda", exp_description, message_sizes))
     except:
         send_notification("Error in experiment. Debugging with shell")
         post_mortem()
