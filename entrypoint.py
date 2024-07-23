@@ -18,6 +18,31 @@ import click
 from shlex import split
 from contextlib import contextmanager
 
+import logging
+from logfmter import Logfmter
+
+datefmt = "%Y.%m.%d.%a.%H-%M-%S"
+formatter = Logfmter(
+    keys=[
+        "ts",
+        "lvl",
+        "at",
+        "lno",
+    ],
+    mapping={
+        "ts": "asctime",
+        "lvl": "levelname",
+        "at": "pathname",
+        "lno": "lineno",
+    },
+    datefmt=datefmt,
+)
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+
+
+logging.basicConfig(handlers=[handler], level=logging.INFO)
+
 
 def embed(globals, locals):
     from ptpython.repl import embed
@@ -41,8 +66,8 @@ def load_gin(exp_name="ingest-kafka"):
                 f"{g.g.gitroot}/gin/g5k/defaults.gin",
                 # f"{g.g.gitroot}/gin/g5k/paravance.gin",
                 # f"{g.g.gitroot}/gin/g5k/parasilo.gin",
-                # f"{g.g.gitroot}/gin/g5k/montcalm.gin",
-                f"{g.g.gitroot}/gin/g5k/chirop.gin",
+                f"{g.g.gitroot}/gin/g5k/montcalm.gin",
+                # f"{g.g.gitroot}/gin/g5k/chirop.gin",
                 # f"{g.g.gitroot}/gin/g5k/neowise.gin",
                 f"{g.g.gitroot}/gin/{exp_name}.gin",
             ],
@@ -113,6 +138,7 @@ def setup(exp_name, workers):
 
     send_notification("Setup complete")
 
+
 @click.command("ingest")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
 @click.option("--load", type=str)
@@ -122,7 +148,9 @@ def setup(exp_name, workers):
 def ingest(exp_name, **kwargs):
     from greenflow.playbook import exp
 
-    exp_description = "cluster=chirop type=threshold-explore instances=10"
+    exp_description = (
+        "cluster=montcalm type=threshold-explore instances=10 partitions=1"
+    )
 
     message_sizes = [
         128,
@@ -130,9 +158,9 @@ def ingest(exp_name, **kwargs):
     ] + list(range(1024, 10241, 1024))
     try:
         with kafka_context():
-            print(threshold("ingest-kafka", exp_description, message_sizes))
+            logging.info(threshold("ingest-kafka", exp_description, message_sizes))
         with redpanda_context():
-            print(threshold("ingest-redpanda", exp_description, message_sizes))
+            logging.info(threshold("ingest-redpanda", exp_description, message_sizes))
     except:
         send_notification("Error in experiment. Debugging with shell")
         post_mortem()

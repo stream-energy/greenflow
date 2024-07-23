@@ -1,7 +1,8 @@
+import contextlib
 from typing import Callable, NamedTuple, Any
 import pendulum
-from abc import ABC, abstractmethod
-
+import os
+import logging
 
 
 class State(NamedTuple):
@@ -23,169 +24,221 @@ class Decision(NamedTuple):
     next_params: dict[str, Any]
 
 
-class AdaptiveExperiment(ABC):
-    def __init__(
-        self,
-        executor: Callable[[State], Result],
-        initial_params: dict[str, Any],
-        max_iter: int = 10,
-    ):
-        self.initial_params = initial_params
-        self.max_iter = max_iter
-        self.experiment = executor
+class ThresholdResult(NamedTuple):
+    message_size: int
+    threshold_load: int
+    observed_throughput: int
+    history: History
 
-    @abstractmethod
-    def decide(self, history: History) -> Decision | None:
-        pass
 
-    def execute(self) -> History:
-        history = History(states=[], results=[])
+def decide(history: History) -> Decision | None:
+    """
+    This function looks at how the experiment has been going so far
+    and decides what to do next. It returns a Decision object with the
+    next parameters to try, or None if the experiment should be stopped.
+    """
+    if not history.states:
+        # Can't make a decision without any data, this
+        # should never happen
+        raise
 
-        def recurse(
-            history: History, params: dict[str, Any], iteration: int
-        ) -> History:
-            if iteration >= self.max_iter:
-                return history
+    # This is a simple binary search algorithm to find the threshold load
+    # it only needs the last state and result to make a decision
 
-            state = State(params=params, time=pendulum.now())
-            result = self.experiment(state)
+    prev_params = history.states[-1].params
+    prev_metrics = history.results[-1].metrics
 
-            new_history = History(
-                states=history.states + [state], results=history.results + [result]
+    load = prev_params["load"]
+    throughput = prev_metrics["throughput"]
+
+    threshold = 0.05
+    ableToHandle = throughput >= load * (1 - threshold)
+
+    low = prev_params["low"]
+    high = prev_params["high"]
+
+    if high is None:
+        if not ableToHandle:
+            high = throughput
+            new_load = (low + high) // 2
+            return Decision(
+                next_params={
+                    **prev_params,
+                    "load": new_load,
+                    "high": high,
+                }
+            )
+        else:
+            # Double the load until failure
+            new_load = load * 2
+            return Decision(
+                next_params={
+                    **prev_params,
+                    "load": new_load,
+                    "low": load,
+                }
+            )
+    else:
+        if ableToHandle:
+            if high - low < load * 0.05:
+                # The range is small enough, we can stop the experiment
+                return None
+            # It was able to handle the load
+            # So we can set this as the new low
+            low = load
+            new_load = (low + high) // 2
+            return Decision(
+                next_params={
+                    **prev_params,
+                    "load": new_load,
+                    "low": low,
+                }
+            )
+        else:
+            low = throughput * 0.8
+            high = min(high, throughput)  # Ensure high is not increased
+            new_load = (low + high) // 2
+            return Decision(
+                next_params={
+                    **prev_params,
+                    "load": new_load,
+                    "high": high,
+                    "low": low,
+                }
             )
 
-            decision = self.decide(new_history)
-            if decision is None:
-                return new_history
 
-            return recurse(new_history, decision.next_params, iteration + 1)
+def execute(initial_params: dict[str, Any]) -> History:
+    history = History(states=[], results=[])
+    max_iterations = 15
 
-        return recurse(history, self.initial_params, 0)
+    def recurse(
+        history: History,
+        params: dict[str, Any],
+        it: int,
+        max_iterations: int = max_iterations,
+    ) -> History:
+        if it >= max_iterations:
+            logging.warn("Max iterations reached")
+            return history
 
+        state = State(params=params, time=pendulum.now())
+        result = experiment(state)
 
-class ThresholdLoadTest(AdaptiveExperiment):
-    def __init__(
-        self,
-        *,
-        executor: Callable[[State], Result],
-        initial_params: dict[str, Any],
-        max_iter: int = 10,
-        exp_name: str,
-        exp_description: str,
-    ):
-        super().__init__(executor, initial_params, max_iter)
-        self.name = exp_name
-        self.desc = exp_description
-
-    def decide(self, history: History) -> Decision | None:
-        if not history.states:
-            return Decision(next_params=self.initial_params)
-
-        current = history.states[-1].params
-        result = history.results[-1].metrics
-        load = current["load"]
-        throughput = result["throughput"]
-
-        threshold = 0.1
-        diff = abs(load - throughput) / load
-
-        low = current.get("low", 1 * 10**4)
-        high = current.get("high", 1 * 10**6)
-
-        if diff <= threshold:
-            low = load
-        elif throughput < load * (1 - threshold):
-            high = load
-        else:
-            low = load
-
-        if high - low < load * 0.05:
-            return None  # Stop the experiment
-
-        next_load = (low + high) // 2
-        return Decision(
-            next_params={**current, "load": next_load, "low": low, "high": high}
+        new_history = History(
+            states=history.states + [state], results=history.results + [result]
         )
 
+        decision = decide(new_history)
+        if decision is None:
+            return new_history
 
-def find_threshold_load(*, exp_name, message_size, description, previous_results=None):
+        return recurse(new_history, decision.next_params, it + 1)
+
+    return recurse(history, initial_params, 0)
+
+
+def experiment(state: State) -> Result:
     from greenflow.playbook import exp
+    from greenflow.analysis import get_observed_throughput_of_last_experiment
     from entrypoint import rebind_parameters
 
-    def experiment(state: State) -> Result:
-        from greenflow.playbook import exp
-        from greenflow.analysis import get_observed_throughput_of_last_experiment
+    params = state.params
 
-        params = state.params
-
-        load = params["load"]
-        message_size = params["message_size"]
-        start_time = pendulum.now()
-        print(f"Starting with load {load} and message size {message_size}")
-        rebind_parameters(load=load, message_size=message_size)
+    load = int(params["load"])
+    message_size = params["message_size"]
+    start_time = pendulum.now()
+    rebind_parameters(load=load, message_size=message_size)
+    # exp is calling ansible_runner
+    # Its output is very verbose, so we are not printing it
+    # Suppress stdout and stderr before calling exp
+    with open("/tmp/greenflow.log", "a+") as f, contextlib.redirect_stdout(
+        f
+    ), contextlib.redirect_stderr(f):
         exp(
             exp_name=params["exp_name"],
             experiment_description=params["exp_description"],
         )
-        throughput = get_observed_throughput_of_last_experiment(
-            minimum_current_ts=start_time
-        )
-        print(f"Done with load {load}. Observed throughput: {throughput}")
-        return Result(metrics={"throughput": throughput}, time=state.time)
+    throughput = get_observed_throughput_of_last_experiment(
+        minimum_current_ts=start_time
+    )
+    logging.info(
+        {
+            "msg": "Experiment complete",
+            **params,
+            "message_size": message_size,
+            "load": load,
+            "throughput": throughput,
+        }
+    )
+    return Result(metrics={"throughput": throughput}, time=state.time)
 
-    # Adjust initial load based on previous results
-    if previous_results:
-        prev_message_size, prev_threshold_load, _ = previous_results[-1]
-        if message_size > prev_message_size:
-            initial_load = prev_threshold_load
+
+def threshold(
+    exp_name: str, exp_description: str, message_sizes: list[int]
+) -> list[ThresholdResult]:
+    from greenflow.playbook import exp
+
+    results = []
+
+    from entrypoint import rebind_parameters
+
+    rebind_parameters(durationSeconds=10)
+    exp(exp_name=exp_name, experiment_description="Warmup")
+    rebind_parameters(durationSeconds=100)
+    first_message_size = message_sizes[0]
+
+    if first_message_size <= 1024:
+        low = 5 * 10**5
+    elif first_message_size <= 4096:
+        low = 1 * 10**5
     else:
-        # Adjust initial load based on message size
-        if message_size <= 1024:
-            initial_load = 1 * 10**5
-        elif message_size <= 4096:
-            initial_load = 5 * 10**4
-        else:
-            initial_load = 2 * 10**4
-
-    # initial_params = {
-    #     "load": initial_load,
-
-    initial_load = 1 * 10**5 if message_size <= 4096 else 1 * 10**4
+        low = 1 * 10**4
 
     initial_params = {
-        "load": initial_load,
-        "message_size": message_size,
+        "message_size": first_message_size,
         "exp_name": exp_name,
-        "exp_description": description,
+        "exp_description": exp_description,
+        "low": low,
+        "load": low,
+        "high": None,
     }
-    rebind_parameters(durationSeconds=100)
-    # Run a warmup
-    exp(exp_name=exp_name, experiment_description="Warmup")
-    test = ThresholdLoadTest(
-        exp_name=exp_name,
-        exp_description=description,
-        executor=experiment,
-        initial_params=initial_params,
-    )
-    final_history = test.execute()
-    final_state = final_history.states[-1]
-    final_result = final_history.results[-1]
-    return final_state.params["load"], final_result.metrics["throughput"]
-
-
-def threshold(exp_name: str, exp_description: str, message_sizes: list[int]) -> list[tuple[int, int]]:
-    results = []
-    for message_size in message_sizes:
-        threshold_load, observed_throughput = find_threshold_load(
-            exp_name=exp_name,
-            message_size=message_size,
-            description=exp_description,
+    first_history = execute(initial_params=initial_params)
+    first_final_state = first_history.states[-1]
+    first_final_result = first_history.results[-1]
+    results.append(
+        ThresholdResult(
+            message_size=first_message_size,
+            threshold_load=first_final_state.params["load"],
+            observed_throughput=first_final_result.metrics["throughput"],
+            history=first_history,
         )
-        results.append((threshold_load, observed_throughput))
+    )
 
-        print(f"\nThreshold results for {exp_name}:")
-        print(f"Message size: {message_size} bytes")
-        print(f"Threshold load: {threshold_load} messages/second")
-        print(f"Observed throughput: {observed_throughput} messages/second")
+    for message_size in message_sizes[1:]:
+        high = results[-1].threshold_load
+        if message_size <= 1024:
+            low = int(2.5 * 10**5)
+        elif message_size <= 4096:
+            low = 1 * 10**5
+        else:
+            low = 1 * 10**4
+        initial_params = initial_params | {
+            "low": low,
+            "load": (low + high) // 2,
+            "high": high,
+            "message_size": message_size,
+        }
+        history = execute(initial_params=initial_params)
+        last_state = history.states[-1]
+        last_result = history.results[-1]
+        threshold_result = ThresholdResult(
+            message_size=message_size,
+            threshold_load=last_state.params["load"],
+            observed_throughput=last_result.metrics["throughput"],
+            history=history,
+        )
+        # logging.info({"exp_name": exp_name, "result": threshold_result})
+        results.append(threshold_result)
 
     return results

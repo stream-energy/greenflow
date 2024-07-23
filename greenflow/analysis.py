@@ -26,7 +26,7 @@ def sort_by_time(exp_id, experiments):
     return pendulum.parse(date_time_str)
 
 
-def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.DateTime):
+def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.DateTime) -> float:
     # Get the most recent experiment
     experiments = {exp.doc_id: exp for exp in g.storage.experiments.all()}
 
@@ -38,6 +38,7 @@ def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.Date
     }
 
     if not valid_experiments:
+        breakpoint()
         print(f"No experiments found after {minimum_current_ts}")
         return float("NaN")
 
@@ -85,10 +86,6 @@ def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.Date
             pass
 
         observed_throughput = max_watermark / duration
-
-        print(f"Observed throughput: {observed_throughput:.2f} messages/second")
-        print(f"Experiment duration: {duration:.2f} seconds")
-        print(f"Max watermark: {max_watermark}")
 
         return observed_throughput
 

@@ -45,11 +45,11 @@ class _g:
         exp.stopped_ts = stopped_ts.to_iso8601_string()
 
 
-        # To avoid polluting, do not write to disk if shorter than 2 minutes
-        if stopped_ts.diff(pendulum.parse(exp.started_ts)).minutes < 2:
-            self.root.current_experiment = None
-            transaction.commit()
-            return
+        # # To avoid polluting, do not write to disk if shorter than 2 minutes
+        # if stopped_ts.diff(pendulum.parse(exp.started_ts)).minutes < 2:
+        #     self.root.current_experiment = None
+        #     transaction.commit()
+        #     return
         g.storage.commit_experiment()
 
 

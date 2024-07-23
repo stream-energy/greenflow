@@ -1,10 +1,10 @@
-greenflow.factors.exp_params.durationSeconds = 240
+greenflow.factors.exp_params.durationSeconds = 100
 greenflow.factors.exp_params.instances = 10
 greenflow.factors.exp_params.kafka_bootstrap_servers = "redpanda.redpanda.svc.cluster.local:9092"
 greenflow.factors.exp_params.load = 50000
 greenflow.factors.exp_params.messageSize = 64
 greenflow.factors.exp_params.replicationFactor = 3
-greenflow.factors.exp_params.partitions = 30
+greenflow.factors.exp_params.partitions = 1
 greenflow.factors.exp_params.warmupSeconds = 0
 greenflow.factors.exp_params.redpanda_write_caching = True
 greenflow.factors.factors.exp_name = "ingest-redpanda"
