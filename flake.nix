@@ -62,6 +62,7 @@
             })
             direnv
             pulumi-bin
+            mdbook
           ];
           scripts.resetEnv.exec = ''
             rm -rf .devenv

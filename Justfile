@@ -10,6 +10,12 @@ send_notification message:
     import requests
     requests.post("{{ntfy_url}}", headers={"priority": "low"}, data="{{message}}")
 
+docs:
+    #!/usr/bin/env bash
+    pushd "{{ gitroot }}/book";
+      mdbook build
+    popd
+
 test_message_delivery:
     just send_notification "Test message"
 
