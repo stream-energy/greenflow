@@ -55,7 +55,9 @@ def embed(globals, locals):
     )
 
 
-ntfy_url = "https://ntfy.sh/4d5a7713-8b2a-46c8-8407-0014b19aa54a-greenflow"
+# Configure NTFY_URL in .secrets.env to get notifications on your phone!
+# Once the experiment is complete or if there is an error, you will get a notification
+ntfy_url = os.getenv("NTFY_URL", "http://ntfy.sh/YOUR_URL_HERE")
 
 
 def load_gin(exp_name="ingest-kafka"):

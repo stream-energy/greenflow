@@ -1,0 +1,71 @@
+networks:
+  proxy-network:
+    name: proxy-network
+
+services:
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    container_name: caddy
+    hostname: caddy
+    networks:
+      - proxy-network
+    depends_on:
+      - tailscale 
+      - grafana
+      - vm
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+      - ./tailscale-tmp/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+  tailscale:
+    env_file: .env
+    container_name: tailscaled
+    image: tailscale/tailscale
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - /dev/net/tun:/dev/net/tun
+      - tailscale-varlib:/var/lib
+      - ./tailscale-tmp:/tmp
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    container_name: grafana
+    networks:
+      - proxy-network
+    ports:
+      - "3000:3000"
+    volumes:
+      - 'grafana-local-storage:/var/lib/grafana'
+      - type: bind
+        source: ./grafana/etc-grafana
+        target: /etc/grafana
+    user: root
+  vm:
+    image: victoriametrics/victoria-metrics
+    restart: unless-stopped
+    container_name: victoria-metrics
+    ports:
+      - "8428:8428"
+    networks:
+      - proxy-network
+    volumes:
+      - "victoria-metrics-data:/victoria-metrics-data"
+    user: root
+
+volumes:
+  caddy-data:
+  caddy-config:
+  tailscale-varlib:
+  grafana-local-storage:
+  victoria-metrics-data:
