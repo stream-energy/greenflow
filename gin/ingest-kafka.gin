@@ -4,6 +4,6 @@ greenflow.factors.exp_params.kafka_bootstrap_servers = "theodolite-kafka-kafka-b
 greenflow.factors.exp_params.load = 50000
 greenflow.factors.exp_params.replicationFactor = 3
 greenflow.factors.exp_params.messageSize = 64
-greenflow.factors.exp_params.partitions = 1
+greenflow.factors.exp_params.partitions = 12
 greenflow.factors.exp_params.warmupSeconds = 0
 greenflow.factors.factors.exp_name = "ingest-kafka"

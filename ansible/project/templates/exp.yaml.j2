@@ -64,7 +64,7 @@
               spec:
                 containers:
                   - name: create-topic
-                    image: redpandadata/redpanda
+                    image: registry.gitlab.inria.fr/gkovilkk/greenflow/redpanda:v24.1.8
                     command: ["rpk"]
                     args:
                       - "topic"
@@ -146,7 +146,7 @@
               spec:
                 containers:
                   - name: delete-topic
-                    image: redpandadata/redpanda
+                    image: registry.gitlab.inria.fr/gkovilkk/greenflow/redpanda:v24.1.8
                     command: ["rpk"]
                     args:
                       - "topic"

@@ -128,7 +128,7 @@ def process_experiment(exp: Document) -> dict[str, Any]:
     return {
         "exp_id": exp.doc_id,
         "exp_name": exp["exp_name"],
-        "exp_description": exp["experiment_description"],
+        # "exp_description": exp["experiment_description"],
         "started_ts": exp["started_ts"],
         "stopped_ts": exp["stopped_ts"],
         **metadata.get("results", {}),
@@ -147,7 +147,7 @@ def calculate_throughput_MBps(row: pd.Series):
     Calculate the throughput in megabytes per second (MBps).
     """
     message_size_bytes = row.get(
-        "message_size_bytes", 1024
+        "messageSize", 1024
     )  # Default to 1KB if not specified
     observed_throughput_messages = row.get("observed_throughput", 0)
 
@@ -195,8 +195,11 @@ def calculate_throughput_gap(row: pd.Series):
     except KeyError:
         throughput_gap = float("NaN")
 
-    throughput_gap_percentage = (throughput_gap / expected_throughput) * 100
-    row["throughput_gap"] = throughput_gap
+    try:
+        throughput_gap_percentage = (throughput_gap / expected_throughput) * 100
+    except ZeroDivisionError:
+        throughput_gap_percentage = float("NaN")
+    # row["throughput_gap"] = throughput_gap
     row["throughput_gap_percentage"] = throughput_gap_percentage
 
     return row
@@ -234,7 +237,7 @@ def calculate_latency(row: pd.Series):
 
 def calculate_throughput_per_watt(row: pd.Series):
     """Use the average power consumption to calculate the throughput per watt"""
-    throughput_per_watt = row["observed_throughput"] / row["average_power"]
+    throughput_per_watt = row["throughput_MBps"] / row["average_power"]
     row["throughput_per_watt"] = throughput_per_watt
 
     return row
@@ -279,7 +282,7 @@ def enrich_dataframe(df):
     calculations = [
         calculate_observed_throughput,
         calculate_throughput_gap,
-        calculate_latency,
+        # calculate_latency,
         calculate_average_power,
         calculate_throughput_MBps,
         calculate_throughput_per_watt,
@@ -289,9 +292,3 @@ def enrich_dataframe(df):
         df = df.apply(calc, axis=1)
 
     return df
-
-
-if __name__ == "__main__":
-    cutoff = "2024-07-09T21:36:18.761822+02:00"
-    experiments: dict[int, Document] = get_experiments()
-    data: pd.DataFrame = filter_experiments(experiments, cutoff)

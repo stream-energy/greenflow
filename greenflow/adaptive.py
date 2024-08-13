@@ -81,6 +81,7 @@ def decide(history: History) -> Decision | None:
     else:
         if ableToHandle:
             if high - low < load * 0.05:
+                logging.info({"msg": "Converged"})
                 # The range is small enough, we can stop the experiment
                 return None
             # It was able to handle the load
@@ -95,8 +96,13 @@ def decide(history: History) -> Decision | None:
                 }
             )
         else:
-            low = throughput * 0.8
-            high = min(high, throughput)  # Ensure high is not increased
+            high = min(high, load)  # Ensure high is not increased
+            if low == get_lower_bound(prev_params["message_size"]):
+                # Heuristic to hopefully get faster convergence
+                # If low is still the default value, set it based on observed throughput
+                low = throughput * 0.8
+            # if low > high:
+            #     low = high * 0.9
             new_load = (low + high) // 2
             return Decision(
                 next_params={
@@ -146,7 +152,7 @@ def experiment(state: State) -> Result:
     params = state.params
 
     load = int(params["load"])
-    message_size = params["message_size"]
+    message_size = int(params["message_size"])
     start_time = pendulum.now()
     rebind_parameters(load=load, message_size=message_size)
     # exp is calling ansible_runner
@@ -173,6 +179,13 @@ def experiment(state: State) -> Result:
     )
     return Result(metrics={"throughput": throughput}, time=state.time)
 
+def get_lower_bound(message_size: int) -> int:
+    if message_size == 128:
+        return 5 * 10**5
+    elif message_size <= 4096:
+        return 5 * 10**4
+    else:
+        return 1 * 10**4
 
 def threshold(
     exp_name: str, exp_description: str, message_sizes: list[int]
@@ -188,19 +201,12 @@ def threshold(
     rebind_parameters(durationSeconds=100)
     first_message_size = message_sizes[0]
 
-    if first_message_size <= 1024:
-        low = 5 * 10**5
-    elif first_message_size <= 4096:
-        low = 1 * 10**5
-    else:
-        low = 1 * 10**4
-
     initial_params = {
         "message_size": first_message_size,
         "exp_name": exp_name,
         "exp_description": exp_description,
-        "low": low,
-        "load": low,
+        "low": get_lower_bound(first_message_size),
+        "load": get_lower_bound(first_message_size),
         "high": None,
     }
     first_history = execute(initial_params=initial_params)
@@ -217,12 +223,82 @@ def threshold(
 
     for message_size in message_sizes[1:]:
         high = results[-1].threshold_load
-        if message_size <= 1024:
-            low = int(2.5 * 10**5)
-        elif message_size <= 4096:
-            low = 1 * 10**5
-        else:
-            low = 1 * 10**4
+        low = get_lower_bound(message_size)
+        if high < low:
+            # swap low and high
+            high = low
+            low = 0
+        initial_params = initial_params | {
+            "low": low,
+            "load": (low + high) // 2,
+            "high": high,
+            "message_size": message_size,
+        }
+        history = execute(initial_params=initial_params)
+        last_state = history.states[-1]
+        last_result = history.results[-1]
+        threshold_result = ThresholdResult(
+            message_size=message_size,
+            threshold_load=last_state.params["load"],
+            observed_throughput=last_result.metrics["throughput"],
+            history=history,
+        )
+        # logging.info({"exp_name": exp_name, "result": threshold_result})
+        results.append(threshold_result)
+
+    return results
+
+
+def threshold_primed(
+    exp_name: str, exp_description: str, message_sizes: list[int]
+) -> list[ThresholdResult]:
+    from greenflow.playbook import exp
+
+    from entrypoint import rebind_parameters
+
+    rebind_parameters(durationSeconds=10)
+    exp(exp_name=exp_name, experiment_description="Warmup")
+    rebind_parameters(durationSeconds=100)
+
+    results = [
+        ThresholdResult(
+            message_size=128,
+            threshold_load=3917060,
+            observed_throughput=3758691,
+            history=History(states=[], results=[]),
+        ),
+        ThresholdResult(
+            message_size=512,
+            threshold_load=1386134,
+            observed_throughput=1375417,
+            history=History(states=[], results=[]),
+        ),
+        ThresholdResult(
+            message_size=1024,
+            threshold_load=712266,
+            observed_throughput=706587,
+            history=History(states=[], results=[]),
+        ),
+        ThresholdResult(
+            message_size=2048,
+            threshold_load=341127,
+            observed_throughput=335415,
+            history=History(states=[], results=[]),
+        ),
+    ]
+
+    initial_params = {
+        "message_size": results[-1].message_size,
+        "exp_name": exp_name,
+        "exp_description": exp_description,
+        "low": get_lower_bound(results[-1].message_size),
+        "load": get_lower_bound(results[-1].message_size),
+    }
+
+
+    for message_size in message_sizes[3:]:
+        high = results[-1].threshold_load
+        low = get_lower_bound(message_size)
         initial_params = initial_params | {
             "low": low,
             "load": (low + high) // 2,
