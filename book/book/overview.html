@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Page not found - GreenFlow documentation</title>
-        <base href="/">
+        <title>System Overview - GreenFlow documentation</title>
 
 
         <!-- Custom HTML head -->
@@ -89,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="requirements.html"><strong aria-hidden="true">2.</strong> Requirements</a></li><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">3.</strong> System Overview</a></li><li class="chapter-item expanded "><a href="workflow.html"><strong aria-hidden="true">4.</strong> Workflow</a></li><li class="chapter-item expanded "><a href="prometheus-setup.html"><strong aria-hidden="true">5.</strong> Prometheus Setup</a></li><li class="chapter-item expanded "><a href="data-analysis.html"><strong aria-hidden="true">6.</strong> Data Analysis</a></li><li class="chapter-item expanded affix "><a href="project-info.html">Project Info</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="requirements.html"><strong aria-hidden="true">2.</strong> Requirements</a></li><li class="chapter-item expanded "><a href="overview.html" class="active"><strong aria-hidden="true">3.</strong> System Overview</a></li><li class="chapter-item expanded "><a href="workflow.html"><strong aria-hidden="true">4.</strong> Workflow</a></li><li class="chapter-item expanded "><a href="prometheus-setup.html"><strong aria-hidden="true">5.</strong> Prometheus Setup</a></li><li class="chapter-item expanded "><a href="data-analysis.html"><strong aria-hidden="true">6.</strong> Data Analysis</a></li><li class="chapter-item expanded affix "><a href="project-info.html">Project Info</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -174,14 +173,33 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
-<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
+                        <h1 id="system-overview"><a class="header" href="#system-overview">System Overview</a></h1>
+<h2 id="entry-point"><a class="header" href="#entry-point">Entry Point</a></h2>
+<p>The main entry point for running and managing experiments is <code>$PROJECT_ROOT/entrypoint.py</code>. This script provides CLI commands for setting up the environment, running experiments, and managing resources.</p>
+<p>The entrypoint is meant to be edited and modified by the experimenter. There is some limited capability to pass in command-line arguments, however, for more complex usecases, it's meant to be easy to change.</p>
+<h3 id="experiment-management"><a class="header" href="#experiment-management">Experiment Management</a></h3>
+<p>Experiments are managed using the <code>Experiment</code> class in <code>$PROJECT_ROOT/greenflow/experiment.py</code>. This class handles the initialization, execution, and result calculation of experiments.</p>
+<h3 id="configuration"><a class="header" href="#configuration">Configuration</a></h3>
+<p>As stream processing systems have a large number of configuration parameters and tuneables, this project uses <a href="https://github.com/google/gin-config">gin-config</a> for configuration management. Refer <code>$PROJECT_ROOT/gin</code> for more.</p>
+<p>Gin is a lightweight, Python-like configuration language that supports dependency injection. This allows us to define functions without explicitly passing each and every parameter that might change.</p>
+<p>Configurations are defined in <code>.gin</code> files and can be dynamically re-bound using the <code>rebind_parameters</code> function in <code>entrypoint.py</code>.</p>
+<h3 id="storage"><a class="header" href="#storage">Storage</a></h3>
+<p>Experiment data is stored using TinyDB with custom serialization for handling complex data types. The <code>ExpStorage</code> class in <code>storage.py</code> manages the experiment database.</p>
+<p>The experiment database is stored in plain-text in <code>yaml</code> format at <code>$PROJECT_ROOT/storage/experiment-history.yaml</code>. This includes any and all parameters, the Grid'5000 deployment information as well as the exact timestamps of <code>experiment_started_ts</code> and <code>deployment_started_ts</code> which are then used correspondingly as labels with the VictoriaMetrics/Prometheus TSDB to filter the results for further analysis. For more details, click <a href="./setup/prometheus-setup.html">here</a>.</p>
+<h3 id="what-next"><a class="header" href="#what-next">What next?</a></h3>
+<p>Now that you have a better idea of how the overall system works, <a href="./workflow.html">let's understand the overall workflow</a>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="requirements.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
+                            <a rel="next prefetch" href="workflow.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -189,7 +207,13 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="requirements.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
+                    <a rel="next prefetch" href="workflow.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
             </nav>
 
         </div>

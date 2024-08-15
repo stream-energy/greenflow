@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Page not found - GreenFlow documentation</title>
-        <base href="/">
+        <title>Data Analysis - GreenFlow documentation</title>
 
 
         <!-- Custom HTML head -->
@@ -89,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="requirements.html"><strong aria-hidden="true">2.</strong> Requirements</a></li><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">3.</strong> System Overview</a></li><li class="chapter-item expanded "><a href="workflow.html"><strong aria-hidden="true">4.</strong> Workflow</a></li><li class="chapter-item expanded "><a href="prometheus-setup.html"><strong aria-hidden="true">5.</strong> Prometheus Setup</a></li><li class="chapter-item expanded "><a href="data-analysis.html"><strong aria-hidden="true">6.</strong> Data Analysis</a></li><li class="chapter-item expanded affix "><a href="project-info.html">Project Info</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="requirements.html"><strong aria-hidden="true">2.</strong> Requirements</a></li><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">3.</strong> System Overview</a></li><li class="chapter-item expanded "><a href="workflow.html"><strong aria-hidden="true">4.</strong> Workflow</a></li><li class="chapter-item expanded "><a href="prometheus-setup.html"><strong aria-hidden="true">5.</strong> Prometheus Setup</a></li><li class="chapter-item expanded "><a href="data-analysis.html" class="active"><strong aria-hidden="true">6.</strong> Data Analysis</a></li><li class="chapter-item expanded affix "><a href="project-info.html">Project Info</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -174,14 +173,112 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
-<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
+                        <h1 id="data-analysis"><a class="header" href="#data-analysis">Data Analysis</a></h1>
+<p>This chapter provides an overview of how to analyze data collected from GreenFlow experiments. It includes a brief introduction to Prometheus querying with PromQL, and explains how to use the provided tools and scripts for data analysis.</p>
+<h2 id="overview-of-prometheus-and-promql"><a class="header" href="#overview-of-prometheus-and-promql">Overview of Prometheus and PromQL</a></h2>
+<p>Prometheus is a powerful monitoring and alerting toolkit that collects and stores metrics as time series data. PromQL (Prometheus Query Language) is used to query this data. Understanding the basics of PromQL is essential for effective data analysis.</p>
+<h3 id="prometheus-metrics"><a class="header" href="#prometheus-metrics">Prometheus Metrics</a></h3>
+<p>Prometheus metrics are stored with labels that provide additional context. A metric consists of:</p>
+<ul>
+<li><strong>Metric Name</strong>: Describes the type of data being measured (e.g., <code>http_requests_total</code>).</li>
+<li><strong>Labels</strong>: Key-value pairs that provide additional information about the metric (e.g., <code>method="GET"</code>).</li>
+</ul>
+<h3 id="basic-promql-queries"><a class="header" href="#basic-promql-queries">Basic PromQL Queries</a></h3>
+<ul>
+<li><strong>Instant Vector</strong>: A set of time series containing a single sample for each time series, all sharing the same timestamp.</li>
+</ul>
+<pre><code class="language-promql">http_requests_total
+</code></pre>
+<ul>
+<li><strong>Range Vector</strong>: A set of time series containing a range of data points over time.</li>
+</ul>
+<pre><code class="language-promql">http_requests_total[5m]
+</code></pre>
+<ul>
+<li><strong>Aggregation</strong>: Summarizes or groups data.</li>
+</ul>
+<pre><code class="language-promql">sum(http_requests_total) by (method)
+</code></pre>
+<p>For more detailed information, refer to the <a href="https://prometheus.io/docs/prometheus/latest/querying/basics/">Prometheus documentation</a>.</p>
+<h2 id="data-analysis-in-greenflow"><a class="header" href="#data-analysis-in-greenflow">Data analysis in GreenFlow</a></h2>
+<p>GreenFlow provides tools and scripts to facilitate data analysis. The primary tools include the analysis.py script and Jupyter notebooks.</p>
+<p>Since the metrics are stored in the VictoriaMetrics instance, they can be queried and accessed through filtering for <code>experiment_started_ts</code> to zoom in on a particular experiment. Make use of Grafana for exploring and visualizing the data.</p>
+<h3 id="analysis-script-analysispy"><a class="header" href="#analysis-script-analysispy">Analysis Script: analysis.py</a></h3>
+<p>The analysis.py script contains helper functions for performing various calculations and data manipulations using pandas DataFrames. This script is used to automate the data analysis process.
+Key functions in analysis.py:</p>
+<ul>
+<li>get_experiments(): Retrieves experiment data.</li>
+<li>filter_experiments(): Filters experiments based on specified criteria.</li>
+<li>enrich_dataframe(): Adds additional computed columns to the DataFrame for analysis.</li>
+</ul>
+<h2 id="example-workflow-in-jupyter-notebook"><a class="header" href="#example-workflow-in-jupyter-notebook">Example Workflow in Jupyter Notebook</a></h2>
+<p>Below is an example workflow for analyzing data using a Jupyter notebook. This workflow includes steps for filtering experiments, enriching data, and creating visualizations.</p>
+<pre><code class="language-python"># %%
+from prometheus_api_client import PrometheusConnect, MetricRangeDataFrame
+from prometheus_api_client.utils import parse_datetime
+import pandas as pd
+import pendulum
+from greenflow.g import g
+from tinydb import TinyDB, Query
+from os import getenv
+import matplotlib.pyplot as plt
+import seaborn as sns
+import greenflow.analysis as an
+import qgridnext as qgrid
+
+# %%
+# Retrieve and filter experiments
+cutoff = "2024-07-23T14:40:18.761822+02:00"
+experiments = an.get_experiments()
+
+def interest(exp) -&gt; bool:
+  params = exp["experiment_metadata"]["factors"]["exp_params"]
+  messageSize = params["messageSize"]
+  partitions = params["partitions"]
+  if "cluster=chirop" in exp["experiment_description"]:
+    if messageSize &gt; 64 and partitions &gt;= 1:
+      return True
+  return False
+
+redpanda_kafka_data = an.filter_experiments(experiments, interest, cutoff)
+
+# %%
+# Enrich data and visualize
+enriched_data = an.enrich_dataframe(redpanda_kafka_data)
+enriched_data = enriched_data[enriched_data["throughput_gap_percentage"] &lt; 0]
+
+# Create a scatter plot
+def create_graph(data, system_name):
+    fig, ax = plt.subplots(figsize=(12, 8))
+    cmap = plt.cm.RdYlGn
+    scatter = ax.scatter(
+        data["messageSize"], data["load"], c=data["throughput_gap_percentage"], cmap=cmap, s=50
+    )
+    plt.colorbar(scatter, ax=ax, label="Throughput Gap (%)", extend="min")
+    ax.set_title(f"Load vs Message Size for {system_name}")
+    ax.set_xlabel("Message Size (bytes)")
+    ax.set_ylabel("Load (messages/sec)")
+    plt.tight_layout()
+    plt.show()
+
+# Create graphs for Kafka and Redpanda
+create_graph(enriched_data[enriched_data["exp_name"] == "ingest-kafka"], "Kafka")
+create_graph(enriched_data[enriched_data["exp_name"] == "ingest-redpanda"], "Redpanda")
+</code></pre>
+<h2 id="custom-analysis"><a class="header" href="#custom-analysis">Custom Analysis</a></h2>
+<p>For custom analysis, you can modify the provided Jupyter notebook or create your own analysis scripts using the functions in analysis.py. The Jupyter notebook provides an interactive environment for exploring and visualizing data, while the analysis.py script offers reusable functions for common analysis tasks.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="prometheus-setup.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
+                            <a rel="next prefetch" href="project-info.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -189,7 +286,13 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="prometheus-setup.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
+                    <a rel="next prefetch" href="project-info.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
             </nav>
 
         </div>

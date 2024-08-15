@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Page not found - GreenFlow documentation</title>
-        <base href="/">
+        <title>Prometheus Setup - GreenFlow documentation</title>
 
 
         <!-- Custom HTML head -->
@@ -89,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="requirements.html"><strong aria-hidden="true">2.</strong> Requirements</a></li><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">3.</strong> System Overview</a></li><li class="chapter-item expanded "><a href="workflow.html"><strong aria-hidden="true">4.</strong> Workflow</a></li><li class="chapter-item expanded "><a href="prometheus-setup.html"><strong aria-hidden="true">5.</strong> Prometheus Setup</a></li><li class="chapter-item expanded "><a href="data-analysis.html"><strong aria-hidden="true">6.</strong> Data Analysis</a></li><li class="chapter-item expanded affix "><a href="project-info.html">Project Info</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="requirements.html"><strong aria-hidden="true">2.</strong> Requirements</a></li><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">3.</strong> System Overview</a></li><li class="chapter-item expanded "><a href="workflow.html"><strong aria-hidden="true">4.</strong> Workflow</a></li><li class="chapter-item expanded "><a href="prometheus-setup.html" class="active"><strong aria-hidden="true">5.</strong> Prometheus Setup</a></li><li class="chapter-item expanded "><a href="data-analysis.html"><strong aria-hidden="true">6.</strong> Data Analysis</a></li><li class="chapter-item expanded affix "><a href="project-info.html">Project Info</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -174,14 +173,96 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
-<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
+                        <h1 id="prometheus-setup"><a class="header" href="#prometheus-setup">Prometheus Setup</a></h1>
+<p>This document outlines the setup process for Prometheus within the GreenFlow project, explaining how it integrates with other components and the configuration required for successful deployment.</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The Prometheus setup in GreenFlow is designed to collect metrics from experiments run on a Kubernetes cluster and store them in a local Docker Compose environment. This setup allows for flexible data collection and analysis agnostic to the network.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>The approach taken in GreenFlow for setting up Prometheus and related components is driven by several key factors:</p>
+<ol>
+<li>
+<p><strong>Network Agnosticism</strong>: Experiments may be run on various types of machines with different network configurations. This setup ensures consistency across different environments without requiring complex network setups.</p>
+</li>
+<li>
+<p><strong>Ephemeral Experiment Environments</strong>: GreenFlow is designed to run on bare metal platforms with ephemeral nodes and reservations. No data is stored permanently on the cluster itself, necessitating a reliable external data collection solution.</p>
+</li>
+<li>
+<p><strong>Simplified Setup</strong>: By leveraging Docker and Nix on the local machine, we ensure that experiments can be run without the need for a custom domain or a personally managed Prometheus server exposed to the web.</p>
+</li>
+<li>
+<p><strong>Flexibility</strong>: This approach allows for data collection and analysis even when the experimental nodes are not on the same network as the analysis machine.</p>
+</li>
+<li>
+<p><strong>Reproducibility</strong>: The consistent interface provided by this setup enhances the reproducibility of experiments across different configurations and environments.</p>
+</li>
+<li>
+<p><strong>Data Persistence</strong>: While the experiment environment is ephemeral, this setup ensures that valuable metrics and data are safely stored and accessible for post-experiment analysis.</p>
+</li>
+</ol>
+<p>By addressing these challenges, we provide a robust and reliable solution that simplifies the complexity of setting up experiments in diverse environments while ensuring data integrity and accessibility.</p>
+<h2 id="key-components"><a class="header" href="#key-components">Key Components</a></h2>
+<ol>
+<li>Prometheus Helm Chart (deployed on Kubernetes, within the experimental cluster)</li>
+<li>Local Docker Compose environment</li>
+<li>Tailscale for secure networking</li>
+</ol>
+<h2 id="deployment-process"><a class="header" href="#deployment-process">Deployment Process</a></h2>
+<h3 id="1-kubernetes-prometheus-setup"><a class="header" href="#1-kubernetes-prometheus-setup">1. Kubernetes Prometheus Setup</a></h3>
+<p>The Prometheus stack is deployed on the Kubernetes cluster using a Helm chart. This Prometheus instance is configured to scale up before an experiment starts and scale down after it completes.</p>
+<p>This configuration is part of the Ansible role <code>prometheus</code> and the values of the Helm chart are substituted in <code>$PROJECT_ROOT/ansible/project/roles/prometheus/templates/kube-prometheus-stack-values.yaml.j2</code>
+Key configuration:</p>
+<ul>
+<li>Remote Write URL: This is set to point to the local Victoria Metrics instance.</li>
+</ul>
+<h3 id="2-local-docker-compose-environment"><a class="header" href="#2-local-docker-compose-environment">2. Local Docker Compose Environment</a></h3>
+<p>The local environment runs several services:</p>
+<ul>
+<li>Victoria Metrics: Acts as the target Prometheus cluster, receiving data from the Kubernetes Prometheus instance.</li>
+<li>Grafana: For visualizing the collected metrics.</li>
+<li>Caddy: Reverse proxy for routing requests.</li>
+<li>Tailscale: Provides secure networking between the Kubernetes cluster and local environment.</li>
+</ul>
+<h3 id="3-tailscale-configuration"><a class="header" href="#3-tailscale-configuration">3. Tailscale Configuration</a></h3>
+<p>Tailscale is used to create a secure connection between the Kubernetes cluster and the local machine. This is especially useful when the local machine is behind NAT or firewalls.</p>
+<h2 id="configuration"><a class="header" href="#configuration">Configuration</a></h2>
+<p>Most of the user-specific configuration is captured in the <code>.secrets.env</code> file. This file is used by Ansible templates to populate the necessary values in the Prometheus role. After making any changes, make sure to run <code>direnv allow</code> or manually source the variables by running <code>source .secrets.env</code></p>
+<p>Key configurations in <code>$PROJECT_ROOT/.secrets.env</code>.</p>
+<h3 id="tailscale-setup"><a class="header" href="#tailscale-setup">Tailscale Setup</a></h3>
+<ol>
+<li>Set up a <a href="https://login.tailscale.com/admin/machines">Tailscale account</a>.</li>
+<li>Generate a <a href="https://login.tailscale.com/admin/settings/keys">Tailscale auth key</a></li>
+<li>Add the Tailscale auth key to the .env file in the Docker Compose directory <code>$PROJECT_ROOT/deploy</code></li>
+</ol>
+<h3 id="how-does-it-work"><a class="header" href="#how-does-it-work">How does it work?</a></h3>
+<ol>
+<li>Before an experiment:
+The Prometheus stack in Kubernetes scales up.</li>
+<li>During the experiment:
+▪ Metrics are collected by the Kubernetes Prometheus instance.
+▪ Data is also sent to the local Victoria Metrics instance via the <a href="https://prometheus.io/docs/specs/remote_write_spec/">Prometheus Remote Write API</a></li>
+<li>After the experiment:
+▪ The Kubernetes Prometheus stack scales down.
+▪ Data remains in the local Victoria Metrics for analysis.</li>
+</ol>
+<h3 id="alternative-access-methods"><a class="header" href="#alternative-access-methods">Alternative Access Methods</a></h3>
+<p>While Tailscale is recommended for its ease of use and security, alternative methods for accessing the Kubernetes cluster from the local machine include:</p>
+<ul>
+<li>ngrok</li>
+<li>Cloudflare Tunnel</li>
+<li>Direct access (if the local machine is accessible from all nodes of the Kubernetes cluster and firewall/ports are open)</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="workflow.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
+                            <a rel="next prefetch" href="data-analysis.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -189,7 +270,13 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="workflow.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
+                    <a rel="next prefetch" href="data-analysis.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
             </nav>
 
         </div>

@@ -25,6 +25,8 @@ setup *args:
 test *args:
     python entrypoint.py test "$@"
 
+exp *args:
+    python entrypoint.py exp "$@"
 
 i *args:
     python entrypoint.py i "$@"

@@ -174,7 +174,10 @@ def generate_experiment_pairs():
 
     return experiment_pairs
 
-def search_space(experiment_pairs: list[tuple[int, int]], exp_name: str, exp_description: str) -> list[dict]:
+
+def search_space(
+    experiment_pairs: list[tuple[int, int]], exp_name: str, exp_description: str
+) -> list[dict]:
     results = []
     from greenflow.playbook import exp
 
@@ -195,13 +198,41 @@ def search_space(experiment_pairs: list[tuple[int, int]], exp_name: str, exp_des
     return results
 
 
-@click.command("ingest")
+@click.command("exp")
+@click.argument("exp_name", type=str)
+@click.option("--description", type=str, default="")
+@click.option("--load", type=int)
+@click.option("--instances", type=int)
+@click.option("--workers", type=int)
+def exp(exp_name, description, load, instances, workers):
+    from greenflow.playbook import exp
+
+    load_gin(exp_name)
+    if load is not None:
+        with gin.unlock_config():
+            gin.bind_parameter("greenflow.factors.exp_params.load", load)
+    if workers is not None:
+        with gin.unlock_config():
+            gin.bind_parameter("greenflow.g5k.G5KPlatform.get_conf.num_worker", workers)
+    if instances is not None:
+        with gin.unlock_config():
+            gin.bind_parameter("greenflow.factors.exp_params.instances", instances)
+    try:
+        embed(globals(), locals())
+        exp(exp_name=exp_name, experiment_description=description)
+    except:
+        post_mortem()
+
+    send_notification("Experiment complete. On to the next.")
+
+
+@click.command("ingest_set")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
 @click.option("--load", type=str)
 @click.option("--message_size", type=int)
 @click.option("--instances", type=int)
 @click.option("--partitions", type=int)
-def ingest(exp_name, **kwargs):
+def ingest_set(exp_name, **kwargs):
     from greenflow.playbook import exp
 
     exp_description = "cluster=chirop type=search-space"
@@ -219,7 +250,7 @@ def ingest(exp_name, **kwargs):
             results = search_space(
                 experiment_pairs,
                 exp_name="ingest-redpanda",
-                exp_description=exp_description
+                exp_description=exp_description,
             )
             # logging.info(threshold("ingest-redpanda", exp_description, message_sizes))
     except:
@@ -227,6 +258,7 @@ def ingest(exp_name, **kwargs):
         post_mortem()
 
     send_notification("Experiment complete. On to the next.")
+
 
 @click.command("killjob")
 def killjob():
@@ -256,9 +288,10 @@ def cli():
 
 
 cli.add_command(setup)
-cli.add_command(ingest)
+cli.add_command(ingest_set)
 cli.add_command(i)
 cli.add_command(killjob)
+cli.add_command(exp)
 
 
 if __name__ == "__main__":
