@@ -208,7 +208,6 @@ cli.add_command(setup)
 cli.add_command(ingest_set)
 cli.add_command(i)
 cli.add_command(killjob)
-cli.add_command(exp)
 
 
 if __name__ == "__main__":

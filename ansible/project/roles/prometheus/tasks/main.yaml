@@ -2,16 +2,16 @@
 # vim: set ft=yaml:
 
 #TODO: This needs to be present for Redpanda
-# - name: Deploy Cert-Manager
-#   delegate_to: localhost
-#   kubernetes.core.helm:
-#     name: cert-manager
-#     chart_ref: jetstack/cert-manager
-#     create_namespace: yes
-#     # chart_version: 0.8.2
-#     wait: true
-#     release_namespace: cert-manager
-#     values: "{{ lookup('ansible.builtin.template', 'cert-manager-values.yaml.j2') | from_yaml }}"
+- name: Deploy Cert-Manager
+  delegate_to: localhost
+  kubernetes.core.helm:
+    name: cert-manager
+    chart_ref: jetstack/cert-manager
+    create_namespace: yes
+    # chart_version: 0.8.2
+    wait: true
+    release_namespace: cert-manager
+    values: "{{ lookup('ansible.builtin.template', 'cert-manager-values.yaml.j2') | from_yaml }}"
 
 - name: Deploying Prometheus
   delegate_to: localhost
