@@ -140,93 +140,16 @@ def setup(exp_name, workers):
 
     send_notification("Setup complete")
 
-
-def generate_experiment_pairs():
-    experiment_pairs = []
-
-    # For 512 bytes
-    for load in [50000, 100000, 250000, 500000, 1000000, 2000000, 3000000]:
-        experiment_pairs.append((load, 512))
-
-    # For 1024 bytes
-    for load in [50000, 100000, 250000, 500000, 750000, 1000000]:
-        experiment_pairs.append((load, 1024))
-
-    # For 2048 bytes
-    for load in [50000, 100000, 250000, 400000, 550000, 700000]:
-        experiment_pairs.append((load, 2048))
-
-    # For 4096 bytes
-    for load in [50000, 75000, 100000, 125000]:
-        experiment_pairs.append((load, 4096))
-
-    # For 6144 bytes
-    for load in [25000, 50000, 75000]:
-        experiment_pairs.append((load, 6144))
-
-    # For 8192 bytes
-    for load in [25000, 40000, 55000]:
-        experiment_pairs.append((load, 8192))
-
-    # For 10240 bytes
-    for load in [25000, 35000, 45000]:
-        experiment_pairs.append((load, 10240))
-
-    return experiment_pairs
+@click.command("local-test")
+def local_test():
+    load_gin("ingest-redpanda")
+    from sh import k3d
+    k3d("cluster", "create", "-f", "deploy/test-cluster.yaml")
+    with redpanda_context():
+        pass
 
 
-def search_space(
-    experiment_pairs: list[tuple[int, int]], exp_name: str, exp_description: str
-) -> list[dict]:
-    results = []
-    from greenflow.playbook import exp
-
-    for load, message_size in experiment_pairs:
-        rebind_parameters(load=load, message_size=message_size)
-        # exp is calling ansible_runner
-        # Its output is very verbose, so we are not printing it
-        # Suppress stdout and stderr before calling exp
-        with open("/tmp/greenflow.log", "a+") as f, contextlib.redirect_stdout(
-            f
-        ), contextlib.redirect_stderr(f):
-            exp(
-                exp_name=exp_name,
-                experiment_description=exp_description,
-            )
-            logging.info(dict(msg="Completed", load=load, message_size=message_size))
-
-    return results
-
-
-@click.command("exp")
-@click.argument("exp_name", type=str)
-@click.option("--description", type=str, default="")
-@click.option("--load", type=int)
-@click.option("--instances", type=int)
-@click.option("--workers", type=int)
-def exp(exp_name, description, load, instances, workers):
-    from greenflow.playbook import exp
-
-    load_gin(exp_name)
-    if load is not None:
-        with gin.unlock_config():
-            gin.bind_parameter("greenflow.factors.exp_params.load", load)
-    if workers is not None:
-        with gin.unlock_config():
-            gin.bind_parameter("greenflow.g5k.G5KPlatform.get_conf.num_worker", workers)
-    if instances is not None:
-        with gin.unlock_config():
-            gin.bind_parameter("greenflow.factors.exp_params.instances", instances)
-    try:
-        embed(globals(), locals())
-        exp(exp_name=exp_name, experiment_description=description)
-    except:
-        post_mortem()
-
-    send_notification("Experiment complete. On to the next.")
-
-
-@click.command("ingest_set")
+@click.command("ingest")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
 @click.option("--load", type=str)
 @click.option("--message_size", type=int)
@@ -234,6 +157,7 @@ def exp(exp_name, description, load, instances, workers):
 @click.option("--partitions", type=int)
 def ingest_set(exp_name, **kwargs):
     from greenflow.playbook import exp
+    load_gin(exp_name)
 
     exp_description = "cluster=chirop type=search-space"
 
@@ -243,16 +167,9 @@ def ingest_set(exp_name, **kwargs):
     ] + list(range(1024, 10241, 1024))
     try:
         # with kafka_context():
-
         #     logging.info(threshold("ingest-kafka", exp_description, message_sizes))
-        with redpanda_context():
-            experiment_pairs = generate_experiment_pairs()
-            results = search_space(
-                experiment_pairs,
-                exp_name="ingest-redpanda",
-                exp_description=exp_description,
-            )
-            # logging.info(threshold("ingest-redpanda", exp_description, message_sizes))
+        # with redpanda_context():
+        logging.info(threshold("ingest-redpanda", exp_description, message_sizes))
     except:
         send_notification("Error in experiment. Debugging with shell")
         post_mortem()
