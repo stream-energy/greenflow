@@ -20,6 +20,7 @@
   ignore_errors: true
 
 - name: Scale down Prometheus to 0
+  when: deployment_type == "production"
   k8s:
     state: present
     definition:

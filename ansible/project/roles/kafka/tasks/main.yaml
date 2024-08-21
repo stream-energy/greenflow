@@ -1,6 +1,13 @@
 ---
 # vim: set ft=yaml:
 
+- name: Debug YAML output
+  debug:
+    msg: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    # - "../templates/kafka*.j2"
+    - "../templates/kafka-crd.yaml.j2"
+
 - name: Deploy Kafka
   kubernetes.core.k8s:
     state: present

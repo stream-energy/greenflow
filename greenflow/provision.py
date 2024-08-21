@@ -14,7 +14,6 @@ def post_setup():
 
 @gin.configurable
 def provision(*, platform: type[Platform] = gin.REQUIRED):
-    from .g import g
     p: Platform = platform()
 
     p.pre_provision()

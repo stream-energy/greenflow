@@ -2,6 +2,7 @@ nodeSelector:
   node.kubernetes.io/broker: "true"
 console:
   enabled: true
+{% if deployment_type == "production" %}
 resources:
   cpu:
     cores: "8"
@@ -15,6 +16,9 @@ resources:
     #   reserveMemory: 1Gi
 console:
   enabled: false
+{% elif deployment_type == "test" %}
+resources: {}
+{% endif %}
 config:
   cluster:
     auto_create_topics_enabled: false
@@ -46,12 +50,15 @@ image:
 pullSecrets:
   - name: regcred
 statefulset:
-  replicas: 3
+{% if deployment_type == "test" %}
+  replicas: 1
+{% endif %}
   podAntiAffinity:
     topologyKey: kubernetes.io/hostname
     type: custom
     weight: 1
     custom:
+{% if deployment_type == "production" %}
       preferredDuringSchedulingIgnoredDuringExecution:
         - weight: 1
           podAffinityTerm:
@@ -61,6 +68,7 @@ statefulset:
                 app.kubernetes.io/name: redpanda
                 app.kubernetes.io/instance: "redpanda"
                 app.kubernetes.io/component: redpanda-statefulset
+{% endif %}
   #TODO: Figure out how to make affinity optional and not required, this is not working and documentation between redpanda helm is broken
 # affinity:
 #   podAntiAffinity:

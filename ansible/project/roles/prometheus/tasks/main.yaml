@@ -26,6 +26,7 @@
     values: "{{ lookup('ansible.builtin.template', 'kube-prometheus-stack-values.yaml.j2') | from_yaml }}"
 
 - name: Disable Prometheus monitoring (Will be re-enabled during experiment)
+  when: deployment_type == 'production'
   k8s:
     state: present
     definition:

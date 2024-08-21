@@ -15,6 +15,12 @@
 #     release_namespace: redpanda
 #     values: "{{ lookup('ansible.builtin.template', 'operator-values.yaml.j2') | from_yaml }}"
 
+- name: Debug YAML output
+  debug:
+    msg: "{{ lookup('ansible.builtin.template', item) | from_yaml }}"
+  with_fileglob:
+    - "../templates/helm*.j2"
+
 - name: Deploy Redpanda
   delegate_to: localhost
   kubernetes.core.helm:

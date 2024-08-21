@@ -13,6 +13,7 @@
   connection: local
   gather_facts: false
   tasks:
+{% if deployment_type == "production" %}
     - name: Update Prometheus CRD and Re-enable monitoring
       k8s:
         state: present
@@ -23,12 +24,10 @@
             namespace: default
             name: kp-kube-prometheus-stack-prometheus
           spec:
+            replicas: 1
             externalLabels:
               deployment_started_ts: "{{ deployment_started_ts }}"
               experiment_started_ts: "{{ experiment_started_ts }}"
-            remoteWrite:
-              - url: "{{ lookup('ansible.builtin.env', 'EXPERIMENT_STORAGE_URL') }}"
-            replicas: 1
 
     # - name: Wait until Scaphandre Daemonset is online
     #   shell: "kubectl -n default rollout status ds/scaphandre"
@@ -47,6 +46,7 @@
       until: deployment_info.resources[0].status.availableReplicas == deployment_info.resources[0].spec.replicas
       retries: 20
       delay: 2
+{% endif %}
 
     - name: Create Kafka Topic via Job
       kubernetes.core.k8s:
@@ -58,10 +58,11 @@
           metadata:
             name: create-kafka-topic
           spec:
-            ttlSecondsAfterFinished: 5
-            backoffLimit: 1
+            ttlSecondsAfterFinished: {{ exp_params.durationSeconds }}
+            backoffLimit: 0
             template:
               spec:
+                restartPolicy: Never
                 containers:
                   - name: create-topic
                     image: registry.gitlab.inria.fr/gkovilkk/greenflow/redpanda:v24.1.8
@@ -80,19 +81,6 @@
                       - "-c"
                       - "write.caching=true"
 {% endif %}
-                restartPolicy: Never
-    - name: Sleep for 10 seconds
-      pause:
-        seconds: 10
-
-    - name: Delete topic creation job
-      ansible.builtin.k8s:
-        state: absent
-        definition:
-          apiVersion: batch/v1
-          kind: Job
-          metadata:
-            name: create-kafka-topic
 
 
 - name: Deploy EXP
@@ -107,28 +95,13 @@
   connection: local
   gather_facts: false
   tasks:
-{% if 'ingest' not in exp_name  %}
-    - name: Wait for execution to finish
-      shell: kubectl wait execution "{{ exp_name }}" --for=jsonpath='{.status.executionState}'=Finished --timeout=1h
-
-    - name: Delete any past experiment
-      kubernetes.core.k8s:
-        state: absent
-        api_version: theodolite.rocks/v1beta1
-        kind: execution
-        namespace: default
-        name: "{{ exp_name }}"
-{% else %}
     - name: Sleep for {{ exp_params.durationSeconds }} seconds
       pause:
         seconds: {{ exp_params.durationSeconds }}
-    - name: Delete Load generator deployment
-      kubernetes.core.k8s:
-        state: absent
-        api_version: apps/v1
-        kind: Deployment
-        namespace: default
-        name: throughput
+
+    - name: Sleep for 15 additional seconds
+      pause:
+        seconds: 15
 
     - name: Delete Kafka Topic via Job
       kubernetes.core.k8s:
@@ -140,10 +113,11 @@
           metadata:
             name: delete-kafka-topic
           spec:
-            ttlSecondsAfterFinished: 5
-            backoffLimit: 4
+            ttlSecondsAfterFinished: 15
+            backoffLimit: 0
             template:
               spec:
+                restartPolicy: Never
                 containers:
                   - name: delete-topic
                     image: registry.gitlab.inria.fr/gkovilkk/greenflow/redpanda:v24.1.8
@@ -154,19 +128,12 @@
                       - "input"
                       - "-X"
                       - "brokers={{ exp_params.kafka_bootstrap_servers }}"
-                restartPolicy: Never
-{% endif %}
 
     # Scale down the daemonset
     # - name: Delete all scaphandre
     #   shell: kubectl delete -l app.kubernetes.io/name=scaphandre serviceaccount,daemonset,servicemonitor,clusterrole,clusterrolebinding,service --force --grace-period=0
     #   ignore_errors: true
-
-    # - name: Give it 10 seconds to cool down
-    #   pause:
-    #     seconds: 10
-
-# TODO: Once everything is well understood, we can start scaling down Prometheus once again
+{% if deployment_type == "production" %}
     - name: Scale down Prometheus to 0
       k8s:
         state: present
@@ -182,3 +149,4 @@
     - name: Give it 10 seconds to cool down
       pause:
         seconds: 10
+{% endif %}

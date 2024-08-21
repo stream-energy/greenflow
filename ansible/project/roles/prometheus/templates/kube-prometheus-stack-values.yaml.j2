@@ -8,6 +8,8 @@ prometheus:
       deployment_started_ts: "{{ deployment_started_ts }}"
     nodeSelector:
       node-role.kubernetes.io/control-plane: "true"
+    remoteWrite:
+      - url: "{{ lookup('ansible.builtin.env', 'EXPERIMENT_STORAGE_URL') }}"
   serviceMonitor:
     relabelings:
       - action: replace
@@ -38,6 +40,13 @@ prometheus:
               sourceLabels:
                 - __meta_kubernetes_namespace
               targetLabel: namespace
+  service:
+    type: NodePort
+    nodePort: 32090
+    # annotations:
+    #   metallb.universe.tf/allow-shared-ip: monitoring
+    # externalTrafficPolicy: Cluster
+    # loadBalancerIP:
 prometheusOperator:
   serviceMonitor:
     relabelings:

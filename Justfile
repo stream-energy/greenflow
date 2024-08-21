@@ -28,6 +28,9 @@ test *args:
 exp *args:
     python entrypoint.py exp "$@"
 
+killexp *args:
+    python entrypoint.py killexp "$@"
+
 i *args:
     python entrypoint.py i "$@"
 

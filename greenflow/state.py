@@ -11,12 +11,14 @@ def get_deployment_state_vars():
             ),
             "kubeconfig_path": "../../kubeconfig",
             "gitroot": g.gitroot,
+            "deployment_type": g.deployment_type,
         }
     except AttributeError:
         return {
             "deployment_started_ts": "1970-01-01T00:00:00Z",
             "kubeconfig_path": "../../kubeconfig",
             "gitroot": g.gitroot,
+            "deployment_type": "production",
         }
 
 

@@ -1,26 +1,26 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: throughput
   namespace: default
 spec:
-  selector:
-    matchLabels:
-      app: throughput
-  replicas: {{ exp_params.instances }}
+  parallelism: {{ exp_params.instances }}
+  completions: {{ exp_params.instances }}
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 15
   template:
     metadata:
       labels:
         app: throughput
     spec:
-      pullPolicy: always
+      restartPolicy: Never
       terminationGracePeriodSeconds: 0
       nodeSelector:
         node.kubernetes.io/worker: "true"
-
       containers:
         - name: workload-generator
           image: registry.gitlab.inria.fr/gkovilkk/greenflow/throughput
+          imagePullPolicy: Always
           env:
             - name: THROUGHPUT_BROKERS
               value: "{{ exp_params.kafka_bootstrap_servers }}"

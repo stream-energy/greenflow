@@ -76,33 +76,3 @@ def exp(exp_name, experiment_description):
     _playbook("generate_experiment.yaml", extra_vars)
     _playbook("_current_exp.yaml", extra_vars)
     g.end_exp()
-
-
-# def strimzi():
-#     run_playbook("strimzi.yaml")
-
-
-# def kafka():
-#     run_playbook("kafka.yaml")
-
-
-# def theodolite():
-#     run_playbook("theodolite.yaml")
-
-# def kminion():
-#     run_playbook("kminion.yaml")
-
-# def redpanda():
-#     run_playbook("redpanda.yaml")
-
-# def redpanda_test():
-#     run_playbook("redpanda_test.yaml")
-
-# for playbook_name in [
-#     "redpanda.yaml",
-#     "kafka.yaml",
-#     "theodolite.yaml",
-#     "killexp.yaml",
-#     "redpanda_test.yaml",
-# ]:
-#     globals()[playbook_name.split(".")[0]] = lambda: run_playbook(playbook_name)

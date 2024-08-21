@@ -1,0 +1,5 @@
+greenflow.provision.provision.platform = @greenflow.platform.MockPlatform
+greenflow.destroy.destroy.platform = @greenflow.platform.MockPlatform
+greenflow.destroy.killjob.platform = @greenflow.platform.MockPlatform
+
+greenflow.factors.exp_params.replicationFactor = 1

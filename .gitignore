@@ -1,4 +1,6 @@
 /.direnv/
+charts
+mitogen
 /.venv
 /.vscode/.poetry.cache
 /.vscode/*.log

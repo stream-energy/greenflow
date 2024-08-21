@@ -1,0 +1,41 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: greenflow-test-cluster
+servers: 1
+agents: 0
+# image: reisub0/k3d-nvidia-runtime:v1.28.10-k3s1-cuda-12.2.2-base-ubuntu22.04
+image: rancher/k3s:v1.24.17-k3s1
+registries: # define how registries should be created or used
+  create: # creates a default registry to be used with the cluster; same as `--registry-create registry.localhost`
+    name: registry.localhost
+    host: "0.0.0.0"
+    hostPort: "5000"
+ports:
+  # - port: 80:80
+  #   nodeFilters:
+  #     - loadbalancer
+  # - port: 443:443
+  #   nodeFilters:
+  #     - loadbalancer
+  - port: 31092:31092
+    nodeFilters:
+      - server:*
+  - port: 32000-32100:32000-32100
+    nodeFilters:
+      - server:*
+kubeAPI:
+  host: para1
+  hostIP: "0.0.0.0"
+  hostPort: "64443"
+options:
+  runtime: # runtime (docker) specific options
+    gpuRequest: all # same as `--gpus all`
+  k3s:
+    extraArgs:
+      - arg: "--node-label=node.kubernetes.io/broker=true"
+        nodeFilters:
+          - server:*
+      - arg: "--node-label=node.kubernetes.io/worker=true"
+        nodeFilters:
+          - server:*

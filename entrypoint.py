@@ -1,6 +1,7 @@
+import traceback
 import requests
 import gin
-from greenflow import destroy, g, provision
+from greenflow import destroy, provision, monkey_patch_g
 from greenflow.adaptive import *
 from greenflow.playbook import (
     deploy_k3s,
@@ -41,7 +42,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 
 
-logging.basicConfig(handlers=[handler], level=logging.INFO)
+logging.basicConfig(handlers=[handler], level=logging.WARN)
 
 
 def embed(globals, locals):
@@ -60,21 +61,33 @@ def embed(globals, locals):
 ntfy_url = os.getenv("NTFY_URL", "http://ntfy.sh/YOUR_URL_HERE")
 
 
-def load_gin(exp_name="ingest-kafka"):
+def load_gin(exp_name="ingest-redpanda"):
+    import greenflow.g as g
+
     with gin.unlock_config():
-        gin.parse_config_files_and_bindings(
-            [
-                f"{g.g.gitroot}/gin/vmon-defaults.gin",
-                f"{g.g.gitroot}/gin/g5k/defaults.gin",
-                # f"{g.g.gitroot}/gin/g5k/paravance.gin",
-                # f"{g.g.gitroot}/gin/g5k/parasilo.gin",
-                # f"{g.g.gitroot}/gin/g5k/montcalm.gin",
-                f"{g.g.gitroot}/gin/g5k/chirop.gin",
-                # f"{g.g.gitroot}/gin/g5k/neowise.gin",
-                f"{g.g.gitroot}/gin/{exp_name}.gin",
-            ],
-            [],
-        )
+        if g.g.deployment_type == "test":
+            gin.parse_config_files_and_bindings(
+                [
+                    f"{g.g.gitroot}/gin/test-platform.gin",
+                    f"{g.g.gitroot}/gin/{exp_name}.gin",
+                    f"{g.g.gitroot}/gin/test-platform.gin",
+                ],
+                [],
+            )
+        else:
+            gin.parse_config_files_and_bindings(
+                [
+                    f"{g.g.gitroot}/gin/vmon-defaults.gin",
+                    f"{g.g.gitroot}/gin/g5k/defaults.gin",
+                    # f"{g.g.gitroot}/gin/g5k/paravance.gin",
+                    # f"{g.g.gitroot}/gin/g5k/parasilo.gin",
+                    # f"{g.g.gitroot}/gin/g5k/montcalm.gin",
+                    f"{g.g.gitroot}/gin/g5k/chirop.gin",
+                    # f"{g.g.gitroot}/gin/g5k/neowise.gin",
+                    f"{g.g.gitroot}/gin/{exp_name}.gin",
+                ],
+                [],
+            )
 
 
 def rebind_parameters(**kwargs):
@@ -114,7 +127,7 @@ def redpanda_context():
 
 
 @click.command("setup")
-@click.argument("exp_name", type=str)
+@click.argument("exp_name", type=str, default="ingest-redpanda")
 @click.option("--workers", type=int)
 def setup(exp_name, workers):
     load_gin(exp_name)
@@ -140,13 +153,42 @@ def setup(exp_name, workers):
 
     send_notification("Setup complete")
 
-@click.command("local-test")
-def local_test():
-    load_gin("ingest-redpanda")
-    from sh import k3d
-    k3d("cluster", "create", "-f", "deploy/test-cluster.yaml")
-    with redpanda_context():
-        pass
+
+@click.command("test")
+@click.argument("exp_name", type=str, default="ingest-redpanda")
+def test(exp_name: str):
+    from greenflow.exp_ng import exp_ng as exp, killexp
+
+    monkey_patch_g(deployment_type="test")
+
+    try:
+        logging.critical({"exp_name": exp_name})
+        load_gin(exp_name=exp_name)
+        provision.provision()
+        # p(prometheus)
+        # with redpanda_context():
+        #     ...
+        # p(strimzi)
+        p(kafka)
+        # p(redpanda)
+        # exp("ingest-redpanda", f"cluster=local uuid={uuid.uuid4()}")
+        rebind_parameters(
+            load=2.7 * 10**6,
+        )
+        exp(
+            "ingest-kafka",
+            f"cluster=local uuid=4b6063df-400d-49d4-9bc8-9c316fbe1da7",
+        )
+        # embed(globals(), locals())
+    except:
+        traceback.print_exc()
+        post_mortem()
+    finally:
+        from greenflow.playbook import killexp as kexp
+
+        # killexp()
+    # with redpanda_context():
+    # pass
 
 
 @click.command("ingest")
@@ -157,6 +199,7 @@ def local_test():
 @click.option("--partitions", type=int)
 def ingest_set(exp_name, **kwargs):
     from greenflow.playbook import exp
+
     load_gin(exp_name)
 
     exp_description = "cluster=chirop type=search-space"
@@ -181,6 +224,17 @@ def ingest_set(exp_name, **kwargs):
 def killjob():
     load_gin()
     destroy.killjob()
+
+
+@click.command("killexp")
+def killexp():
+    # TODO: Modify for non-test
+    from greenflow.exp_ng import killexp as kexp
+
+    monkey_patch_g(deployment_type="test")
+
+    load_gin()
+    kexp()
 
 
 def send_notification(text, priority="low"):
@@ -208,6 +262,8 @@ cli.add_command(setup)
 cli.add_command(ingest_set)
 cli.add_command(i)
 cli.add_command(killjob)
+cli.add_command(killexp)
+cli.add_command(test)
 
 
 if __name__ == "__main__":

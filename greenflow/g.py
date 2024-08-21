@@ -5,12 +5,20 @@ import transaction
 import ZODB
 import gin
 
+
 class _g:
+    def __init__(self, deployment_type="production"):
+        self.deployment_type = deployment_type
+
     @cached_property
     def storage(self):
         from .storage import ExpStorage
+        from unittest.mock import Mock
 
-        return ExpStorage()
+        if self.deployment_type == "production":
+            return ExpStorage()
+        elif self.deployment_type == "test":
+            return Mock(ExpStorage)
 
     @cached_property
     def gitroot(self):
@@ -20,7 +28,11 @@ class _g:
 
     @cached_property
     def root(self):
-        connection = ZODB.connection(f"{self.gitroot}/storage/current_deployment.fs")
+        if self.deployment_type == "production":
+            storage_path = f"{self.gitroot}/storage/current_deployment.fs"
+        elif self.deployment_type == "test":
+            storage_path = f"{self.gitroot}/storage/test_deployment.fs"
+        connection = ZODB.connection(storage_path)
         root = connection.root
         return root
 
@@ -32,7 +44,7 @@ class _g:
         self.root.current_deployment.last_updated = pendulum.now().to_iso8601_string()
         transaction.commit()
 
-    def init_exp(self, exp_name, experiment_description=''):
+    def init_exp(self, exp_name, experiment_description=""):
         from .experiment import Experiment
 
         e = Experiment(exp_name, experiment_description)
@@ -43,7 +55,6 @@ class _g:
         exp = self.root.current_experiment
         stopped_ts = pendulum.now()
         exp.stopped_ts = stopped_ts.to_iso8601_string()
-
 
         # # To avoid polluting, do not write to disk if shorter than 2 minutes
         # if stopped_ts.diff(pendulum.parse(exp.started_ts)).minutes < 2:
