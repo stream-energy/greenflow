@@ -169,14 +169,14 @@ def test(exp_name: str):
         # with redpanda_context():
         #     ...
         # p(strimzi)
-        p(kafka)
-        # p(redpanda)
+        # p(kafka)
+        p(redpanda)
         # exp("ingest-redpanda", f"cluster=local uuid={uuid.uuid4()}")
         rebind_parameters(
-            load=2.7 * 10**6,
+            load=5.0 * 10**6,
         )
         exp(
-            "ingest-kafka",
+            exp_name,
             f"cluster=local uuid=4b6063df-400d-49d4-9bc8-9c316fbe1da7",
         )
         # embed(globals(), locals())
@@ -227,13 +227,14 @@ def killjob():
 
 
 @click.command("killexp")
-def killexp():
+@click.argument("exp_name", type=str, default="ingest-redpanda")
+def killexp(exp_name: str):
     # TODO: Modify for non-test
     from greenflow.exp_ng import killexp as kexp
 
     monkey_patch_g(deployment_type="test")
 
-    load_gin()
+    load_gin(exp_name=exp_name)
     kexp()
 
 
