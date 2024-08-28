@@ -29,8 +29,8 @@ kubeAPI:
   hostIP: "0.0.0.0"
   hostPort: "64443"
 options:
-  runtime: # runtime (docker) specific options
-    gpuRequest: all # same as `--gpus all`
+  #runtime: # runtime (docker) specific options
+  #  gpuRequest: all # same as `--gpus all`
   k3s:
     extraArgs:
       - arg: "--node-label=node.kubernetes.io/broker=true"

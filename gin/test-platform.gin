@@ -3,3 +3,4 @@ greenflow.destroy.destroy.platform = @greenflow.platform.MockPlatform
 greenflow.destroy.killjob.platform = @greenflow.platform.MockPlatform
 
 greenflow.factors.exp_params.replicationFactor = 1
+greenflow.g._g.deployment_type = "test"

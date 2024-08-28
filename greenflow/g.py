@@ -5,10 +5,24 @@ import transaction
 import ZODB
 import gin
 
+from .factors import factors
 
+
+@gin.configurable()
 class _g:
-    def __init__(self, deployment_type="production"):
+    def __init__(
+        self,
+        deployment_type: str = gin.REQUIRED,
+    ):
         self.deployment_type = deployment_type
+        if deployment_type == "test":
+            import os
+            os.environ["EXPERIMENT_STORAGE_URL"] = os.environ["TEST_EXPERIMENT_STORAGE_URL"]
+            os.environ["PROMETHEUS_URL"] = os.environ["TEST_PROMETHEUS_URL"]
+            os.environ["EXPERIMENT_PUSHGATEWAY_URL"] = os.environ[
+                "TEST_EXPERIMENT_PUSHGATEWAY_URL"
+            ]
+            os.environ["DASHBOARD_BASE_URL"] = os.environ["TEST_DASHBOARD_BASE_URL"]
 
     @cached_property
     def storage(self):
@@ -18,7 +32,9 @@ class _g:
         if self.deployment_type == "production":
             return ExpStorage()
         elif self.deployment_type == "test":
-            return Mock(ExpStorage)
+            return ExpStorage(
+                path=f"{self.gitroot}/storage/test_experiment-history.yaml"
+            )
 
     @cached_property
     def gitroot(self):
@@ -44,17 +60,19 @@ class _g:
         self.root.current_deployment.last_updated = pendulum.now().to_iso8601_string()
         transaction.commit()
 
-    def init_exp(self, exp_name, experiment_description=""):
+    def init_exp(self, experiment_description):
         from .experiment import Experiment
+
+        exp_name = factors()["exp_name"]
 
         e = Experiment(exp_name, experiment_description)
         self.root.current_experiment = e
         transaction.commit()
 
     def end_exp(self):
-        exp = self.root.current_experiment
         stopped_ts = pendulum.now()
-        exp.stopped_ts = stopped_ts.to_iso8601_string()
+        self.root.current_experiment.stopped_ts = stopped_ts.to_iso8601_string()
+        transaction.commit()
 
         # # To avoid polluting, do not write to disk if shorter than 2 minutes
         # if stopped_ts.diff(pendulum.parse(exp.started_ts)).minutes < 2:
@@ -63,25 +81,6 @@ class _g:
         #     return
         g.storage.commit_experiment()
 
-
-g: _g = _g()
-
-# if __name__ == "__main__":
-#     import greenflow.platform
-#     def load_gin(exp_name):
-#         gin.parse_config_files_and_bindings(
-#             [
-#                 f"{g.gitroot}/gin/g5k-defaults.gin",
-#                 f"{g.gitroot}/gin/{exp_name}.gin",
-#             ],
-#             []
-#         )
-
-#     load_gin("uc3-flink")
-#     # You can call the various class methods here. Examples:
-#     # g.reinit_deployment(platform)
-#     g.init_exp("uc3-flink")
-#     g.end_exp()
-
-#     # Note: The necessary arguments must be provided to the methods.
-#     pass
+    @staticmethod
+    def get_g() -> "_g":
+        return _g()

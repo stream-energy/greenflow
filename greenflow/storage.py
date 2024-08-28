@@ -1,22 +1,18 @@
 class ExpStorage:
-    def __init__(self) -> None:
+    from .g import g
+
+    def __init__(self, path=f"{g.gitroot}/storage/experiment-history.yaml") -> None:
         from tinydb import TinyDB
         from tinydb_serialization import SerializationMiddleware
 
         from .utils import DateTimeSerializer, YAMLStorage
-        from .g import g
 
         serialization = SerializationMiddleware(YAMLStorage)
         serialization.register_serializer(DateTimeSerializer(), "Pendulum")
         self.experiments = TinyDB(
-            f"{g.gitroot}/storage/experiment-history.yaml",
+            path,
             storage=serialization,
         )
-
-    def create_new_experiment(self):
-        from .g import g
-
-        g.init_exp()
 
     def commit_experiment(self) -> None:
         from .g import g

@@ -5,7 +5,6 @@ import ansible_runner
 
 from .factors import factors
 from .state import get_deployment_state_vars, get_experiment_state_vars
-from .g import g
 
 __all__ = [
     "p",
@@ -28,6 +27,7 @@ __all__ = [
 
 
 def _playbook(playbook_name, extra=None):
+    from .g import g
     extra = extra or {}
     rc = ansible_runner.run(
         playbook=playbook_name,
@@ -71,6 +71,7 @@ def run_playbook(playbook_name):
 
 
 def exp(exp_name, experiment_description):
+    from .g import g
     g.init_exp(exp_name, experiment_description)
     extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
     _playbook("generate_experiment.yaml", extra_vars)

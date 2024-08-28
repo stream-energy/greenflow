@@ -7,15 +7,29 @@ from shlex import split
 
 from box import Box, BoxList
 
-from .factors import factors
-from .playbook import _playbook
-from .state import get_deployment_state_vars, get_experiment_state_vars
+from .prometheus import reinit_prometheus, scale_prometheus
+
+from ..factors import factors
+from ..playbook import _playbook
+from ..state import get_deployment_state_vars, get_experiment_state_vars
 
 
 def create_job(extra_vars) -> Job:
     pushgateway_url = extra_vars["prometheus_pushgateway_url"]
     exp_params = extra_vars["exp_params"]
-    args = BoxList(
+
+    # First, check if the topic exists
+    check_topic_args = BoxList(
+        [
+            "topic",
+            "describe",
+            "input",
+            "-X",
+            f"brokers={exp_params.kafka_bootstrap_servers}",
+        ]
+    )
+
+    create_topic_args = BoxList(
         [
             "topic",
             "create",
@@ -29,13 +43,13 @@ def create_job(extra_vars) -> Job:
         ]
         + (["-c", "write.caching=true"] if "redpanda" in extra_vars.exp_name else [])
     )
+
     return Job(
         dict(
             apiVersion="batch/v1",
             kind="Job",
             metadata={"name": "create-kafka-topic", "namespace": "default"},
             spec={
-                "ttlSecondsAfterFinished": 100,
                 "backoffLimit": 0,
                 "template": {
                     "spec": {
@@ -44,8 +58,18 @@ def create_job(extra_vars) -> Job:
                             {
                                 "name": "create-topic",
                                 "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/redpanda:v24.1.8",
-                                "command": ["rpk"],
-                                "args": args,
+                                "command": ["/bin/sh"],
+                                "args": [
+                                    "-c",
+                                    f"""
+                                    if rpk {' '.join(check_topic_args)} > /dev/null 2>&1; then
+                                        echo "Topic 'input' already exists."
+                                        exit 0
+                                    else
+                                        rpk {' '.join(create_topic_args)}
+                                    fi
+                                    """,
+                                ],
                             }
                         ],
                     }
@@ -53,6 +77,9 @@ def create_job(extra_vars) -> Job:
             },
         )
     )
+
+
+
 
 def exp_job_custom(extra_vars) -> Job:
     pushgateway_url = extra_vars["prometheus_pushgateway_url"]
@@ -66,7 +93,7 @@ def exp_job_custom(extra_vars) -> Job:
                 "parallelism": exp_params["instances"],
                 "completions": exp_params["instances"],
                 "backoffLimit": 0,
-                "ttlSecondsAfterFinished": 15,
+                # "ttlSecondsAfterFinished": 5,
                 "template": {
                     "metadata": {"labels": {"app": "throughput"}},
                     "spec": {
@@ -126,7 +153,7 @@ def exp_job(extra_vars) -> Job:
                 "parallelism": exp_params["instances"],
                 "completions": exp_params["instances"],
                 "backoffLimit": 0,
-                "ttlSecondsAfterFinished": 15,
+                # "ttlSecondsAfterFinished": 100,
                 "template": {
                     "metadata": {"labels": {"app": "kafka-producer-perf-test"}},
                     "spec": {
@@ -136,7 +163,7 @@ def exp_job(extra_vars) -> Job:
                         "containers": [
                             {
                                 "name": "kafka-producer-perf-test",
-                                "image": "confluentinc/cp-kafka:latest",
+                                "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/cp-kafka:7.7.0",
                                 "imagePullPolicy": "IfNotPresent",
                                 "command": [
                                     "/bin/sh",
@@ -168,7 +195,7 @@ def delete_job(extra_vars) -> Job:
             kind="Job",
             metadata={"name": "delete-kafka-topic", "namespace": "default"},
             spec={
-                "ttlSecondsAfterFinished": 15,
+                # "ttlSecondsAfterFinished": 5,
                 "backoffLimit": 0,
                 "template": {
                     "spec": {
@@ -199,6 +226,7 @@ def create_kafka_topic(extra_vars):
     job.create()
     job.wait(["condition=Complete", "condition=Failed"])
     if job.status.conditions[0].type == "Complete":
+        job.delete(propagation_policy="Foreground")
         return
     else:
         raise RuntimeError("Failed to create kafka topic")
@@ -209,12 +237,20 @@ def deploy_experiment(extra_vars) -> Job:
     # job = exp_job_custom(extra_vars)
     job.create()
 
-    gracePeriod = 30
+    # Assume that it can take up to 20 seconds to start the job
+    gracePeriod = 20
     totalDuration = extra_vars["exp_params"]["durationSeconds"] + gracePeriod
 
     try:
         job.wait(["condition=Complete", "condition=Failed"], timeout=totalDuration)
+        if job.status.conditions[0].type == "Complete":
+            job.delete(propagation_policy="Foreground")
+            return
     except TimeoutError:
+        # breakpoint()
+        job.delete(propagation_policy="Foreground")
+        return
+    except KeyboardInterrupt:
         job.delete(propagation_policy="Foreground")
         return
 
@@ -224,24 +260,29 @@ def delete_kafka_topic(extra_vars):
     job.create()
     job.wait(["condition=Complete", "condition=Failed"])
     if job.status.conditions[0].type == "Complete":
+        job.delete(propagation_policy="Foreground")
         return
     else:
         raise RuntimeError("Failed to delete kafka topic")
 
 
-def exp_ng(exp_name, experiment_description):
-    from .playbook import _playbook
-    from .g import g
+def exp(experiment_description):
+    exp_name = factors()["exp_name"]
+    from ..g import g
 
     g.init_exp(exp_name, experiment_description)
     extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
     extra_vars = Box(extra_vars)
 
+    reinit_prometheus(
+        extra_vars["deployment_started_ts"], extra_vars["experiment_started_ts"]
+    )
     create_kafka_topic(extra_vars)
     deploy_experiment(extra_vars)
 
-    # Chill for a bit
-    time.sleep(30)
+    # Let the metrics get scraped before deleting the kafka topic
+    time.sleep(15)
+    scale_prometheus(0)
 
     delete_kafka_topic(extra_vars)
 
@@ -249,7 +290,8 @@ def exp_ng(exp_name, experiment_description):
 
 
 def killexp():
-    from .g import g
+    from ..g import g
+
     extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
     extra_vars = Box(extra_vars)
     g.end_exp()
@@ -258,8 +300,12 @@ def killexp():
     except:
         ...
         traceback.print_exc()
-        breakpoint()
-    for job_name in ["create-kafka-topic", "throughput", "delete-kafka-topic"]:
+    for job_name in [
+        "create-kafka-topic",
+        "throughput",
+        "delete-kafka-topic",
+        "kafka-producer-perf-test",
+    ]:
         try:
             job = Job(Box(metadata=Box(name=job_name, namespace="default")))
             job.delete(propagation_policy="Foreground")
@@ -268,7 +314,8 @@ def killexp():
             ...
             # traceback.print_exc()
             # breakpoint()
+    scale_prometheus(0)
 
 
-if __name__ == "__main__":
-    exp_ng("ingest-kafka", "cluster=local uuid=1234")
+# if __name__ == "__main__":
+#     exp("cluster=local uuid=1234")

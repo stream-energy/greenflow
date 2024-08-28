@@ -25,7 +25,7 @@ class Decision(NamedTuple):
 
 
 class ThresholdResult(NamedTuple):
-    message_size: int
+    messageSize: int
     threshold_load: int
     observed_throughput: int
     history: History
@@ -97,7 +97,7 @@ def decide(history: History) -> Decision | None:
             )
         else:
             high = min(high, load)  # Ensure high is not increased
-            if low == get_lower_bound(prev_params["message_size"]):
+            if low == get_lower_bound(prev_params["messageSize"]):
                 # Heuristic to hopefully get faster convergence
                 # If low is still the default value, set it based on observed throughput
                 low = throughput * 0.8
@@ -125,7 +125,7 @@ def execute(initial_params: dict[str, Any]) -> History:
         max_iterations: int = max_iterations,
     ) -> History:
         if it >= max_iterations:
-            logging.warn("Max iterations reached")
+            logging.warning("Max iterations reached")
             return history
 
         state = State(params=params, time=pendulum.now())
@@ -145,68 +145,63 @@ def execute(initial_params: dict[str, Any]) -> History:
 
 
 def experiment(state: State) -> Result:
-    from greenflow.playbook import exp
+    from greenflow.exp_ng.exp_ng import exp
     from greenflow.analysis import get_observed_throughput_of_last_experiment
     from entrypoint import rebind_parameters
 
     params = state.params
 
     load = int(params["load"])
-    message_size = int(params["message_size"])
+    messageSize = int(params["messageSize"])
     start_time = pendulum.now()
-    rebind_parameters(load=load, message_size=message_size)
+    rebind_parameters(load=load, messageSize=messageSize)
     # exp is calling ansible_runner
     # Its output is very verbose, so we are not printing it
     # Suppress stdout and stderr before calling exp
-    with open("/tmp/greenflow.log", "a+") as f, contextlib.redirect_stdout(
-        f
-    ), contextlib.redirect_stderr(f):
-        exp(
-            exp_name=params["exp_name"],
-            experiment_description=params["exp_description"],
-        )
+    logging.warning(
+        {
+            "msg": "Starting",
+            **params,
+            "messageSize": messageSize,
+            "load": load,
+        }
+    )
+    exp(
+        experiment_description=params["exp_description"],
+    )
     throughput = get_observed_throughput_of_last_experiment(
         minimum_current_ts=start_time
     )
-    logging.info(
-        {
-            "msg": "Experiment complete",
-            **params,
-            "message_size": message_size,
-            "load": load,
-            "throughput": throughput,
-        }
-    )
     return Result(metrics={"throughput": throughput}, time=state.time)
 
-def get_lower_bound(message_size: int) -> int:
-    if message_size == 128:
-        return 5 * 10**5
-    elif message_size <= 4096:
+def get_lower_bound(messageSize: int) -> int:
+    if messageSize == 128:
+        return 2 * 10**6
+    elif messageSize <= 4096:
         return 5 * 10**4
     else:
         return 1 * 10**4
 
 def threshold(
-    exp_name: str, exp_description: str, message_sizes: list[int]
+    exp_name: str, exp_description: str, messageSizes: list[int]
 ) -> list[ThresholdResult]:
-    from greenflow.playbook import exp
+    from .exp_ng.exp_ng import exp
 
     results = []
 
     from entrypoint import rebind_parameters
 
     rebind_parameters(durationSeconds=10)
-    exp(exp_name=exp_name, experiment_description="Warmup")
+    exp(experiment_description="Warmup")
     rebind_parameters(durationSeconds=100)
-    first_message_size = message_sizes[0]
+    first_messageSize = messageSizes[0]
 
     initial_params = {
-        "message_size": first_message_size,
+        "messageSize": first_messageSize,
         "exp_name": exp_name,
         "exp_description": exp_description,
-        "low": get_lower_bound(first_message_size),
-        "load": get_lower_bound(first_message_size),
+        "low": get_lower_bound(first_messageSize),
+        "load": get_lower_bound(first_messageSize),
         "high": None,
     }
     first_history = execute(initial_params=initial_params)
@@ -214,16 +209,16 @@ def threshold(
     first_final_result = first_history.results[-1]
     results.append(
         ThresholdResult(
-            message_size=first_message_size,
+            messageSize=first_messageSize,
             threshold_load=first_final_state.params["load"],
             observed_throughput=first_final_result.metrics["throughput"],
             history=first_history,
         )
     )
 
-    for message_size in message_sizes[1:]:
+    for messageSize in messageSizes[1:]:
         high = results[-1].threshold_load
-        low = get_lower_bound(message_size)
+        low = get_lower_bound(messageSize)
         if high < low:
             # swap low and high
             high = low
@@ -232,13 +227,13 @@ def threshold(
             "low": low,
             "load": (low + high) // 2,
             "high": high,
-            "message_size": message_size,
+            "messageSize": messageSize,
         }
         history = execute(initial_params=initial_params)
         last_state = history.states[-1]
         last_result = history.results[-1]
         threshold_result = ThresholdResult(
-            message_size=message_size,
+            messageSize=messageSize,
             threshold_load=last_state.params["load"],
             observed_throughput=last_result.metrics["throughput"],
             history=history,
@@ -250,37 +245,37 @@ def threshold(
 
 
 def threshold_primed(
-    exp_name: str, exp_description: str, message_sizes: list[int]
+    exp_name: str, exp_description: str, messageSizes: list[int]
 ) -> list[ThresholdResult]:
     from greenflow.playbook import exp
 
     from entrypoint import rebind_parameters
 
     rebind_parameters(durationSeconds=10)
-    exp(exp_name=exp_name, experiment_description="Warmup")
+    exp(experiment_description="Warmup")
     rebind_parameters(durationSeconds=100)
 
     results = [
         ThresholdResult(
-            message_size=128,
+            messageSize=128,
             threshold_load=3917060,
             observed_throughput=3758691,
             history=History(states=[], results=[]),
         ),
         ThresholdResult(
-            message_size=512,
+            messageSize=512,
             threshold_load=1386134,
             observed_throughput=1375417,
             history=History(states=[], results=[]),
         ),
         ThresholdResult(
-            message_size=1024,
+            messageSize=1024,
             threshold_load=712266,
             observed_throughput=706587,
             history=History(states=[], results=[]),
         ),
         ThresholdResult(
-            message_size=2048,
+            messageSize=2048,
             threshold_load=341127,
             observed_throughput=335415,
             history=History(states=[], results=[]),
@@ -288,28 +283,28 @@ def threshold_primed(
     ]
 
     initial_params = {
-        "message_size": results[-1].message_size,
+        "messageSize": results[-1].messageSize,
         "exp_name": exp_name,
         "exp_description": exp_description,
-        "low": get_lower_bound(results[-1].message_size),
-        "load": get_lower_bound(results[-1].message_size),
+        "low": get_lower_bound(results[-1].messageSize),
+        "load": get_lower_bound(results[-1].messageSize),
     }
 
 
-    for message_size in message_sizes[3:]:
+    for messageSize in messageSizes[3:]:
         high = results[-1].threshold_load
-        low = get_lower_bound(message_size)
+        low = get_lower_bound(messageSize)
         initial_params = initial_params | {
             "low": low,
             "load": (low + high) // 2,
             "high": high,
-            "message_size": message_size,
+            "messageSize": messageSize,
         }
         history = execute(initial_params=initial_params)
         last_state = history.states[-1]
         last_result = history.results[-1]
         threshold_result = ThresholdResult(
-            message_size=message_size,
+            messageize=messageSize,
             threshold_load=last_state.params["load"],
             observed_throughput=last_result.metrics["throughput"],
             history=history,

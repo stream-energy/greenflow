@@ -17,6 +17,10 @@ resources:
 console:
   enabled: false
 {% elif deployment_type == "test" %}
+external:
+  enabled: true
+  addresses:
+    - localhost
 resources: {}
 {% endif %}
 config:

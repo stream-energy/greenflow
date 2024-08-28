@@ -4,6 +4,7 @@ import os
 
 def get_deployment_state_vars():
     from .g import g
+
     try:
         return {
             "deployment_started_ts": (
@@ -25,9 +26,15 @@ def get_deployment_state_vars():
 def get_experiment_state_vars():
     from .g import g
 
-    return {
-        "experiment_started_ts": (
-            g.root.current_experiment.started_ts.format("YYYY-MM-DDTHH:mm:ssZ")
-        ),
-        "prometheus_pushgateway_url": os.getenv("EXPERIMENT_PUSHGATEWAY_URL"),
-    }
+    try:
+        return {
+            "experiment_started_ts": (
+                g.root.current_experiment.started_ts.format("YYYY-MM-DDTHH:mm:ssZ")
+            ),
+            "prometheus_pushgateway_url": os.getenv("EXPERIMENT_PUSHGATEWAY_URL"),
+        }
+    except AttributeError:
+        return {
+            "experiment_started_ts": "1970-01-01T00:00:00Z",
+            "prometheus_pushgateway_url": os.getenv("EXPERIMENT_PUSHGATEWAY_URL"),
+        }

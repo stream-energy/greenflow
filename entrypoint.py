@@ -1,7 +1,6 @@
 import traceback
 import requests
 import gin
-from greenflow import destroy, provision, monkey_patch_g
 from greenflow.adaptive import *
 from greenflow.playbook import (
     deploy_k3s,
@@ -18,6 +17,7 @@ from sh import kubectl, helm
 import click
 from shlex import split
 from contextlib import contextmanager
+import kr8s
 
 import logging
 from logfmter import Logfmter
@@ -61,30 +61,50 @@ def embed(globals, locals):
 ntfy_url = os.getenv("NTFY_URL", "http://ntfy.sh/YOUR_URL_HERE")
 
 
-def load_gin(exp_name="ingest-redpanda"):
-    import greenflow.g as g
+def load_gin(exp_name="ingest-redpanda", test=False):
+    import greenflow.g
+    from greenflow.g import _g
 
-    with gin.unlock_config():
-        if g.g.deployment_type == "test":
+    if test:
+        with gin.unlock_config():
+            gin.bind_parameter("greenflow.g._g.deployment_type", "test")
+        g = _g.get_g()
+        try:
+            _ = greenflow.g.g
+        except AttributeError:
+            greenflow.g.g = g
+        from greenflow import provision, destroy
+
+        with gin.unlock_config():
             gin.parse_config_files_and_bindings(
                 [
-                    f"{g.g.gitroot}/gin/test-platform.gin",
-                    f"{g.g.gitroot}/gin/{exp_name}.gin",
-                    f"{g.g.gitroot}/gin/test-platform.gin",
+                    f"{g.gitroot}/gin/test-platform.gin",
+                    f"{g.gitroot}/gin/{exp_name}.gin",
+                    f"{g.gitroot}/gin/test-platform.gin",
                 ],
                 [],
             )
-        else:
+    else:
+        with gin.unlock_config():
+            gin.bind_parameter("greenflow.g._g.deployment_type", "production")
+        g = _g.get_g()
+        try:
+            _ = greenflow.g.g
+        except AttributeError:
+            greenflow.g.g = g
+        from greenflow import provision, destroy
+
+        with gin.unlock_config():
             gin.parse_config_files_and_bindings(
                 [
-                    f"{g.g.gitroot}/gin/vmon-defaults.gin",
-                    f"{g.g.gitroot}/gin/g5k/defaults.gin",
-                    # f"{g.g.gitroot}/gin/g5k/paravance.gin",
-                    # f"{g.g.gitroot}/gin/g5k/parasilo.gin",
-                    # f"{g.g.gitroot}/gin/g5k/montcalm.gin",
-                    f"{g.g.gitroot}/gin/g5k/chirop.gin",
-                    # f"{g.g.gitroot}/gin/g5k/neowise.gin",
-                    f"{g.g.gitroot}/gin/{exp_name}.gin",
+                    f"{g.gitroot}/gin/vmon-defaults.gin",
+                    f"{g.gitroot}/gin/g5k/defaults.gin",
+                    # f"{g.gitroot}/gin/g5k/paravance.gin",
+                    # f"{g.gitroot}/gin/g5k/parasilo.gin",
+                    f"{g.gitroot}/gin/g5k/montcalm.gin",
+                    # f"{g.gitroot}/gin/g5k/chirop.gin",
+                    # f"{g.gitroot}/gin/g5k/neowise.gin",
+                    f"{g.gitroot}/gin/{exp_name}.gin",
                 ],
                 [],
             )
@@ -94,7 +114,7 @@ def rebind_parameters(**kwargs):
     parameter_mapping = {
         "load": "greenflow.factors.exp_params.load",
         "instances": "greenflow.factors.exp_params.instances",
-        "message_size": "greenflow.factors.exp_params.messageSize",
+        "messageSize": "greenflow.factors.exp_params.messageSize",
         "partitions": "greenflow.factors.exp_params.partitions",
         "bootstrap_servers": "greenflow.factors.kafka_bootstrap_servers",
         "redpanda_write_caching": "greenflow.factors.exp_params.redpanda_write_caching",
@@ -130,7 +150,10 @@ def redpanda_context():
 @click.argument("exp_name", type=str, default="ingest-redpanda")
 @click.option("--workers", type=int)
 def setup(exp_name, workers):
-    load_gin(exp_name)
+    load_gin(exp_name=exp_name)
+
+    from greenflow import provision
+
     if workers is not None:
         with gin.unlock_config():
             gin.bind_parameter(
@@ -140,7 +163,7 @@ def setup(exp_name, workers):
         provision.provision()
         deploy_k3s()
         p(prometheus)
-        p(scaphandre)
+        # p(scaphandre)
         p(strimzi)
         # # Warm-up Kafka and Redpanda in the first time setup
         with kafka_context():
@@ -157,64 +180,57 @@ def setup(exp_name, workers):
 @click.command("test")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
 def test(exp_name: str):
-    from greenflow.exp_ng import exp_ng as exp, killexp
+    load_gin(exp_name=exp_name, test=True)
 
-    monkey_patch_g(deployment_type="test")
+    from greenflow.exp_ng.exp_ng import exp as exp, killexp
+    from greenflow.exp_ng.hammer import main
+    from greenflow import provision
 
-    try:
-        logging.critical({"exp_name": exp_name})
-        load_gin(exp_name=exp_name)
-        provision.provision()
-        # p(prometheus)
-        # with redpanda_context():
-        #     ...
-        # p(strimzi)
-        # p(kafka)
-        p(redpanda)
-        # exp("ingest-redpanda", f"cluster=local uuid={uuid.uuid4()}")
-        rebind_parameters(
-            load=5.0 * 10**6,
-        )
-        exp(
-            exp_name,
-            f"cluster=local uuid=4b6063df-400d-49d4-9bc8-9c316fbe1da7",
-        )
-        # embed(globals(), locals())
-    except:
-        traceback.print_exc()
-        post_mortem()
-    finally:
-        from greenflow.playbook import killexp as kexp
-
-        # killexp()
+    logging.warning({"exp_name": exp_name})
+    provision.provision()
+    # p(prometheus)
+    # p(strimzi)
     # with redpanda_context():
-    # pass
+    #     ...
+    # with kafka_context():
+    #     ...
+    # p(kafka)
+    # p(redpanda)
+    rebind_parameters(
+        load=5.0 * 10**6,
+        durationSeconds=100,
+    )
+    main()
 
 
 @click.command("ingest")
-@click.argument("exp_name", type=str, default="ingest-redpanda")
+# @click.argument("exp_name", type=str, default="ingest-redpanda")
+@click.argument("exp_description", type=str)
 @click.option("--load", type=str)
-@click.option("--message_size", type=int)
+@click.option("--messageSize", type=int)
 @click.option("--instances", type=int)
 @click.option("--partitions", type=int)
-def ingest_set(exp_name, **kwargs):
+def ingest_set(exp_description, **kwargs):
     from greenflow.playbook import exp
 
-    load_gin(exp_name)
+    # load_gin(exp_name)
 
-    exp_description = "cluster=chirop type=search-space"
-
-    message_sizes = [
+    messageSizes = [
         128,
         512,
     ] + list(range(1024, 10241, 1024))
     try:
-        # with kafka_context():
-        #     logging.info(threshold("ingest-kafka", exp_description, message_sizes))
-        # with redpanda_context():
-        logging.info(threshold("ingest-redpanda", exp_description, message_sizes))
+        exp_name = "ingest-kafka"
+        with kafka_context():
+            load_gin(exp_name)
+            logging.info(threshold(exp_name, exp_description, messageSizes))
+        exp_name = "ingest-redpanda"
+        with redpanda_context():
+            load_gin(exp_name)
+            logging.info(threshold(exp_name, exp_description, messageSizes))
     except:
         send_notification("Error in experiment. Debugging with shell")
+        traceback.print_exc()
         post_mortem()
 
     send_notification("Experiment complete. On to the next.")
@@ -223,19 +239,29 @@ def ingest_set(exp_name, **kwargs):
 @click.command("killjob")
 def killjob():
     load_gin()
+
+    from greenflow import destroy
+
     destroy.killjob()
 
 
-@click.command("killexp")
+@click.command("kexp")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
-def killexp(exp_name: str):
-    # TODO: Modify for non-test
-    from greenflow.exp_ng import killexp as kexp
-
-    monkey_patch_g(deployment_type="test")
-
+def kexp(exp_name: str):
     load_gin(exp_name=exp_name)
-    kexp()
+
+    from greenflow.exp_ng.exp_ng import killexp
+
+    killexp()
+
+
+@click.command("tkexp")
+@click.argument("exp_name", type=str, default="ingest-redpanda")
+def tkexp(exp_name: str):
+    load_gin(exp_name=exp_name, test=True)
+    from greenflow.exp_ng.exp_ng import killexp
+
+    killexp()
 
 
 def send_notification(text, priority="low"):
@@ -245,7 +271,7 @@ def send_notification(text, priority="low"):
 @click.command("i")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
 @click.option("--load", type=str)
-@click.option("--message_size", type=int)
+@click.option("--messageSize", type=int)
 @click.option("--instances", type=int)
 @click.option("--partitions", type=int)
 def i(exp_name, **kwargs):
@@ -263,7 +289,8 @@ cli.add_command(setup)
 cli.add_command(ingest_set)
 cli.add_command(i)
 cli.add_command(killjob)
-cli.add_command(killexp)
+cli.add_command(tkexp)
+cli.add_command(kexp)
 cli.add_command(test)
 
 

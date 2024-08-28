@@ -6,6 +6,8 @@ import pandas as pd
 import pendulum
 from os import getenv
 
+from .deployment import Deployment
+
 
 class Experiment(persistent.Persistent):
     def __init__(self, exp_name, experiment_description=""):
@@ -14,9 +16,14 @@ class Experiment(persistent.Persistent):
 
         self.factors = factors()
         self.results = {}
-        self.deployment_metadata = g.root.current_deployment.metadata
-        self.started_ts = pendulum.now()
-        self.started_ts = pendulum.now().to_iso8601_string()
+        try:
+            self.deployment_metadata = g.root.current_deployment.metadata
+        except AttributeError:
+            g.root.current_deployment = Deployment(metadata={"type": "mock"})
+            self.deployment_metadata = {}
+        now = pendulum.now()
+        self.started_ts = now.to_iso8601_string()
+        self.stopped_ts = now.to_iso8601_string()
         self.exp_name = exp_name
         self.experiment_description = experiment_description
 

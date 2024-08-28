@@ -3,8 +3,8 @@ from prometheus_api_client import PrometheusConnect, MetricRangeDataFrame
 from prometheus_api_client.utils import parse_datetime
 import pandas as pd
 import pendulum
+import requests
 from tinydb.table import Document
-from greenflow.g import g
 from tinydb import TinyDB, Query
 from os import getenv
 
@@ -17,6 +17,7 @@ prom = PrometheusConnect(url=url)
 
 
 def get_experiments():
+    from .g import g
     experiments = {exp.doc_id: exp for exp in g.storage.experiments.all()}
     return experiments
 
@@ -27,8 +28,15 @@ def sort_by_time(exp_id, experiments):
 
 
 def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.DateTime) -> float:
+    from .g import g
+    import logging
     # Get the most recent experiment
     experiments = {exp.doc_id: exp for exp in g.storage.experiments.all()}
+
+    # Since we are using VictoriaMetrics, there's an additional flush required
+    requests.get(
+        f"{url}/internal/force_flush"
+    )
 
     # Filter experiments that started after the minimum_current_ts
     valid_experiments = {
@@ -87,11 +95,12 @@ def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.Date
 
         observed_throughput = max_watermark / duration
 
+        logging.warning({"observed_throughput": observed_throughput})
         return observed_throughput
 
     except KeyError:
         print("No data found for the latest experiment")
-        return 0
+        raise
 
 
 def filter_experiments(
@@ -146,13 +155,13 @@ def calculate_throughput_MBps(row: pd.Series):
     """
     Calculate the throughput in megabytes per second (MBps).
     """
-    message_size_bytes = row.get(
+    messageSize_bytes = row.get(
         "messageSize", 1024
     )  # Default to 1KB if not specified
     observed_throughput_messages = row.get("observed_throughput", 0)
 
     mbps = (
-        observed_throughput_messages * message_size_bytes / 1024 / 1024
+        observed_throughput_messages * messageSize_bytes / 1024 / 1024
     )  # Convert bytes to MBps
 
     row["throughput_MBps"] = mbps

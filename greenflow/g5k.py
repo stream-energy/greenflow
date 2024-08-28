@@ -7,7 +7,6 @@ import yaml
 
 import gin
 
-from .g import g
 from .platform import Platform
 
 
@@ -78,6 +77,7 @@ class G5KPlatform(Platform):
         self.jobs = self.provider.driver.get_jobs()
 
     def set_platform_metadata(self):
+        from .g import g
         self.metadata["type"] = "g5k"
         self.metadata["job_id"] = self.jobs[0].uid
         self.metadata["job_site"] = self.jobs[0].site
@@ -117,6 +117,7 @@ class G5KPlatform(Platform):
         
 
     def post_provision(self):
+        from .g import g
         self.set_platform_metadata()
 
         with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:

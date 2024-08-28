@@ -9,7 +9,6 @@ import pendulum
 import gin
 
 from .factors import factors
-from .g import g
 from .g5k import G5KPlatform
 from .platform import MockPlatform, Platform
 from .playbook import _playbook

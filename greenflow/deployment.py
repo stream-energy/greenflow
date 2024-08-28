@@ -1,4 +1,5 @@
 import persistent
+import pendulum
 
 
 class Deployment(persistent.Persistent):
@@ -9,6 +10,11 @@ class Deployment(persistent.Persistent):
             }:
                 self.metadata = metadata
                 self.started_ts = metadata["job_started_ts"]
+            case {
+                "type": "mock"
+            }:
+                self.metadata = metadata
+                self.started_ts = pendulum.now().to_iso8601_string()
             case _:
                 raise NotImplementedError
 
