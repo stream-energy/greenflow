@@ -174,6 +174,7 @@ def experiment(state: State) -> Result:
     )
     return Result(metrics={"throughput": throughput}, time=state.time)
 
+
 def get_lower_bound(messageSize: int) -> int:
     if messageSize == 128:
         return 2 * 10**6
@@ -182,10 +183,12 @@ def get_lower_bound(messageSize: int) -> int:
     else:
         return 1 * 10**4
 
+
 def threshold(
     exp_name: str, exp_description: str, messageSizes: list[int]
 ) -> list[ThresholdResult]:
     from .exp_ng.exp_ng import exp
+    from .exp_ng.hammer import hammer
 
     results = []
 
@@ -194,7 +197,10 @@ def threshold(
     rebind_parameters(durationSeconds=10)
     exp(experiment_description="Warmup")
     rebind_parameters(durationSeconds=100)
+
+    # Run the hammer to find the max throughput
     first_messageSize = messageSizes[0]
+    rebind_parameters(messageSize=first_messageSize)
 
     initial_params = {
         "messageSize": first_messageSize,
@@ -214,6 +220,12 @@ def threshold(
             observed_throughput=first_final_result.metrics["throughput"],
             history=first_history,
         )
+    )
+    logging.info(
+        {
+            "messageSize": results[-1].messageSize,
+            "threshold_load": results[-1].threshold_load,
+        }
     )
 
     for messageSize in messageSizes[1:]:
@@ -244,10 +256,13 @@ def threshold(
     return results
 
 
-def threshold_primed(
-    exp_name: str, exp_description: str, messageSizes: list[int]
+def threshold_hammer(exp_description: str, messageSizes: list[int]
 ) -> list[ThresholdResult]:
-    from greenflow.playbook import exp
+    from .exp_ng.exp_ng import exp
+    from .exp_ng.hammer import hammer
+    from .analysis import get_observed_throughput_of_last_experiment
+
+    results = []
 
     from entrypoint import rebind_parameters
 
@@ -255,61 +270,56 @@ def threshold_primed(
     exp(experiment_description="Warmup")
     rebind_parameters(durationSeconds=100)
 
-    results = [
-        ThresholdResult(
-            messageSize=128,
-            threshold_load=3917060,
-            observed_throughput=3758691,
-            history=History(states=[], results=[]),
-        ),
-        ThresholdResult(
-            messageSize=512,
-            threshold_load=1386134,
-            observed_throughput=1375417,
-            history=History(states=[], results=[]),
-        ),
-        ThresholdResult(
-            messageSize=1024,
-            threshold_load=712266,
-            observed_throughput=706587,
-            history=History(states=[], results=[]),
-        ),
-        ThresholdResult(
-            messageSize=2048,
-            threshold_load=341127,
-            observed_throughput=335415,
-            history=History(states=[], results=[]),
-        ),
-    ]
+    # Run the hammer to find the max throughput
+    for messageSize in messageSizes:
+        rebind_parameters(messageSize=messageSize)
+        hammer_throughput = hammer()
 
-    initial_params = {
-        "messageSize": results[-1].messageSize,
-        "exp_name": exp_name,
-        "exp_description": exp_description,
-        "low": get_lower_bound(results[-1].messageSize),
-        "load": get_lower_bound(results[-1].messageSize),
-    }
-
-
-    for messageSize in messageSizes[3:]:
-        high = results[-1].threshold_load
-        low = get_lower_bound(messageSize)
-        initial_params = initial_params | {
-            "low": low,
-            "load": (low + high) // 2,
-            "high": high,
-            "messageSize": messageSize,
-        }
-        history = execute(initial_params=initial_params)
-        last_state = history.states[-1]
-        last_result = history.results[-1]
-        threshold_result = ThresholdResult(
-            messageize=messageSize,
-            threshold_load=last_state.params["load"],
-            observed_throughput=last_result.metrics["throughput"],
-            history=history,
+        # 3% more load should fail
+        expect_fail_load = int(hammer_throughput * 1.03)
+        rebind_parameters(load=expect_fail_load)
+        now = pendulum.now()
+        exp(experiment_description=exp_description)
+        fail_throughput = get_observed_throughput_of_last_experiment(
+            minimum_current_ts=now
         )
-        # logging.info({"exp_name": exp_name, "result": threshold_result})
-        results.append(threshold_result)
+        if fail_throughput == expect_fail_load:
+            logging.warning(
+                dict(
+                    msg="Fail load is not enough",
+                    fail_throughput=fail_throughput,
+                    expect_fail_load=expect_fail_load,
+                    messageSize=messageSize,
+                )
+            )
 
+        # 5% less load should succeed
+        expect_succeed_load = int(hammer_throughput * 0.95)
+        rebind_parameters(load=expect_succeed_load)
+        now = pendulum.now()
+        exp(experiment_description=exp_description)
+        succeed_throughput = get_observed_throughput_of_last_experiment(
+            minimum_current_ts=now
+        )
+        if succeed_throughput != expect_succeed_load:
+            logging.warning(
+                dict(
+                    msg="Succeed load is too much",
+                    succeed_throughput=succeed_throughput,
+                    expect_succeed_load=expect_succeed_load,
+                    messageSize=messageSize,
+                )
+            )
+        results.append(
+            dict(
+                messageSize=messageSize,
+                hammer_throughput=hammer_throughput,
+                expect_fail_load=expect_fail_load,
+                fail_throughput=fail_throughput,
+                expect_succeed_load=expect_succeed_load,
+                succeed_throughput=succeed_throughput,
+                threshold_load=expect_succeed_load,
+            )
+        )
+    logging.warning({"results": results})
     return results

@@ -1,11 +1,15 @@
+import logging
 import threading
 import traceback
 from kr8s.objects import Job
 import time
+import pendulum
 from sh import kubectl
 from shlex import split
 
 from box import Box, BoxList
+
+from .synchronized_perf_script import synchronized_perf_script
 
 from .prometheus import reinit_prometheus, scale_prometheus
 
@@ -79,70 +83,10 @@ def create_job(extra_vars) -> Job:
     )
 
 
-
-
-def exp_job_custom(extra_vars) -> Job:
-    pushgateway_url = extra_vars["prometheus_pushgateway_url"]
-    exp_params = extra_vars["exp_params"]
-    return Job(
-        dict(
-            apiVersion="batch/v1",
-            kind="Job",
-            metadata={"name": "throughput", "namespace": "default"},
-            spec={
-                "parallelism": exp_params["instances"],
-                "completions": exp_params["instances"],
-                "backoffLimit": 0,
-                # "ttlSecondsAfterFinished": 5,
-                "template": {
-                    "metadata": {"labels": {"app": "throughput"}},
-                    "spec": {
-                        "restartPolicy": "Never",
-                        "terminationGracePeriodSeconds": 0,
-                        "nodeSelector": {"node.kubernetes.io/worker": "true"},
-                        "containers": [
-                            {
-                                "name": "workload-generator",
-                                "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/throughput",
-                                "imagePullPolicy": "Always",
-                                "env": [
-                                    {
-                                        "name": "THROUGHPUT_BROKERS",
-                                        "value": exp_params["kafka_bootstrap_servers"],
-                                    },
-                                    {"name": "THROUGHPUT_TOPIC", "value": "input"},
-                                    {
-                                        "name": "THROUGHPUT_MESSAGE_RATE",
-                                        "value": str(
-                                            exp_params["load"]
-                                            // exp_params["instances"]
-                                        ),
-                                    },
-                                    {
-                                        "name": "THROUGHPUT_DURATION",
-                                        "value": f"{exp_params['durationSeconds']}s",
-                                    },
-                                    {
-                                        "name": "THROUGHPUT_MESSAGE_SIZE",
-                                        "value": str(exp_params["messageSize"]),
-                                    },
-                                    {
-                                        "name": "THROUGHPUT_PUSHGATEWAY_URL",
-                                        "value": pushgateway_url,
-                                    },
-                                ],
-                            }
-                        ],
-                    },
-                },
-            },
-        )
-    )
-
-
-def exp_job(extra_vars) -> Job:
+def synchronized_exp_job(extra_vars) -> Job:
     exp_params = extra_vars["exp_params"]
     total_messages = exp_params["load"] * exp_params["durationSeconds"]
+    start_timestamp = int(time.time()) + 15
 
     return Job(
         dict(
@@ -169,13 +113,18 @@ def exp_job(extra_vars) -> Job:
                                     "/bin/sh",
                                     "-c",
                                     f"""
-                                    kafka-producer-perf-test \
-                                        --topic input \
-                                        --num-records {int(total_messages // exp_params['instances'])} \
-                                        --record-size {exp_params['messageSize']} \
-                                        --throughput {int(exp_params['load'] // exp_params['instances'])} \
-                                        --producer-props bootstrap.servers={exp_params['kafka_bootstrap_servers']} \
-                                        --print-metrics
+cat << 'EOF' > /tmp/synchronized_kafka_perf_test.sh
+{synchronized_perf_script}
+EOF
+chmod +x /tmp/synchronized_kafka_perf_test.sh
+/tmp/synchronized_kafka_perf_test.sh \
+    --topic input \
+    --num-records {int(total_messages)} \
+    --record-size {exp_params['messageSize']} \
+    --throughput {int(exp_params['load'] // exp_params['instances'])} \
+    --producer-props bootstrap.servers={exp_params['kafka_bootstrap_servers']} \
+    --durationSeconds {exp_params['durationSeconds']} \
+    --start-timestamp {start_timestamp} \
                                     """,
                                 ],
                             }
@@ -233,7 +182,7 @@ def create_kafka_topic(extra_vars):
 
 
 def deploy_experiment(extra_vars) -> Job:
-    job = exp_job(extra_vars)
+    job = synchronized_exp_job(extra_vars)
     # job = exp_job_custom(extra_vars)
     job.create()
 
@@ -243,15 +192,15 @@ def deploy_experiment(extra_vars) -> Job:
 
     try:
         job.wait(["condition=Complete", "condition=Failed"], timeout=totalDuration)
+        time.sleep(30)
         if job.status.conditions[0].type == "Complete":
             job.delete(propagation_policy="Foreground")
             return
+        else:
+            raise RuntimeError("Failed to run experiment")
     except TimeoutError:
-        # breakpoint()
-        job.delete(propagation_policy="Foreground")
-        return
-    except KeyboardInterrupt:
-        job.delete(propagation_policy="Foreground")
+        breakpoint()
+        # job.delete(propagation_policy="Foreground")
         return
 
 
@@ -266,13 +215,14 @@ def delete_kafka_topic(extra_vars):
         raise RuntimeError("Failed to delete kafka topic")
 
 
-def exp(experiment_description):
+def exp(experiment_description) -> float:
     exp_name = factors()["exp_name"]
     from ..g import g
 
-    g.init_exp(exp_name, experiment_description)
+    g.init_exp(experiment_description)
     extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
     extra_vars = Box(extra_vars)
+    logging.warning({"load": extra_vars.exp_params.load, "messageSize": extra_vars.exp_params.messageSize})
 
     reinit_prometheus(
         extra_vars["deployment_started_ts"], extra_vars["experiment_started_ts"]
@@ -281,10 +231,10 @@ def exp(experiment_description):
     deploy_experiment(extra_vars)
 
     # Let the metrics get scraped before deleting the kafka topic
-    time.sleep(15)
+    time.sleep(10)
+    delete_kafka_topic(extra_vars)
     scale_prometheus(0)
 
-    delete_kafka_topic(extra_vars)
 
     g.end_exp()
 
@@ -315,7 +265,3 @@ def killexp():
             # traceback.print_exc()
             # breakpoint()
     scale_prometheus(0)
-
-
-# if __name__ == "__main__":
-#     exp("cluster=local uuid=1234")

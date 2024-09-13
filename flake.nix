@@ -40,6 +40,8 @@
           };
 
           packages = with pkgs; [
+	    sshpass
+	    dhall
             micromamba
             alejandra
             nil

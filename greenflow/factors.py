@@ -26,7 +26,7 @@ def exp_params(
     replicationFactor: int = gin.REQUIRED,
     partitions: int = gin.REQUIRED,
     redpanda_write_caching: bool = True,
-    kafka_bootstrap_servers: str = "theodolite-kafka-kafka-bootstrap:9092",
+    kafka_bootstrap_servers: str = gin.REQUIRED,
 ):
     return {
         "warmupSeconds": warmupSeconds,

@@ -101,9 +101,9 @@ def load_gin(exp_name="ingest-redpanda", test=False):
                     f"{g.gitroot}/gin/g5k/defaults.gin",
                     # f"{g.gitroot}/gin/g5k/paravance.gin",
                     # f"{g.gitroot}/gin/g5k/parasilo.gin",
-                    f"{g.gitroot}/gin/g5k/montcalm.gin",
+                    # f"{g.gitroot}/gin/g5k/montcalm.gin",
                     # f"{g.gitroot}/gin/g5k/chirop.gin",
-                    # f"{g.gitroot}/gin/g5k/neowise.gin",
+                    f"{g.gitroot}/gin/g5k/neowise.gin",
                     f"{g.gitroot}/gin/{exp_name}.gin",
                 ],
                 [],
@@ -183,11 +183,13 @@ def test(exp_name: str):
     load_gin(exp_name=exp_name, test=True)
 
     from greenflow.exp_ng.exp_ng import exp as exp, killexp
-    from greenflow.exp_ng.hammer import main
+    from greenflow.exp_ng.hammer import hammer
     from greenflow import provision
 
     logging.warning({"exp_name": exp_name})
-    provision.provision()
+    # provision.provision()
+    # deploy_k3s()
+    # p(
     # p(prometheus)
     # p(strimzi)
     # with redpanda_context():
@@ -196,11 +198,18 @@ def test(exp_name: str):
     #     ...
     # p(kafka)
     # p(redpanda)
+    # rebind_parameters(
+    #     load=5.0 * 10**6,
+    #     durationSeconds=100,
+    # )
+    # hammer()
     rebind_parameters(
         load=5.0 * 10**6,
         durationSeconds=100,
     )
-    main()
+    exp("test")
+
+    # threshold_hammer("test", [128, 512, 1024, 2048, 4096, 8192, 16384])
 
 
 @click.command("ingest")
@@ -212,6 +221,7 @@ def test(exp_name: str):
 @click.option("--partitions", type=int)
 def ingest_set(exp_description, **kwargs):
     from greenflow.playbook import exp
+    from greenflow.adaptive import threshold_hammer
 
     # load_gin(exp_name)
 
@@ -223,11 +233,11 @@ def ingest_set(exp_description, **kwargs):
         exp_name = "ingest-kafka"
         with kafka_context():
             load_gin(exp_name)
-            logging.info(threshold(exp_name, exp_description, messageSizes))
+            threshold_hammer(exp_description, messageSizes)
         exp_name = "ingest-redpanda"
         with redpanda_context():
             load_gin(exp_name)
-            logging.info(threshold(exp_name, exp_description, messageSizes))
+            threshold_hammer(exp_description, messageSizes)
     except:
         send_notification("Error in experiment. Debugging with shell")
         traceback.print_exc()
