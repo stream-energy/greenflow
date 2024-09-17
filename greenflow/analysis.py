@@ -12,12 +12,17 @@ from os import getenv
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-url = getenv("PROMETHEUS_URL")
-prom = PrometheusConnect(url=url)
+def get_prometheus_url() -> str:
+    url = getenv("PROMETHEUS_URL")
+    return url
 
+def get_prometheus(env: str = "test") -> PrometheusConnect:
+    prom: PrometheusConnect = PrometheusConnect(url=get_prometheus_url())
+    return prom
 
 def get_experiments():
-    from .g import g
+    from entrypoint import patch_global_g
+    g = patch_global_g("test")
     experiments = {exp.doc_id: exp for exp in g.storage.experiments.all()}
     return experiments
 
@@ -27,7 +32,7 @@ def sort_by_time(exp_id, experiments):
     return pendulum.parse(date_time_str)
 
 
-def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.DateTime) -> float:
+def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.DateTime, prom=get_prometheus()) -> float:
     from .g import g
     import logging
     # Get the most recent experiment
@@ -35,7 +40,7 @@ def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.Date
 
     # Since we are using VictoriaMetrics, there's an additional flush required
     requests.get(
-        f"{url}/internal/force_flush"
+        f"{get_prometheus_url()}/internal/force_flush"
     )
 
     # Filter experiments that started after the minimum_current_ts
@@ -168,7 +173,7 @@ def calculate_throughput_MBps(row: pd.Series):
     return row
 
 
-def calculate_observed_throughput(row: pd.Series):
+def calculate_observed_throughput(row: pd.Series, prom=get_prometheus()):
     started_ts = pendulum.parse(row["started_ts"])
     stopped_ts = pendulum.parse(row["stopped_ts"])
 
@@ -183,6 +188,7 @@ def calculate_observed_throughput(row: pd.Series):
         )
     except KeyError:
         # Return the original row if no data is found
+        breakpoint()
         return row
 
     # get the highest watermark using max- Represents the number of messages in the partition
@@ -214,7 +220,7 @@ def calculate_throughput_gap(row: pd.Series):
     return row
 
 
-def calculate_latency(row: pd.Series):
+def calculate_latency(row: pd.Series, prom=get_prometheus()):
     started_ts, stopped_ts = get_time_range(row)
 
     query = f'histogram_quantile(0.99, sum(rate(kminion_end_to_end_produce_latency_seconds_bucket{{namespace="{"redpanda" if "redpanda" in row["exp_name"] else "default"}", experiment_started_ts="{row["started_ts"]}"}})) by (le))'
@@ -252,7 +258,7 @@ def calculate_throughput_per_watt(row: pd.Series):
     return row
 
 
-def calculate_average_power(row: pd.Series):
+def calculate_average_power(row: pd.Series, prom=get_prometheus()):
     """
     sum(scaph_host_power_microwatts{experiment_started_ts="$Experiment"}[5s]) / 10^6
     """

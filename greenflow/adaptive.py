@@ -276,7 +276,7 @@ def threshold_hammer(exp_description: str, messageSizes: list[int]
         hammer_throughput = hammer()
 
         # 3% more load should fail
-        expect_fail_load = int(hammer_throughput * 1.03)
+        expect_fail_load = int(hammer_throughput * 1.05)
         rebind_parameters(load=expect_fail_load)
         now = pendulum.now()
         exp(experiment_description=exp_description)

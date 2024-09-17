@@ -47,6 +47,9 @@ parse_args() {
 # Parse command line arguments
 parse_args "$@"
 
+# Add 5 seconds to the duration to allow for graceful termination
+DURATION_SECONDS=$((DURATION_SECONDS + 5))
+
 # Validate required parameters
 if [[ -z "$TOPIC" || -z "$NUM_RECORDS" || -z "$RECORD_SIZE" || -z "$PRODUCER_PROPS" || -z "$START_TIMESTAMP" || -z "$DURATION_SECONDS" ]]; then
     echo "Missing required parameters. Usage:"
@@ -59,6 +62,7 @@ CURRENT_TIME=$(date +%s)
 if [ "$START_TIMESTAMP" -gt "$CURRENT_TIME" ]; then
     SLEEP_DURATION=$((START_TIMESTAMP - CURRENT_TIME))
     echo "Waiting for $SLEEP_DURATION seconds before starting the test..."
+    echo "Waiting until $(date -d @$START_TIMESTAMP)"
     sleep $SLEEP_DURATION
 else
     echo "Warning: Start time is in the past. Starting immediately."
@@ -66,34 +70,35 @@ fi
 
 # Log the actual start time
 ACTUAL_START_TIME=$(date +%s)
-echo "Test started at: $ACTUAL_START_TIME"
+echo "Test started at: $(date -d @$ACTUAL_START_TIME)"
 
-# Set up the time bomb
-(
-    sleep "$DURATION_SECONDS"
-    echo "Time's up! Killing the performance test."
-    pkill -P $$
-) &
-TIMEBOMB_PID=$!
-
-# Run the Kafka producer performance test
-echo kafka-producer-perf-test \
-    --topic "$TOPIC" \
-    --num-records "$NUM_RECORDS" \
-    --record-size "$RECORD_SIZE" \
-    --throughput "$THROUGHPUT" \
-    --producer-props "$PRODUCER_PROPS" \
-    --print-metrics
-
+# Run the Kafka producer performance test in the background
 kafka-producer-perf-test \
     --topic "$TOPIC" \
     --num-records "$NUM_RECORDS" \
     --record-size "$RECORD_SIZE" \
     --throughput "$THROUGHPUT" \
     --producer-props "$PRODUCER_PROPS" \
-    --print-metrics
+    --print-metrics &
 
-# Capture the exit status of the performance test
+PERF_TEST_PID=$!
+
+# Set up the time bomb
+(
+    echo "Will kill the performance test in $DURATION_SECONDS seconds at $(date -d @$((ACTUAL_START_TIME + DURATION_SECONDS)))"
+    sleep "$DURATION_SECONDS"
+    echo "Time's up! Killing the performance test."
+    kill -TERM $PERF_TEST_PID
+    sleep 5
+    if kill -0 $PERF_TEST_PID 2>/dev/null; then
+        echo "Performance test didn't terminate gracefully. Forcing kill."
+        kill -KILL $PERF_TEST_PID
+    fi
+) &
+TIMEBOMB_PID=$!
+
+# Wait for the performance test to finish or be killed
+wait $PERF_TEST_PID
 TEST_EXIT_STATUS=$?
 
 # Kill the time bomb if the test finishes before the time is up
@@ -108,5 +113,5 @@ ACTUAL_DURATION=$((END_TIME - ACTUAL_START_TIME))
 echo "Total test duration: $ACTUAL_DURATION seconds"
 
 # Exit with the status of the performance test
-exit $TEST_EXIT_STATUS
+exit 0
 """

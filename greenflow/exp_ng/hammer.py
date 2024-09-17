@@ -56,6 +56,7 @@ chmod +x /tmp/synchronized_kafka_perf_test.sh
     --record-size {exp_params['messageSize']} \
     --throughput -1 \
     --producer-props bootstrap.servers={exp_params['kafka_bootstrap_servers']} \
+    --durationSeconds {exp_params['durationSeconds']} \
     --start-timestamp {start_timestamp}
                                     """,
                                 ],
@@ -77,13 +78,13 @@ def deploy_hammer(extra_vars) -> Job:
     totalDuration = extra_vars["exp_params"]["durationSeconds"] + gracePeriod
 
     try:
-        job.wait(["condition=Complete", "condition=Failed"], timeout=totalDuration * 10)
+        job.wait(["condition=Complete", "condition=Failed"], timeout=totalDuration)
         if job.status.conditions[0].type == "Complete":
             job.delete(propagation_policy="Foreground")
             return
     except TimeoutError:
-        breakpoint()
-        # job.delete(propagation_policy="Foreground")
+        # breakpoint()
+        job.delete(propagation_policy="Foreground")
         return
     except KeyboardInterrupt:
         job.delete(propagation_policy="Foreground")

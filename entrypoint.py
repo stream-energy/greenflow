@@ -60,54 +60,69 @@ def embed(globals, locals):
 # Once the experiment is complete or if there is an error, you will get a notification
 ntfy_url = os.getenv("NTFY_URL", "http://ntfy.sh/YOUR_URL_HERE")
 
-
-def load_gin(exp_name="ingest-redpanda", test=False):
+def patch_global_g(deployment_type):
     import greenflow.g
     from greenflow.g import _g
+    import gin
 
+    with gin.unlock_config():
+        gin.bind_parameter("greenflow.g._g.deployment_type", deployment_type)
+    g = _g.get_g()
+    try:
+        _ = greenflow.g.g
+    except AttributeError:
+        greenflow.g.g = g
+    from greenflow import provision, destroy
+    return g
+
+def setup_gin_config(g, exp_name, config_files):
+    import gin
+
+    with gin.unlock_config():
+        gin.parse_config_files_and_bindings(
+            [f"{g.gitroot}/gin/{file}" for file in config_files],
+            [],
+        )
+
+def load_gin(exp_name="ingest-redpanda", test=False):
     if test:
-        with gin.unlock_config():
-            gin.bind_parameter("greenflow.g._g.deployment_type", "test")
-        g = _g.get_g()
-        try:
-            _ = greenflow.g.g
-        except AttributeError:
-            greenflow.g.g = g
-        from greenflow import provision, destroy
+# # URL should be compatible with Prometheus Remote write api
+# export EXPERIMENT_STORAGE_URL=https://greenflow-victoria.govind.work/api/v1/write
+# export PROMETHEUS_URL=http://h-0:8428
+# export EXPERIMENT_PUSHGATEWAY_URL=https://greenflow-victoria.govind.work/api/v1/import/prometheus
+# export DASHBOARD_BASE_URL=https://greenflow-grafana.govind.work
+# export NTFY_URL=https://ntfy.sh/4d5a7713-8b2a-46c8-8407-0014b19aa54a-greenflow
 
-        with gin.unlock_config():
-            gin.parse_config_files_and_bindings(
-                [
-                    f"{g.gitroot}/gin/test-platform.gin",
-                    f"{g.gitroot}/gin/{exp_name}.gin",
-                    f"{g.gitroot}/gin/test-platform.gin",
-                ],
-                [],
-            )
+# export TEST_EXPERIMENT_STORAGE_URL=https://greenflow-victoria-test.govind.work/api/v1/write
+# export TEST_PROMETHEUS_URL=http://h-0:8429
+# export TEST_EXPERIMENT_PUSHGATEWAY_URL=https://greenflow-victoria-test.govind.work/api/v1/import/prometheus
+# export TEST_DASHBOARD_BASE_URL=https://greenflow-grafana-test.govind.work
+# export TEST_NTFY_URL=https://ntfy.sh/4d5a7713-8b2a-46c8-8407-0014b19aa54a-greenflow-test
+        os.environ["EXPERIMENT_STORAGE_URL"] = os.environ["TEST_EXPERIMENT_STORAGE_URL"]
+        os.environ["PROMETHEUS_URL"] = os.environ["TEST_PROMETHEUS_URL"]
+        os.environ["EXPERIMENT_PUSHGATEWAY_URL"] = os.environ["TEST_EXPERIMENT_PUSHGATEWAY_URL"]
+        os.environ["DASHBOARD_BASE_URL"] = os.environ["TEST_DASHBOARD_BASE_URL"]
+        os.environ["NTFY_URL"] = os.environ["TEST_NTFY_URL"]
+        g = patch_global_g("test")
+        config_files = [
+            "test-platform.gin",
+            f"{exp_name}.gin",
+            "test-platform.gin",
+        ]
     else:
-        with gin.unlock_config():
-            gin.bind_parameter("greenflow.g._g.deployment_type", "production")
-        g = _g.get_g()
-        try:
-            _ = greenflow.g.g
-        except AttributeError:
-            greenflow.g.g = g
-        from greenflow import provision, destroy
+        g = patch_global_g("production")
+        config_files = [
+            "vmon-defaults.gin",
+            "g5k/defaults.gin",
+            # "g5k/paravance.gin",
+            # "g5k/parasilo.gin",
+            # "g5k/montcalm.gin",
+            # "g5k/chirop.gin",
+            "g5k/neowise.gin",
+            f"{exp_name}.gin",
+        ]
 
-        with gin.unlock_config():
-            gin.parse_config_files_and_bindings(
-                [
-                    f"{g.gitroot}/gin/vmon-defaults.gin",
-                    f"{g.gitroot}/gin/g5k/defaults.gin",
-                    # f"{g.gitroot}/gin/g5k/paravance.gin",
-                    # f"{g.gitroot}/gin/g5k/parasilo.gin",
-                    # f"{g.gitroot}/gin/g5k/montcalm.gin",
-                    # f"{g.gitroot}/gin/g5k/chirop.gin",
-                    f"{g.gitroot}/gin/g5k/neowise.gin",
-                    f"{g.gitroot}/gin/{exp_name}.gin",
-                ],
-                [],
-            )
+    setup_gin_config(g, exp_name, config_files)
 
 
 def rebind_parameters(**kwargs):
@@ -198,18 +213,17 @@ def test(exp_name: str):
     #     ...
     # p(kafka)
     # p(redpanda)
-    # rebind_parameters(
-    #     load=5.0 * 10**6,
-    #     durationSeconds=100,
-    # )
-    # hammer()
     rebind_parameters(
-        load=5.0 * 10**6,
+        load=5.0 * 10**3,
+        messageSize=1024,
         durationSeconds=100,
     )
-    exp("test")
-
-    # threshold_hammer("test", [128, 512, 1024, 2048, 4096, 8192, 16384])
+    # hammer()
+    messageSizes = [
+        128,
+        512,
+    ] + list(range(1024, 10241, 1024))
+    threshold_hammer("test", messageSizes)
 
 
 @click.command("ingest")

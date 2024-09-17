@@ -85,7 +85,7 @@ def create_job(extra_vars) -> Job:
 
 def synchronized_exp_job(extra_vars) -> Job:
     exp_params = extra_vars["exp_params"]
-    total_messages = exp_params["load"] * exp_params["durationSeconds"]
+    total_messages = int(exp_params["load"] * exp_params["durationSeconds"] / exp_params["instances"])
     start_timestamp = int(time.time()) + 15
 
     return Job(
@@ -191,12 +191,12 @@ def deploy_experiment(extra_vars) -> Job:
     totalDuration = extra_vars["exp_params"]["durationSeconds"] + gracePeriod
 
     try:
-        job.wait(["condition=Complete", "condition=Failed"], timeout=totalDuration)
-        time.sleep(30)
+        job.wait(["condition=Complete", "condition=Failed"], timeout=totalDuration * 10)
         if job.status.conditions[0].type == "Complete":
             job.delete(propagation_policy="Foreground")
             return
         else:
+            breakpoint()
             raise RuntimeError("Failed to run experiment")
     except TimeoutError:
         breakpoint()
