@@ -40,8 +40,8 @@
           };
 
           packages = with pkgs; [
-	    sshpass
-	    dhall
+            sshpass
+            dhall
             micromamba
             alejandra
             nil
@@ -109,6 +109,12 @@
             password: $GRID5000_PASSWORD
             verify_ssl: $PWD/api-proxy-lille-grid5000-fr-chain.pem
             " > ~/.python-grid5000.yaml
+            echo "
+            - name: run_fio_benchmark
+              src: https://github.com/mcharanrm/ansible-role-fio-benchmark.git
+              version: origin/main
+            " > /tmp/fio-requirements.yml
+            ansible-galaxy install -r /tmp/fio-requirements.yml --roles-path $PWD/ansible/project/roles
           '';
 
           enterShell = ''

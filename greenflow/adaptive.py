@@ -272,53 +272,52 @@ def threshold_hammer(exp_description: str, messageSizes: list[int]
 
     # Run the hammer to find the max throughput
     for messageSize in messageSizes:
-        rebind_parameters(messageSize=messageSize)
-        hammer_throughput = hammer()
+        rebind_parameters(messageSize=messageSize, load=1*10**10)
+        hammer_throughput = hammer(experiment_description=exp_description+" type=Hammer")
 
-        # 3% more load should fail
-        expect_fail_load = int(hammer_throughput * 1.05)
-        rebind_parameters(load=expect_fail_load)
-        now = pendulum.now()
-        exp(experiment_description=exp_description)
-        fail_throughput = get_observed_throughput_of_last_experiment(
-            minimum_current_ts=now
-        )
-        if fail_throughput == expect_fail_load:
-            logging.warning(
-                dict(
-                    msg="Fail load is not enough",
-                    fail_throughput=fail_throughput,
-                    expect_fail_load=expect_fail_load,
-                    messageSize=messageSize,
-                )
-            )
+        # # 3% more load should fail
+        # expect_fail_load = int(hammer_throughput * 1.04)
+        # rebind_parameters(load=expect_fail_load)
+        # now = pendulum.now()
+        # exp(experiment_description=exp_description)
+        # fail_throughput = get_observed_throughput_of_last_experiment(
+        #     minimum_current_ts=now
+        # )
+        # if fail_throughput == expect_fail_load:
+        #     logging.warning(
+        #         dict(
+        #             msg="Fail load is not enough",
+        #             fail_throughput=fail_throughput,
+        #             expect_fail_load=expect_fail_load,
+        #             messageSize=messageSize,
+        #         )
+        #     )
 
-        # 5% less load should succeed
-        expect_succeed_load = int(hammer_throughput * 0.95)
-        rebind_parameters(load=expect_succeed_load)
-        now = pendulum.now()
-        exp(experiment_description=exp_description)
-        succeed_throughput = get_observed_throughput_of_last_experiment(
-            minimum_current_ts=now
-        )
-        if succeed_throughput != expect_succeed_load:
-            logging.warning(
-                dict(
-                    msg="Succeed load is too much",
-                    succeed_throughput=succeed_throughput,
-                    expect_succeed_load=expect_succeed_load,
-                    messageSize=messageSize,
-                )
-            )
+        # expect_succeed_load = int(hammer_throughput * 1.0)
+        # rebind_parameters(load=expect_succeed_load)
+        # now = pendulum.now()
+        # exp(experiment_description=exp_description)
+        # succeed_throughput = get_observed_throughput_of_last_experiment(
+        #     minimum_current_ts=now
+        # )
+        # if succeed_throughput != expect_succeed_load:
+        #     logging.warning(
+        #         dict(
+        #             msg="Succeed load is too much",
+        #             succeed_throughput=succeed_throughput,
+        #             expect_succeed_load=expect_succeed_load,
+        #             messageSize=messageSize,
+        #         )
+        #     )
         results.append(
             dict(
                 messageSize=messageSize,
                 hammer_throughput=hammer_throughput,
-                expect_fail_load=expect_fail_load,
-                fail_throughput=fail_throughput,
-                expect_succeed_load=expect_succeed_load,
-                succeed_throughput=succeed_throughput,
-                threshold_load=expect_succeed_load,
+                # expect_fail_load=expect_fail_load,
+                # fail_throughput=fail_throughput,
+                # expect_succeed_load=expect_succeed_load,
+                # succeed_throughput=succeed_throughput,
+                # threshold_load=expect_succeed_load,
             )
         )
     logging.warning({"results": results})

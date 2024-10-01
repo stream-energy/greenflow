@@ -7,7 +7,9 @@
   tasks:
     - name: Uninstall k3s agent on worker nodes
       shell: "/usr/local/bin/k3s-agent-uninstall.sh"
-      when: "'worker' in group_names"
+      when: "'control_plane' not in kubernetes_role"
+      failed_when: false
     - name: Uninstall k3s agent on control nodes
       shell: "/usr/local/bin/k3s-uninstall.sh"
-      when: "'control' in group_names"
+      when: "'control_plane' in kubernetes_role"
+      failed_when: false

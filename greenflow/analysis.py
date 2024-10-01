@@ -12,25 +12,22 @@ from os import getenv
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def get_prometheus_url() -> str:
-    url = getenv("PROMETHEUS_URL")
-    return url
+url = getenv("PROMETHEUS_URL")
+prom = PrometheusConnect(url=url)
 
-def get_prometheus(env: str = "test") -> PrometheusConnect:
-    prom: PrometheusConnect = PrometheusConnect(url=get_prometheus_url())
-    return prom
 
 def get_experiments():
-    from entrypoint import patch_global_g
-    g = patch_global_g("test")
+    from .g import g
     experiments = {exp.doc_id: exp for exp in g.storage.experiments.all()}
     return experiments
+
 
 def sort_by_time(exp_id, experiments):
     date_time_str = experiments[exp_id]["started_ts"]
     return pendulum.parse(date_time_str)
 
-def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.DateTime, prom=get_prometheus()) -> float:
+
+def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.DateTime) -> float:
     from .g import g
     import logging
     # Get the most recent experiment
@@ -38,7 +35,7 @@ def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.Date
 
     # Since we are using VictoriaMetrics, there's an additional flush required
     requests.get(
-        f"{get_prometheus_url()}/internal/force_flush"
+        f"{url}/internal/force_flush"
     )
 
     # Filter experiments that started after the minimum_current_ts
@@ -79,11 +76,10 @@ def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.Date
     try:
         # Get the data from Prometheus
         data = MetricRangeDataFrame(
-            prom.custom_query_range(
+            prom.get_metric_range_data(
                 query,
                 start_time=started_ts,
                 end_time=stopped_ts,
-                step="5s",
             )
         )
 
@@ -105,6 +101,7 @@ def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.Date
     except KeyError:
         print("No data found for the latest experiment")
         raise
+
 
 def filter_experiments(
     experiments: dict[int, Document],
@@ -130,6 +127,7 @@ def filter_experiments(
 
     return pd.DataFrame(filtered_experiments).set_index("exp_id")
 
+
 def process_experiment(exp: Document) -> dict[str, Any]:
     metadata = exp["experiment_metadata"]
     params = metadata["factors"]["exp_params"]
@@ -146,10 +144,12 @@ def process_experiment(exp: Document) -> dict[str, Any]:
         **filtered_params,
     }
 
+
 def get_time_range(row: pd.Series, buffer_minutes: int = 1):
     started_ts = pendulum.parse(row["started_ts"]).subtract(minutes=buffer_minutes)
     stopped_ts = pendulum.parse(row["stopped_ts"]).add(minutes=buffer_minutes)
     return started_ts, stopped_ts
+
 
 def calculate_throughput_MBps(row: pd.Series):
     """
@@ -167,18 +167,18 @@ def calculate_throughput_MBps(row: pd.Series):
     row["throughput_MBps"] = mbps
     return row
 
-def calculate_observed_throughput(row: pd.Series, prom=get_prometheus()):
+
+def calculate_observed_throughput(row: pd.Series):
     started_ts = pendulum.parse(row["started_ts"])
     stopped_ts = pendulum.parse(row["stopped_ts"])
 
     query = f'kminion_kafka_topic_high_water_mark_sum{{namespace="{"redpanda" if "redpanda" in row["exp_name"] else "default"}", topic_name="input", experiment_started_ts="{row["started_ts"]}"}}'
     try:
         data = MetricRangeDataFrame(
-            prom.custom_query_range(
+            prom.get_metric_range_data(
                 query,
                 start_time=started_ts,
                 end_time=stopped_ts,
-                step="5s",
             )
         )
     except KeyError:
@@ -197,6 +197,7 @@ def calculate_observed_throughput(row: pd.Series, prom=get_prometheus()):
 
     return row
 
+
 def calculate_throughput_gap(row: pd.Series):
     expected_throughput = float(row["load"])
     try:
@@ -213,16 +214,16 @@ def calculate_throughput_gap(row: pd.Series):
 
     return row
 
-def calculate_latency(row: pd.Series, prom=get_prometheus()):
+
+def calculate_latency(row: pd.Series):
     started_ts, stopped_ts = get_time_range(row)
 
     query = f'histogram_quantile(0.99, sum(rate(kminion_end_to_end_produce_latency_seconds_bucket{{namespace="{"redpanda" if "redpanda" in row["exp_name"] else "default"}", experiment_started_ts="{row["started_ts"]}"}})) by (le))'
     try:
-        data = prom.custom_query_range(
+        data = prom.get_metric_range_data(
             query,
             start_time=started_ts.subtract(minutes=5),
             end_time=stopped_ts.add(minutes=5),
-            step="5s",
         )
         data = MetricRangeDataFrame(data)
     except KeyError:
@@ -237,7 +238,12 @@ def calculate_latency(row: pd.Series, prom=get_prometheus()):
     else:
         row["latency_p99"] = 0
 
+    # # Get the 99th percentile latency value
+    # latency_p99 = data["value"].max()
+    # row["latency_p99"] = latency_p99
+
     return row
+
 
 def calculate_throughput_per_watt(row: pd.Series):
     """Use the average power consumption to calculate the throughput per watt"""
@@ -246,20 +252,26 @@ def calculate_throughput_per_watt(row: pd.Series):
 
     return row
 
-def calculate_average_power(row: pd.Series, prom=get_prometheus()):
+
+def calculate_average_power(row: pd.Series):
     """
     sum(scaph_host_power_microwatts{experiment_started_ts="$Experiment"}[5s]) / 10^6
     """
+    # started_ts, stopped_ts = get_time_range(row)
+
     started_ts = pendulum.parse(row["started_ts"])
     stopped_ts = pendulum.parse(row["stopped_ts"])
 
     query = f'sum(scaph_host_power_microwatts{{experiment_started_ts="{row["started_ts"]}"}}) / 10^6'
+    # if started_ts < pendulum.now().subtract(hours=4):
+    #     print(query, started_ts, stopped_ts)
     try:
         data = prom.custom_query_range(
             query,
             start_time=started_ts.subtract(minutes=1),
             end_time=stopped_ts.add(minutes=1),
             step="5s",
+            # params={"step": "5s"},
         )
         data = MetricRangeDataFrame(data)
     except KeyError:
@@ -274,6 +286,7 @@ def calculate_average_power(row: pd.Series, prom=get_prometheus()):
         row["average_power"] = 0
 
     return row
+
 
 def enrich_dataframe(df):
     calculations = [

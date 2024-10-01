@@ -86,18 +86,6 @@ def setup_gin_config(g, exp_name, config_files):
 
 def load_gin(exp_name="ingest-redpanda", test=False):
     if test:
-# # URL should be compatible with Prometheus Remote write api
-# export EXPERIMENT_STORAGE_URL=https://greenflow-victoria.govind.work/api/v1/write
-# export PROMETHEUS_URL=http://h-0:8428
-# export EXPERIMENT_PUSHGATEWAY_URL=https://greenflow-victoria.govind.work/api/v1/import/prometheus
-# export DASHBOARD_BASE_URL=https://greenflow-grafana.govind.work
-# export NTFY_URL=https://ntfy.sh/4d5a7713-8b2a-46c8-8407-0014b19aa54a-greenflow
-
-# export TEST_EXPERIMENT_STORAGE_URL=https://greenflow-victoria-test.govind.work/api/v1/write
-# export TEST_PROMETHEUS_URL=http://h-0:8429
-# export TEST_EXPERIMENT_PUSHGATEWAY_URL=https://greenflow-victoria-test.govind.work/api/v1/import/prometheus
-# export TEST_DASHBOARD_BASE_URL=https://greenflow-grafana-test.govind.work
-# export TEST_NTFY_URL=https://ntfy.sh/4d5a7713-8b2a-46c8-8407-0014b19aa54a-greenflow-test
         os.environ["EXPERIMENT_STORAGE_URL"] = os.environ["TEST_EXPERIMENT_STORAGE_URL"]
         os.environ["PROMETHEUS_URL"] = os.environ["TEST_PROMETHEUS_URL"]
         os.environ["EXPERIMENT_PUSHGATEWAY_URL"] = os.environ["TEST_EXPERIMENT_PUSHGATEWAY_URL"]
@@ -175,10 +163,10 @@ def setup(exp_name, workers):
                 "greenflow.g5k.G5KPlatform.get_conf.num_worker", int(workers)
             )
     try:
-        provision.provision()
-        deploy_k3s()
+        # provision.provision()
+        # deploy_k3s()
         p(prometheus)
-        # p(scaphandre)
+        p(scaphandre)
         p(strimzi)
         # # Warm-up Kafka and Redpanda in the first time setup
         with kafka_context():

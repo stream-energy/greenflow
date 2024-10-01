@@ -70,6 +70,7 @@ class _g:
         transaction.commit()
 
     def end_exp(self):
+        from .g import g
         stopped_ts = pendulum.now()
         self.root.current_experiment.stopped_ts = stopped_ts.to_iso8601_string()
         transaction.commit()
@@ -79,6 +80,7 @@ class _g:
         #     self.root.current_experiment = None
         #     transaction.commit()
         #     return
+        # #TODO: A bit sus
         g.storage.commit_experiment()
 
     @staticmethod

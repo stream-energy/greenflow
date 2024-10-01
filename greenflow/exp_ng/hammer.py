@@ -91,10 +91,8 @@ def deploy_hammer(extra_vars) -> Job:
         return
 
 
-def hammer() -> float:
+def hammer(experiment_description = "Hammer") -> float:
     from pprint import pprint
-
-    experiment_description = "Hammer"
 
     now = pendulum.now()
     g.init_exp(experiment_description)
