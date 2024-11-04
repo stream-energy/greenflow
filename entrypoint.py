@@ -2,21 +2,24 @@ import traceback
 import requests
 import gin
 from greenflow.adaptive import *
+from greenflow.glue import (
+    embed,
+    ntfy_url,
+    patch_global_g,
+    setup_gin_config,
+    kafka_context,
+    redpanda_context,
+)
 from greenflow.playbook import (
     deploy_k3s,
     p,
-    kafka,
     prometheus,
     scaphandre,
     strimzi,
-    redpanda,
 )
 from dataclasses import dataclass
 from bpdb import set_trace, post_mortem
-from sh import kubectl, helm
 import click
-from shlex import split
-from contextlib import contextmanager
 import kr8s
 
 import logging
@@ -45,50 +48,13 @@ handler.setFormatter(formatter)
 logging.basicConfig(handlers=[handler], level=logging.WARN)
 
 
-def embed(globals, locals):
-    from ptpython.repl import embed
-    from os import getenv
-
-    embed(
-        history_filename=f"{getenv('DEVENV_ROOT')}/.devenv/.ptpython-history",
-        globals=globals,
-        locals=locals,
-    )
-
-
-# Configure NTFY_URL in .secrets.env to get notifications on your phone!
-# Once the experiment is complete or if there is an error, you will get a notification
-ntfy_url = os.getenv("NTFY_URL", "http://ntfy.sh/YOUR_URL_HERE")
-
-def patch_global_g(deployment_type):
-    import greenflow.g
-    from greenflow.g import _g
-    import gin
-
-    with gin.unlock_config():
-        gin.bind_parameter("greenflow.g._g.deployment_type", deployment_type)
-    g = _g.get_g()
-    try:
-        _ = greenflow.g.g
-    except AttributeError:
-        greenflow.g.g = g
-    from greenflow import provision, destroy
-    return g
-
-def setup_gin_config(g, exp_name, config_files):
-    import gin
-
-    with gin.unlock_config():
-        gin.parse_config_files_and_bindings(
-            [f"{g.gitroot}/gin/{file}" for file in config_files],
-            [],
-        )
-
 def load_gin(exp_name="ingest-redpanda", test=False):
     if test:
         os.environ["EXPERIMENT_STORAGE_URL"] = os.environ["TEST_EXPERIMENT_STORAGE_URL"]
         os.environ["PROMETHEUS_URL"] = os.environ["TEST_PROMETHEUS_URL"]
-        os.environ["EXPERIMENT_PUSHGATEWAY_URL"] = os.environ["TEST_EXPERIMENT_PUSHGATEWAY_URL"]
+        os.environ["EXPERIMENT_PUSHGATEWAY_URL"] = os.environ[
+            "TEST_EXPERIMENT_PUSHGATEWAY_URL"
+        ]
         os.environ["DASHBOARD_BASE_URL"] = os.environ["TEST_DASHBOARD_BASE_URL"]
         os.environ["NTFY_URL"] = os.environ["TEST_NTFY_URL"]
         g = patch_global_g("test")
@@ -122,6 +88,8 @@ def rebind_parameters(**kwargs):
         "bootstrap_servers": "greenflow.factors.kafka_bootstrap_servers",
         "redpanda_write_caching": "greenflow.factors.exp_params.redpanda_write_caching",
         "durationSeconds": "greenflow.factors.exp_params.durationSeconds",
+        "brokerCpu": "greenflow.factors.exp_params.broker_cpu",
+        "brokerMem": "greenflow.factors.exp_params.broker_mem",
     }
 
     with gin.unlock_config():
@@ -130,23 +98,38 @@ def rebind_parameters(**kwargs):
                 gin.bind_parameter(parameter_mapping[key], value)
 
 
-# Context manager for kafka setup and teardown
-@contextmanager
-def kafka_context():
-    load_gin("ingest-kafka")
-    p(kafka)
-    yield
-    kubectl(split("delete kafka theodolite-kafka"))
-    helm(split("uninstall -n default kminion"))
+@click.command("ingest")
+# @click.argument("exp_name", type=str, default="ingest-redpanda")
+@click.argument("exp_description", type=str)
+@click.option("--load", type=str)
+@click.option("--messageSize", type=int)
+@click.option("--instances", type=int)
+@click.option("--partitions", type=int)
+def ingest_set(exp_description, **kwargs):
+    from greenflow.playbook import exp
+    from greenflow.adaptive import threshold_hammer
 
+    # load_gin(exp_name)
 
-@contextmanager
-def redpanda_context():
-    load_gin("ingest-redpanda")
-    p(redpanda)
-    yield
-    helm(split("uninstall -n redpanda redpanda"))
-    helm(split("uninstall -n redpanda kminion"))
+    messageSizes = [
+        128,
+        512,
+    ] + list(range(1024, 10241, 1024))
+    try:
+        exp_name = "ingest-kafka"
+        with kafka_context():
+            load_gin(exp_name)
+            threshold_hammer(exp_description, messageSizes)
+        exp_name = "ingest-redpanda"
+        with redpanda_context():
+            load_gin(exp_name)
+            threshold_hammer(exp_description, messageSizes)
+    except:
+        send_notification("Error in experiment. Debugging with shell")
+        traceback.print_exc()
+        post_mortem()
+
+    send_notification("Experiment complete. On to the next.")
 
 
 @click.command("setup")
@@ -164,7 +147,7 @@ def setup(exp_name, workers):
             )
     try:
         # provision.provision()
-        # deploy_k3s()
+        deploy_k3s()
         p(prometheus)
         p(scaphandre)
         p(strimzi)
@@ -212,40 +195,6 @@ def test(exp_name: str):
         512,
     ] + list(range(1024, 10241, 1024))
     threshold_hammer("test", messageSizes)
-
-
-@click.command("ingest")
-# @click.argument("exp_name", type=str, default="ingest-redpanda")
-@click.argument("exp_description", type=str)
-@click.option("--load", type=str)
-@click.option("--messageSize", type=int)
-@click.option("--instances", type=int)
-@click.option("--partitions", type=int)
-def ingest_set(exp_description, **kwargs):
-    from greenflow.playbook import exp
-    from greenflow.adaptive import threshold_hammer
-
-    # load_gin(exp_name)
-
-    messageSizes = [
-        128,
-        512,
-    ] + list(range(1024, 10241, 1024))
-    try:
-        exp_name = "ingest-kafka"
-        with kafka_context():
-            load_gin(exp_name)
-            threshold_hammer(exp_description, messageSizes)
-        exp_name = "ingest-redpanda"
-        with redpanda_context():
-            load_gin(exp_name)
-            threshold_hammer(exp_description, messageSizes)
-    except:
-        send_notification("Error in experiment. Debugging with shell")
-        traceback.print_exc()
-        post_mortem()
-
-    send_notification("Experiment complete. On to the next.")
 
 
 @click.command("killjob")

@@ -6,5 +6,7 @@ greenflow.factors.exp_params.messageSize = 64
 greenflow.factors.exp_params.replicationFactor = 1
 greenflow.factors.exp_params.partitions = 1
 greenflow.factors.exp_params.warmupSeconds = 0
+greenflow.factors.exp_params.broker_cpu = "16"
+greenflow.factors.exp_params.broker_mem = "16Gi"
 greenflow.factors.exp_params.redpanda_write_caching = True
 greenflow.factors.factors.exp_name = "ingest-redpanda"

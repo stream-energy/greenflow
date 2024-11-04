@@ -1,7 +1,8 @@
 ---
 # vim: set ft=yaml:
 
-#TODO: This needs to be present for Redpanda
+#TODO: This needs to be present for Redpanda alone, this can be moved 
+# somewhere else
 - name: Deploy Cert-Manager
   delegate_to: localhost
   kubernetes.core.helm:

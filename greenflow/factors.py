@@ -27,6 +27,8 @@ def exp_params(
     partitions: int = gin.REQUIRED,
     redpanda_write_caching: bool = True,
     kafka_bootstrap_servers: str = gin.REQUIRED,
+    broker_cpu: str = gin.REQUIRED,
+    broker_mem: str = gin.REQUIRED,
 ):
     return {
         "warmupSeconds": warmupSeconds,
@@ -38,4 +40,6 @@ def exp_params(
         "kafka_bootstrap_servers": kafka_bootstrap_servers,
         "redpanda_write_caching": redpanda_write_caching,
         "load": load,
+        "broker_cpu": broker_cpu,
+        "broker_mem": broker_mem,
     }

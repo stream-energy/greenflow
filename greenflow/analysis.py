@@ -18,6 +18,7 @@ prom = PrometheusConnect(url=url)
 
 def get_experiments():
     from .g import g
+
     experiments = {exp.doc_id: exp for exp in g.storage.experiments.all()}
     return experiments
 
@@ -27,16 +28,17 @@ def sort_by_time(exp_id, experiments):
     return pendulum.parse(date_time_str)
 
 
-def get_observed_throughput_of_last_experiment(minimum_current_ts: pendulum.DateTime) -> float:
+def get_observed_throughput_of_last_experiment(
+    minimum_current_ts: pendulum.DateTime,
+) -> float:
     from .g import g
     import logging
+
     # Get the most recent experiment
     experiments = {exp.doc_id: exp for exp in g.storage.experiments.all()}
 
     # Since we are using VictoriaMetrics, there's an additional flush required
-    requests.get(
-        f"{url}/internal/force_flush"
-    )
+    requests.get(f"{url}/internal/force_flush")
 
     # Filter experiments that started after the minimum_current_ts
     valid_experiments = {
@@ -127,20 +129,43 @@ def filter_experiments(
 
     return pd.DataFrame(filtered_experiments).set_index("exp_id")
 
-
 def process_experiment(exp: Document) -> dict[str, Any]:
     metadata = exp["experiment_metadata"]
     params = metadata["factors"]["exp_params"]
-    relevant_params = ["load", "durationSeconds", "messageSize"]
-    filtered_params = {k: v for k, v in params.items() if k in relevant_params}
+    
+    # Parse experiment description parameters first
+    desc_params = {}
+    if "experiment_description" in exp:
+        desc_parts = exp["experiment_description"].split()
+        for part in desc_parts:
+            if "=" in part:
+                key, value = part.split("=", 1)
+                desc_params[key] = value  # Store without prefix initially
 
-    return {
+    # Define relevant parameters
+    relevant_params = ["load", "durationSeconds", "messageSize", "broker_cpu", "broker_mem", 
+                      "cluster", "bw"]  # Added new relevant parameters
+    
+    # Create base result dictionary
+    result = {
         "exp_id": exp.doc_id,
         "exp_name": exp["exp_name"],
-        # "exp_description": exp["experiment_description"],
         "started_ts": exp["started_ts"],
         "stopped_ts": exp["stopped_ts"],
         **metadata.get("results", {}),
+    }
+
+    # Filter and add parameters from both sources
+    # Priority: metadata params first, then description params if not already present
+    filtered_params = {}
+    for param in relevant_params:
+        if param in params:
+            filtered_params[param] = params[param]
+        elif param in desc_params:
+            filtered_params[f"desc_{param}"] = desc_params[param]
+
+    return {
+        **result,
         **filtered_params,
     }
 
@@ -151,13 +176,20 @@ def get_time_range(row: pd.Series, buffer_minutes: int = 1):
     return started_ts, stopped_ts
 
 
+# TODO: Add network throughput calculation
+# irate(node_network_receive_bytes_total{device=~"enp.*"}[$__rate_interval])*8
+# irate(node_network_transmit_bytes_total{device=~"enp.*"}[$__rate_interval])*8
+
+# TODO: Add disk throughput calculation
+# irate(node_disk_read_bytes_total{instance="$node",job="$job",device=~"$diskdevices"}[$__rate_interval])
+# irate(node_disk_read_bytes_total{device=~"nvme.*"}[$__rate_interval])*8
+
+
 def calculate_throughput_MBps(row: pd.Series):
     """
     Calculate the throughput in megabytes per second (MBps).
     """
-    messageSize_bytes = row.get(
-        "messageSize", 1024
-    )  # Default to 1KB if not specified
+    messageSize_bytes = row.get("messageSize", 1024)  # Default to 1KB if not specified
     observed_throughput_messages = row.get("observed_throughput", 0)
 
     mbps = (

@@ -5,12 +5,12 @@ console:
 {% if deployment_type == "production" %}
 resources:
   cpu:
-    cores: "8"
+    cores: "{{exp_params.broker_cpu}}"
     # overprovisioned: true
   memory:
     # enable_memory_locking: true
     container:
-      max: 16Gi
+      max: "{{exp_params.broker_mem}}"
     # redpanda:
     #   memory: 14Gi
     #   reserveMemory: 1Gi
