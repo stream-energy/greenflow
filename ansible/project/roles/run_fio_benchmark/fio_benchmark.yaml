@@ -1,0 +1,17 @@
+- name: "Benchmarking throughput and IOPS of a disk on a running instance"
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Install fio, flexible I/O tester"
+      apt:
+        name: fio
+        state: present
+
+    - name: "Test throughput and IOPS of disk"
+      include_role:
+        name: run_fio_benchmark
+      vars:
+        fiotest_directory: '/root/fiotest'
+        fiotest_rounds: 5
+        fiotest_retry_attempt: 120
+        fiotest_retry_delay: 60

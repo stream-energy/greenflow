@@ -1,0 +1,33 @@
+- name: "Benchmarking throughput and IOPS of a disk on a running instance"
+  hosts: all
+  # gather_facts: true
+  become: true
+  tasks:
+    - name: Create Netplan configuration for enp10s0f1
+      template:
+        src: netplan_vrack.yaml.j2
+        dest: /etc/netplan/51-netplan_vrack.yaml
+        mode: 0600
+
+    - name: Apply Netplan configuration
+      command: netplan apply
+      when: ansible_facts['distribution'] == 'Ubuntu'
+
+    - name: Set authorized key taken from the user's home directory
+      authorized_key:
+        user: ubuntu
+        key: "{{ lookup('file', '/home/' + lookup('env', 'USER') + '/.ssh/id_ed25519.pub') }}"
+    - name: "Install fio, flexible I/O tester"
+      apt:
+        name: fio
+        state: present
+
+    # - name: "Test throughput and IOPS of disk"
+    #   include_role:
+    #     name: run_fio_benchmark
+    #   vars:
+    #     fiotest_directory: '/root/fiotest'
+    #     fiotest_rounds: 1
+    #     fiotest_retry_attempt: 120
+    #     fiotest_retry_delay: 60
+    #     fio_store_local_logs_dir: '/tmp/fio_logs'
