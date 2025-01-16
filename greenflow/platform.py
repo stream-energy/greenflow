@@ -17,6 +17,7 @@ class Platform(persistent.Persistent):
 
     def post_provision(self):
         from .g import g
+
         self.set_platform_metadata()
         with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:
             yaml.dump(self.get_ansible_inventory(), f)
@@ -59,6 +60,7 @@ class MockPlatform:
             k3d(split("kubeconfig get --all"), _out=f)
         kubectl(split("config set-context greenflow-test-cluster"))
         from .g import g
+
         print(g.deployment_type)
 
     def pre_teardown(self):

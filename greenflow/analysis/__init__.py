@@ -7,6 +7,7 @@ import requests
 from tinydb.table import Document
 from tinydb import TinyDB, Query
 from os import getenv
+from .cache import cache
 
 # Assuming your data is in the 'redpanda_kafka_data' DataFrame
 import matplotlib.pyplot as plt
@@ -17,7 +18,7 @@ prom = PrometheusConnect(url=url)
 
 
 def get_experiments():
-    from .g import g
+    from ..g import g
 
     experiments = {exp.doc_id: exp for exp in g.storage.experiments.all()}
     return experiments
@@ -31,7 +32,7 @@ def sort_by_time(exp_id, experiments):
 def get_observed_throughput_of_last_experiment(
     minimum_current_ts: pendulum.DateTime,
 ) -> float:
-    from .g import g
+    from ..g import g
     import logging
 
     # Get the most recent experiment
@@ -108,14 +109,12 @@ def get_observed_throughput_of_last_experiment(
 def filter_experiments(
     experiments: dict[int, Document],
     filter_condition: Callable[[Document], bool],
-    cutoff: str,
+    *,
+    cutoff_begin: str,
+    cutoff_end: str,
 ) -> pd.DataFrame:
-    cutoff_date = pendulum.parse(cutoff)
-
-    def is_valid_experiment(exp: Document) -> bool:
-        return (pendulum.parse(exp["started_ts"]) >= cutoff_date) and filter_condition(
-            exp
-        )
+    cutoff_begin_date = pendulum.parse(cutoff_begin)
+    cutoff_end_date = pendulum.parse(cutoff_end)
 
     filtered_experiments = [
         process_experiment(exp)
@@ -124,15 +123,73 @@ def filter_experiments(
             key=lambda x: pendulum.parse(x["started_ts"]),
             reverse=True,
         )
-        if pendulum.parse(exp["started_ts"]) >= cutoff_date and filter_condition(exp)
+        if pendulum.parse(exp["started_ts"]) >= cutoff_begin_date
+        and cutoff_end_date >= pendulum.parse(exp["started_ts"])
+        and filter_condition(exp)
     ]
 
     return pd.DataFrame(filtered_experiments).set_index("exp_id")
 
+
+def interest(*, cluster=None, type=None, exp_name=None, **kwargs) -> Callable[[Any], bool]:
+    def _interest(exp):
+        params = exp["experiment_metadata"]["factors"]["exp_params"]
+        for k, v in params.items():
+            if k in kwargs:
+                if kwargs[k] != v:
+                    return False
+        if exp_name and exp_name not in exp["exp_name"]:
+            return False
+        if type and f"{type}=true" not in exp["experiment_description"]:
+            return False
+        if cluster and f"cluster={cluster}" not in exp["experiment_description"]:
+            return False
+        return True
+
+    return _interest
+
+
+def full_analytical_pipeline_nocache(
+    *,
+    cutoff_begin,
+    cutoff_end,
+    cluster=None,
+    type=None,
+    **kwargs,
+):
+    experiments = get_experiments()
+    redpanda_kafka_data = filter_experiments(
+        experiments,
+        interest(cluster=cluster, type=type, **kwargs),
+        cutoff_begin=cutoff_begin,
+        cutoff_end=cutoff_end,
+    )
+    redpanda_kafka_data = enrich_dataframe(redpanda_kafka_data)
+    return redpanda_kafka_data
+
+
+@cache.pyarrow_cache
+def full_analytical_pipeline(
+    *,
+    cutoff_begin,
+    cutoff_end,
+    cluster=None,
+    type=None,
+    **kwargs,
+):
+    return full_analytical_pipeline_nocache(
+        cutoff_begin=cutoff_begin,
+        cutoff_end=cutoff_end,
+        cluster=cluster,
+        type=type,
+        **kwargs,
+    )
+
+
 def process_experiment(exp: Document) -> dict[str, Any]:
     metadata = exp["experiment_metadata"]
     params = metadata["factors"]["exp_params"]
-    
+
     # Parse experiment description parameters first
     desc_params = {}
     if "experiment_description" in exp:
@@ -143,10 +200,18 @@ def process_experiment(exp: Document) -> dict[str, Any]:
                 desc_params[key] = value  # Store without prefix initially
 
     # Define relevant parameters
-    relevant_params = ["load", "durationSeconds", "messageSize", "broker_cpu", "broker_mem", 
-                      "cluster", "bw"]  # Added new relevant parameters
-    
-    # Create base result dictionary
+    relevant_params = [
+        "load",
+        "durationSeconds",
+        "messageSize",
+        "broker_cpu",
+        "broker_mem",
+        "cluster",
+        "bw",
+        "broker_replicas",
+        "cluster",
+    ]
+
     result = {
         "exp_id": exp.doc_id,
         "exp_name": exp["exp_name"],
@@ -162,7 +227,7 @@ def process_experiment(exp: Document) -> dict[str, Any]:
         if param in params:
             filtered_params[param] = params[param]
         elif param in desc_params:
-            filtered_params[f"desc_{param}"] = desc_params[param]
+            filtered_params[f"{param}"] = desc_params[param]
 
     return {
         **result,
@@ -176,13 +241,118 @@ def get_time_range(row: pd.Series, buffer_minutes: int = 1):
     return started_ts, stopped_ts
 
 
-# TODO: Add network throughput calculation
-# irate(node_network_receive_bytes_total{device=~"enp.*"}[$__rate_interval])*8
-# irate(node_network_transmit_bytes_total{device=~"enp.*"}[$__rate_interval])*8
+def calculate_network_saturation(row: pd.Series):
+    """Calculate the average network saturation during the experiment duration"""
+    started_ts = pendulum.parse(row["started_ts"])
+    stopped_ts = pendulum.parse(row["stopped_ts"])
 
-# TODO: Add disk throughput calculation
-# irate(node_disk_read_bytes_total{instance="$node",job="$job",device=~"$diskdevices"}[$__rate_interval])
-# irate(node_disk_read_bytes_total{device=~"nvme.*"}[$__rate_interval])*8
+    query = f"""
+    max_over_time(
+    max(
+        max by (device, node) (
+        (
+            irate(node_network_receive_bytes_total{{device=~"e.*", experiment_started_ts="{row['started_ts']}"}}[15s])
+        )
+        / on(device, node)
+        (node_network_speed_bytes{{device=~"e.*", experiment_started_ts="{row['started_ts']}"}})
+        )
+    )[1m]
+    )
+    """
+
+    try:
+        data = prom.custom_query_range(
+            query,
+            start_time=started_ts,
+            end_time=stopped_ts,
+            step="5s",
+        )
+        data = MetricRangeDataFrame(data)
+    except KeyError:
+        row["network_saturation"] = float("NaN")
+        return row
+
+    if not data.empty:
+        # Calculate the average network saturation
+        network_saturation = data["value"].max()
+        row["network_saturation"] = network_saturation
+    else:
+        row["network_saturation"] = float("NaN")
+
+    return row
+
+
+def calculate_disk_throughput(row: pd.Series):
+    """Calculate the average disk throughput (MBps) during the experiment duration"""
+    started_ts = pendulum.parse(row["started_ts"])
+    stopped_ts = pendulum.parse(row["stopped_ts"])
+
+    query = f"""
+    max_over_time(
+    sum(
+        irate(node_disk_read_bytes_total{{device=~"nvme.*|sd.*", experiment_started_ts="{row['started_ts']}"}}[15s]) +
+        irate(node_disk_written_bytes_total{{device=~"nvme.*|sd.*", experiment_started_ts="{row['started_ts']}"}}[15s])
+    )[1m]
+    )
+    """
+
+    try:
+        data = prom.custom_query_range(
+            query,
+            start_time=started_ts,
+            end_time=stopped_ts,
+            step="5s",
+        )
+        data = MetricRangeDataFrame(data)
+    except KeyError:
+        row["disk_throughput_MBps"] = float("NaN")
+        return row
+
+    if not data.empty:
+        # Calculate the maximum disk throughput and convert to MBps
+        disk_throughput = data["value"].max() / (1024 * 1024)
+        row["disk_throughput_MBps"] = disk_throughput
+    else:
+        row["disk_throughput_MBps"] = float("NaN")
+
+    return row
+
+
+def calculate_disk_utilization(row: pd.Series):
+    """Calculate the disk utilization (percentage of time the device was busy)"""
+    started_ts = pendulum.parse(row["started_ts"])
+    stopped_ts = pendulum.parse(row["stopped_ts"])
+
+    query = f"""
+    max(
+        rate(node_disk_written_bytes_total{{device=~"nvme.*|sd.*", experiment_started_ts="{row['started_ts']}"}}[1m])
+    )
+    """
+
+    try:
+        data = prom.custom_query_range(
+            query,
+            start_time=started_ts,
+            end_time=stopped_ts,
+            step="5s",
+        )
+        data = MetricRangeDataFrame(data)
+    except KeyError:
+        row["disk_utilization"] = float("NaN")
+        return row
+
+    if not data.empty:
+        # Calculate the maximum disk utilization (as a fraction)
+        disk_utilization = data["value"].mean()
+        row["disk_utilization"] = disk_utilization
+    else:
+        row["disk_utilization"] = float("NaN")
+
+    return row
+
+
+# TODO: Add CPU
+# 100 - (avg by (node) (irate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)
 
 
 def calculate_throughput_MBps(row: pd.Series):
@@ -199,6 +369,12 @@ def calculate_throughput_MBps(row: pd.Series):
     row["throughput_MBps"] = mbps
     return row
 
+
+def create_qgrid_widget(df: pd.DataFrame):
+    import qgridnext as qgrid
+
+    qgrid_widget = qgrid.show_grid(df, show_toolbar=True)
+    return qgrid_widget
 
 def calculate_observed_throughput(row: pd.Series):
     started_ts = pendulum.parse(row["started_ts"])
@@ -320,14 +496,26 @@ def calculate_average_power(row: pd.Series):
     return row
 
 
+def convert_broker_cpu(row: pd.Series):
+    """Convert the broker cpu from a string to an integer"""
+    broker_cpu = row["broker_cpu"]
+    if broker_cpu:
+        row["broker_cpu"] = int(broker_cpu)
+    return row
+
+
 def enrich_dataframe(df):
     calculations = [
         calculate_observed_throughput,
-        calculate_throughput_gap,
-        # calculate_latency,
+        # calculate_throughput_gap,
+        calculate_latency,
         calculate_average_power,
         calculate_throughput_MBps,
+        calculate_disk_throughput,
+        calculate_disk_utilization,
         calculate_throughput_per_watt,
+        convert_broker_cpu,
+        calculate_network_saturation,
     ]
 
     for calc in calculations:

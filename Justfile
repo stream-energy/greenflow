@@ -3,12 +3,14 @@ gitroot := env_var_or_default('GITROOT', "./")
 set positional-arguments
 
 ingest *args:
-    python entrypoint.py ingest "$@"
+    #!/usr/bin/env bash
+    if ! python entrypoint.py ingest "$@"; then
+    just send --priority max "Ingest failed with args: $@"
+    exit 1
+    fi
 
-send_notification message:
-    #!/usr/bin/env python
-    import requests
-    requests.post("{{ntfy_url}}", headers={"priority": "low"}, data="{{message}}")
+send *args:
+    python entrypoint.py send "$@"
 
 docs:
     #!/usr/bin/env bash
@@ -17,10 +19,14 @@ docs:
     popd
 
 test_message_delivery:
-    just send_notification "Test message"
+    just send "Test message"
 
 setup *args:
-    python entrypoint.py setup "$@"
+    #!/usr/bin/env bash
+    if ! python entrypoint.py setup "$@"; then
+        just send --priority max "❌ Setup failed with args: $@"
+        exit 1
+    fi
 
 test *args:
     python entrypoint.py test "$@"

@@ -2,7 +2,6 @@ from contextlib import contextmanager
 from shlex import split
 import gin
 from sh import helm, kubectl
-from entrypoint import load_gin
 from greenflow.adaptive import os
 import greenflow.g
 from greenflow.playbook import kafka, p, redpanda
@@ -37,6 +36,7 @@ def patch_global_g(deployment_type):
     except AttributeError:
         greenflow.g.g = g
     from greenflow import provision, destroy
+
     return g
 
 
@@ -52,7 +52,8 @@ def setup_gin_config(g, exp_name, config_files):
 
 @contextmanager
 def kafka_context():
-    load_gin("ingest-kafka")
+    # from entrypoint import load_gin
+    # load_gin("ingest-kafka")
     p(kafka)
     yield
     kubectl(split("delete kafka theodolite-kafka"))
@@ -61,8 +62,11 @@ def kafka_context():
 
 @contextmanager
 def redpanda_context():
-    load_gin("ingest-redpanda")
+
+    # from entrypoint import load_gin
+    # load_gin("ingest-redpanda")
     p(redpanda)
     yield
     helm(split("uninstall -n redpanda redpanda"))
     helm(split("uninstall -n redpanda kminion"))
+    kubectl(split("delete -n redpanda pvc --all"))

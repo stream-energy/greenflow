@@ -4,12 +4,12 @@ import traceback
 from kr8s.objects import Job
 import time
 import pendulum
-from sh import kubectl
+from sh import kubectl, helm
 from shlex import split
 
 from box import Box, BoxList
 
-from .synchronized_perf_script import synchronized_perf_script
+from .synchronized_perf_script import producer_script
 
 from .prometheus import reinit_prometheus, scale_prometheus
 
@@ -23,30 +23,25 @@ def create_job(extra_vars) -> Job:
     exp_params = extra_vars["exp_params"]
 
     # First, check if the topic exists
-    check_topic_args = BoxList(
-        [
-            "topic",
-            "describe",
-            "input",
-            "-X",
-            f"brokers={exp_params.kafka_bootstrap_servers}",
-        ]
-    )
+    check_topic_args = BoxList([
+        "--bootstrap-server",
+        exp_params.kafka_bootstrap_servers,
+        "--topic",
+        "input",
+        "--describe"
+    ])
 
-    create_topic_args = BoxList(
-        [
-            "topic",
-            "create",
-            "input",
-            "-r",
-            f"{exp_params.replicationFactor}",
-            "-p",
-            f"{exp_params.partitions}",
-            "-X",
-            f"brokers={exp_params.kafka_bootstrap_servers}",
-        ]
-        + (["-c", "write.caching=true"] if "redpanda" in extra_vars.exp_name else [])
-    )
+    create_topic_args = BoxList([
+        "--bootstrap-server",
+        exp_params.kafka_bootstrap_servers,
+        "--topic",
+        "input",
+        "--partitions",
+        f"{exp_params.partitions}",
+        "--replication-factor",
+        f"{exp_params.replicationFactor}",
+        "--create"
+    ])
 
     return Job(
         dict(
@@ -61,16 +56,16 @@ def create_job(extra_vars) -> Job:
                         "containers": [
                             {
                                 "name": "create-topic",
-                                "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/redpanda:v24.1.8",
+                                "image": "quay.io/strimzi/kafka:0.44.0-kafka-3.8.0",
                                 "command": ["/bin/sh"],
                                 "args": [
                                     "-c",
                                     f"""
-                                    if rpk {' '.join(check_topic_args)} > /dev/null 2>&1; then
+                                    if /opt/kafka/bin/kafka-topics.sh {' '.join(check_topic_args)} > /dev/null 2>&1; then
                                         echo "Topic 'input' already exists."
                                         exit 0
                                     else
-                                        rpk {' '.join(create_topic_args)}
+                                        /opt/kafka/bin/kafka-topics.sh {' '.join(create_topic_args)}
                                     fi
                                     """,
                                 ],
@@ -85,7 +80,11 @@ def create_job(extra_vars) -> Job:
 
 def synchronized_exp_job(extra_vars) -> Job:
     exp_params = extra_vars["exp_params"]
-    total_messages = int(exp_params["load"] * exp_params["durationSeconds"] / exp_params["instances"])
+    total_messages = int(
+        exp_params["load"]
+        * exp_params["durationSeconds"]
+        / exp_params["producer_instances"]
+    )
     start_timestamp = int(time.time()) + 15
 
     return Job(
@@ -94,8 +93,8 @@ def synchronized_exp_job(extra_vars) -> Job:
             kind="Job",
             metadata={"name": "kafka-producer-perf-test", "namespace": "default"},
             spec={
-                "parallelism": exp_params["instances"],
-                "completions": exp_params["instances"],
+                "parallelism": exp_params["producer_instances"],
+                "completions": exp_params["producer_instances"],
                 "backoffLimit": 0,
                 # "ttlSecondsAfterFinished": 100,
                 "template": {
@@ -114,14 +113,14 @@ def synchronized_exp_job(extra_vars) -> Job:
                                     "-c",
                                     f"""
 cat << 'EOF' > /tmp/synchronized_kafka_perf_test.sh
-{synchronized_perf_script}
+{producer_script}
 EOF
 chmod +x /tmp/synchronized_kafka_perf_test.sh
 /tmp/synchronized_kafka_perf_test.sh \
     --topic input \
     --num-records {int(total_messages)} \
     --record-size {exp_params['messageSize']} \
-    --throughput {int(exp_params['load'] // exp_params['instances'])} \
+    --throughput {int(exp_params['load'] // exp_params['producer_instances'])} \
     --producer-props bootstrap.servers={exp_params['kafka_bootstrap_servers']} \
     --durationSeconds {exp_params['durationSeconds']} \
     --start-timestamp {start_timestamp} \
@@ -222,7 +221,12 @@ def exp(experiment_description) -> float:
     g.init_exp(experiment_description)
     extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
     extra_vars = Box(extra_vars)
-    logging.warning({"load": extra_vars.exp_params.load, "messageSize": extra_vars.exp_params.messageSize})
+    logging.warning(
+        {
+            "load": extra_vars.exp_params.load,
+            "messageSize": extra_vars.exp_params.messageSize,
+        }
+    )
 
     reinit_prometheus(
         extra_vars["deployment_started_ts"], extra_vars["experiment_started_ts"]
@@ -234,7 +238,6 @@ def exp(experiment_description) -> float:
     time.sleep(10)
     delete_kafka_topic(extra_vars)
     scale_prometheus(0)
-
 
     g.end_exp()
 
@@ -255,6 +258,7 @@ def killexp():
         "throughput",
         "delete-kafka-topic",
         "kafka-producer-perf-test",
+        "kafka-consumer-perf-test",
     ]:
         try:
             job = Job(Box(metadata=Box(name=job_name, namespace="default")))
@@ -264,4 +268,18 @@ def killexp():
             ...
             # traceback.print_exc()
             # breakpoint()
+        try:
+            kubectl(split("delete kafka theodolite-kafka"), _ok_code=[0, 1])
+            helm(split("uninstall -n default kminion"), _ok_code=[0, 1])
+            helm(split("uninstall -n redpanda redpanda"), _ok_code=[0, 1])
+            helm(split("uninstall -n redpanda kminion"), _ok_code=[0, 1])
+            kubectl(split("delete pvc -n redpanda --all"), _ok_code=[0, 1])
+            # Restart the Strimzi operator deployment
+            kubectl(
+                split("rollout restart deployment strimzi-cluster-operator -n default"),
+                _ok_code=[0, 1],
+            )
+        except:
+            traceback.print_exc()
+            ...
     scale_prometheus(0)

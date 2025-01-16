@@ -31,7 +31,7 @@ class VMonG5KPlatform(Platform):
 
         return (
             en.VMonG5kConf.from_settings(
-                job_type=["allow_classic_ssh","exotic"],
+                job_type=["allow_classic_ssh", "exotic"],
                 job_name=job_name,
                 queue=queue,
                 walltime=walltime,

@@ -15,5 +15,16 @@
     },
     "python.analysis.typeCheckingMode": "off",
     "python.linting.enabled": false,
-    "todo-tree.tree.showBadges": true
+    "todo-tree.tree.showBadges": true,
+    "python.testing.pytestArgs": [
+        "greenflow/tests",
+        "--disable-warnings",
+        "--reuse-containers",
+        "-q"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.experiments.optInto": [
+        "All"
+    ]
 }

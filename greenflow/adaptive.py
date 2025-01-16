@@ -256,7 +256,8 @@ def threshold(
     return results
 
 
-def threshold_hammer(exp_description: str, messageSizes: list[int]
+def threshold_hammer(
+    exp_description: str, messageSizes: list[int]
 ) -> list[ThresholdResult]:
     from .exp_ng.exp_ng import exp
     from .exp_ng.hammer import hammer
@@ -272,8 +273,10 @@ def threshold_hammer(exp_description: str, messageSizes: list[int]
 
     # Run the hammer to find the max throughput
     for messageSize in messageSizes:
-        rebind_parameters(messageSize=messageSize, load=1*10**10)
-        hammer_throughput = hammer(experiment_description=exp_description+" type=Hammer")
+        rebind_parameters(messageSize=messageSize, load=1 * 10**10)
+        hammer_throughput = hammer(
+            experiment_description=exp_description + " type=Hammer"
+        )
 
         # # 3% more load should fail
         # expect_fail_load = int(hammer_throughput * 1.04)

@@ -6,14 +6,16 @@ console:
 resources:
   cpu:
     cores: "{{exp_params.broker_cpu}}"
-    # overprovisioned: true
+    overprovisioned: true
   memory:
     # enable_memory_locking: true
     container:
-      max: "{{exp_params.broker_mem}}"
-    # redpanda:
-    #   memory: 14Gi
-    #   reserveMemory: 1Gi
+      # min: "{{exp_params.broker_mem}}"
+      min: "30Gi"
+      max: "30Gi"
+    redpanda:
+      memory: "{{exp_params.broker_mem}}"
+      reserveMemory: 0
 console:
   enabled: false
 {% elif deployment_type == "test" %}
@@ -28,10 +30,11 @@ config:
     auto_create_topics_enabled: false
     default_topic_partitions: 1
     default_topic_replications: 1
+    internal_topic_replication_factor: 1
+  # node:
+  #   developer_mode: true
 {% if exp_params.redpanda_write_caching %}
     write_caching_default: true
-  node:
-    developer_mode: true
 {% endif %}
 monitoring:
   enabled: false
@@ -56,6 +59,8 @@ pullSecrets:
 statefulset:
 {% if deployment_type == "test" %}
   replicas: 1
+{% elif deployment_type == "production" %}
+  replicas: {{exp_params.broker_replicas}}
 {% endif %}
   podAntiAffinity:
     topologyKey: kubernetes.io/hostname

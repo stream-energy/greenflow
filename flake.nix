@@ -63,7 +63,6 @@
               ];
             })
             direnv
-            pulumi-bin
             mdbook
           ];
           scripts.resetEnv.exec = ''
@@ -100,6 +99,10 @@
             pushd $PWD/charts/theodolite/helm
               helm dep build
             popd
+
+            helm plugin install https://github.com/databus23/helm-diff
+            helm plugin install https://github.com/aslafy-z/helm-git --version 1.3.0
+
             ansible-galaxy collection install kubernetes.core
             ansible-galaxy collection install community.general
 

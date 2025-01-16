@@ -16,6 +16,14 @@ def is_jsonable(x):
         return False
 
 
+# Convert memory to MiB for sorting
+def convert_to_mib(mem_str):
+    if "Mi" in mem_str:
+        return int(mem_str.replace("Mi", ""))
+    elif "Gi" in mem_str:
+        return int(mem_str.replace("Gi", "")) * 1024
+
+
 def get_readable_gin_config() -> dict:
     """
     Parses the gin configuration to a dictionary. Useful for logging to e.g. W&B
@@ -89,13 +97,12 @@ def generate_grafana_dashboard_url(
 
     deployment_id = g.root.current_deployment.started_ts.format("YYYY-MM-DDTHH:mm:ssZ")
     experiment_id = g.root.current_experiment.started_ts.format("YYYY-MM-DDTHH:mm:ssZ")
-    deployment_id = deployment_id.replace("+","%2B")
-    experiment_id = experiment_id.replace("+","%2B")
+    deployment_id = deployment_id.replace("+", "%2B")
+    experiment_id = experiment_id.replace("+", "%2B")
 
     if isinstance(started_ts, str):
         started_ts = pendulum.parse(started_ts)
     if isinstance(stopped_ts, str):
         stopped_ts = pendulum.parse(stopped_ts)
-
 
     return f"{base_url}from={int(started_ts.float_timestamp*1000)}&to={int(stopped_ts.float_timestamp*1000)}&var-Deployment={deployment_id}&var-Experiment={experiment_id}"

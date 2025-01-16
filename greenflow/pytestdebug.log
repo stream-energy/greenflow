@@ -1,0 +1,1752 @@
+versions pytest-8.3.2, python-3.10.14.final.0
+invocation_dir=/home/g/greenflow/greenflow
+cwd=/home/g/greenflow/greenflow
+args=('--debug',)
+
+  pytest_cmdline_main [hook]
+      config: <_pytest.config.Config object at 0x7febbc7707f0>
+    pytest_plugin_registered [hook]
+        plugin: <Session  exitstatus='<UNSET>' testsfailed=0 testscollected=0>
+        plugin_name: session
+        manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+    finish pytest_plugin_registered --> [] [hook]
+    pytest_configure [hook]
+        config: <_pytest.config.Config object at 0x7febbc7707f0>
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.LFPlugin object at 0x7febbc65c310>
+          plugin_name: lfplugin
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.NFPlugin object at 0x7febbc65c790>
+          plugin_name: nfplugin
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+    early skip of rewriting module: faulthandler [assertion]
+      pytest_plugin_registered [hook]
+          plugin: <class '_pytest.legacypath.LegacyTmpdirPlugin'>
+          plugin_name: legacypath-tmpdir
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+    early skip of rewriting module: pdb [assertion]
+    early skip of rewriting module: cmd [assertion]
+    early skip of rewriting module: code [assertion]
+    early skip of rewriting module: codeop [assertion]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+          plugin_name: 140650465301152
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.config.Config object at 0x7febbc7707f0>
+          plugin_name: pytestconfig
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.mark' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/mark/__init__.py'>
+          plugin_name: mark
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.main' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/main.py'>
+          plugin_name: main
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.runner' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/runner.py'>
+          plugin_name: runner
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.fixtures' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/fixtures.py'>
+          plugin_name: fixtures
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.helpconfig' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/helpconfig.py'>
+          plugin_name: helpconfig
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.python' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/python.py'>
+          plugin_name: python
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.terminal' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/terminal.py'>
+          plugin_name: terminal
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.debugging' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/debugging.py'>
+          plugin_name: debugging
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.unittest' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/unittest.py'>
+          plugin_name: unittest
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.capture' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/capture.py'>
+          plugin_name: capture
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.skipping' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/skipping.py'>
+          plugin_name: skipping
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.legacypath' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/legacypath.py'>
+          plugin_name: legacypath
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.tmpdir' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/tmpdir.py'>
+          plugin_name: tmpdir
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.monkeypatch' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/monkeypatch.py'>
+          plugin_name: monkeypatch
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.recwarn' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/recwarn.py'>
+          plugin_name: recwarn
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.pastebin' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/pastebin.py'>
+          plugin_name: pastebin
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.assertion' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/assertion/__init__.py'>
+          plugin_name: assertion
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.junitxml' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/junitxml.py'>
+          plugin_name: junitxml
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.doctest' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/doctest.py'>
+          plugin_name: doctest
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.cacheprovider' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/cacheprovider.py'>
+          plugin_name: cacheprovider
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.freeze_support' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/freeze_support.py'>
+          plugin_name: freeze_support
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.setuponly' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/setuponly.py'>
+          plugin_name: setuponly
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.setupplan' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/setupplan.py'>
+          plugin_name: setupplan
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.stepwise' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/stepwise.py'>
+          plugin_name: stepwise
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.warnings' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/warnings.py'>
+          plugin_name: warnings
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.logging' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/logging.py'>
+          plugin_name: logging
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.reports' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/reports.py'>
+          plugin_name: reports
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.python_path' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/python_path.py'>
+          plugin_name: python_path
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.unraisableexception' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/unraisableexception.py'>
+          plugin_name: unraisableexception
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.threadexception' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/threadexception.py'>
+          plugin_name: threadexception
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.faulthandler' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/faulthandler.py'>
+          plugin_name: faulthandler
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'anyio.pytest_plugin' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/anyio/pytest_plugin.py'>
+          plugin_name: anyio
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_cov.plugin' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pytest_cov/plugin.py'>
+          plugin_name: pytest_cov
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'time_machine' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/time_machine/__init__.py'>
+          plugin_name: time_machine
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_redis.plugin' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pytest_redis/plugin.py'>
+          plugin_name: pytest_redis
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <CaptureManager _method='fd' _global_capturing=<MultiCapture out=<FDCapture 1 oldfd=6 _state='suspended' tmpfile=<_io.TextIOWrapper name="<_io.FileIO name=7 mode='rb+' closefd=True>" mode='r+' encoding='utf-8'>> err=<FDCapture 2 oldfd=8 _state='suspended' tmpfile=<_io.TextIOWrapper name="<_io.FileIO name=9 mode='rb+' closefd=True>" mode='r+' encoding='utf-8'>> in_=<FDCapture 0 oldfd=4 _state='started' tmpfile=<_io.TextIOWrapper name='/dev/null' mode='r' encoding='utf-8'>> _state='suspended' _in_suspended=False> _capture_fixture=None>
+          plugin_name: capturemanager
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+          plugin_name: session
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.LFPlugin object at 0x7febbc65c310>
+          plugin_name: lfplugin
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.NFPlugin object at 0x7febbc65c790>
+          plugin_name: nfplugin
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <class '_pytest.legacypath.LegacyTmpdirPlugin'>
+          plugin_name: legacypath-tmpdir
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.terminal.TerminalReporter object at 0x7febbc65c9d0>
+          plugin_name: terminalreporter
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.logging.LoggingPlugin object at 0x7febbc65c910>
+          plugin_name: logging-plugin
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+    finish pytest_configure --> [] [hook]
+    pytest_sessionstart [hook]
+        session: <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+          plugin_name: 140650465301152
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.config.Config object at 0x7febbc7707f0>
+          plugin_name: pytestconfig
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.mark' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/mark/__init__.py'>
+          plugin_name: mark
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.main' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/main.py'>
+          plugin_name: main
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.runner' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/runner.py'>
+          plugin_name: runner
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.fixtures' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/fixtures.py'>
+          plugin_name: fixtures
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.helpconfig' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/helpconfig.py'>
+          plugin_name: helpconfig
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.python' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/python.py'>
+          plugin_name: python
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.terminal' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/terminal.py'>
+          plugin_name: terminal
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.debugging' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/debugging.py'>
+          plugin_name: debugging
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.unittest' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/unittest.py'>
+          plugin_name: unittest
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.capture' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/capture.py'>
+          plugin_name: capture
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.skipping' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/skipping.py'>
+          plugin_name: skipping
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.legacypath' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/legacypath.py'>
+          plugin_name: legacypath
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.tmpdir' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/tmpdir.py'>
+          plugin_name: tmpdir
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.monkeypatch' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/monkeypatch.py'>
+          plugin_name: monkeypatch
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.recwarn' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/recwarn.py'>
+          plugin_name: recwarn
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.pastebin' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/pastebin.py'>
+          plugin_name: pastebin
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.assertion' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/assertion/__init__.py'>
+          plugin_name: assertion
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.junitxml' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/junitxml.py'>
+          plugin_name: junitxml
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.doctest' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/doctest.py'>
+          plugin_name: doctest
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.cacheprovider' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/cacheprovider.py'>
+          plugin_name: cacheprovider
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.freeze_support' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/freeze_support.py'>
+          plugin_name: freeze_support
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.setuponly' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/setuponly.py'>
+          plugin_name: setuponly
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.setupplan' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/setupplan.py'>
+          plugin_name: setupplan
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.stepwise' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/stepwise.py'>
+          plugin_name: stepwise
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.warnings' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/warnings.py'>
+          plugin_name: warnings
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.logging' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/logging.py'>
+          plugin_name: logging
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.reports' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/reports.py'>
+          plugin_name: reports
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.python_path' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/python_path.py'>
+          plugin_name: python_path
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.unraisableexception' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/unraisableexception.py'>
+          plugin_name: unraisableexception
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.threadexception' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/threadexception.py'>
+          plugin_name: threadexception
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.faulthandler' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/faulthandler.py'>
+          plugin_name: faulthandler
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'anyio.pytest_plugin' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/anyio/pytest_plugin.py'>
+          plugin_name: anyio
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_cov.plugin' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pytest_cov/plugin.py'>
+          plugin_name: pytest_cov
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'time_machine' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/time_machine/__init__.py'>
+          plugin_name: time_machine
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_redis.plugin' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pytest_redis/plugin.py'>
+          plugin_name: pytest_redis
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <CaptureManager _method='fd' _global_capturing=<MultiCapture out=<FDCapture 1 oldfd=6 _state='suspended' tmpfile=<_io.TextIOWrapper name="<_io.FileIO name=7 mode='rb+' closefd=True>" mode='r+' encoding='utf-8'>> err=<FDCapture 2 oldfd=8 _state='suspended' tmpfile=<_io.TextIOWrapper name="<_io.FileIO name=9 mode='rb+' closefd=True>" mode='r+' encoding='utf-8'>> in_=<FDCapture 0 oldfd=4 _state='started' tmpfile=<_io.TextIOWrapper name='/dev/null' mode='r' encoding='utf-8'>> _state='suspended' _in_suspended=False> _capture_fixture=None>
+          plugin_name: capturemanager
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+          plugin_name: session
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.LFPlugin object at 0x7febbc65c310>
+          plugin_name: lfplugin
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.NFPlugin object at 0x7febbc65c790>
+          plugin_name: nfplugin
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <class '_pytest.legacypath.LegacyTmpdirPlugin'>
+          plugin_name: legacypath-tmpdir
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.terminal.TerminalReporter object at 0x7febbc65c9d0>
+          plugin_name: terminalreporter
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.logging.LoggingPlugin object at 0x7febbc65c910>
+          plugin_name: logging-plugin
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.fixtures.FixtureManager object at 0x7febbc65ca90>
+          plugin_name: funcmanage
+          manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_report_header [hook]
+          config: <_pytest.config.Config object at 0x7febbc7707f0>
+          start_path: /home/g/greenflow/greenflow
+          startdir: /home/g/greenflow/greenflow
+      finish pytest_report_header --> [['rootdir: /home/g/greenflow', 'configfile: pyproject.toml', 'plugins: anyio-4.4.0, cov-5.0.0, time-machine-2.15.0, redis-3.1.3'], ['using: pytest-8.3.2', 'registered third-party plugins:', '  anyio-4.4.0 at /home/g/greenflow/.mamba/lib/python3.10/site-packages/anyio/pytest_plugin.py', '  pytest-cov-5.0.0 at /home/g/greenflow/.mamba/lib/python3.10/site-packages/pytest_cov/plugin.py', '  time-machine-2.15.0 at /home/g/greenflow/.mamba/lib/python3.10/site-packages/time_machine/__init__.py', '  pytest-redis-3.1.3 at /home/g/greenflow/.mamba/lib/python3.10/site-packages/pytest_redis/plugin.py']] [hook]
+    finish pytest_sessionstart --> [] [hook]
+    pytest_collection [hook]
+        session: <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+    perform_collect <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0> ['/home/g/greenflow/greenflow'] [collection]
+        pytest_collectstart [hook]
+            collector: <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+        finish pytest_collectstart --> [] [hook]
+        pytest_make_collect_report [hook]
+            collector: <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+        processing argument CollectionArgument(path=PosixPath('/home/g/greenflow/greenflow'), parts=[], module_name=None) [collection]
+            pytest_collect_directory [hook]
+                path: /home/g/greenflow
+                parent: <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+            finish pytest_collect_directory --> <Dir greenflow> [hook]
+            pytest_collectstart [hook]
+                collector: <Dir greenflow>
+            finish pytest_collectstart --> [] [hook]
+            pytest_make_collect_report [hook]
+                collector: <Dir greenflow>
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.devcontainer.json
+                  path: /home/g/greenflow/.devcontainer.json
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/.devcontainer.json
+                  path: /home/g/greenflow/.devcontainer.json
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.devenv
+                  path: /home/g/greenflow/.devenv
+              finish pytest_ignore_collect --> True [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.envrc
+                  path: /home/g/greenflow/.envrc
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/.envrc
+                  path: /home/g/greenflow/.envrc
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.git
+                  path: /home/g/greenflow/.git
+              finish pytest_ignore_collect --> True [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.gitignore
+                  path: /home/g/greenflow/.gitignore
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/.gitignore
+                  path: /home/g/greenflow/.gitignore
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.gitmodules
+                  path: /home/g/greenflow/.gitmodules
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/.gitmodules
+                  path: /home/g/greenflow/.gitmodules
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.ipynb_checkpoints
+                  path: /home/g/greenflow/.ipynb_checkpoints
+              finish pytest_ignore_collect --> True [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.mamba
+                  path: /home/g/greenflow/.mamba
+              finish pytest_ignore_collect --> True [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.pytest_cache
+                  path: /home/g/greenflow/.pytest_cache
+              finish pytest_ignore_collect --> True [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.secrets.env
+                  path: /home/g/greenflow/.secrets.env
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/.secrets.env
+                  path: /home/g/greenflow/.secrets.env
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/.vscode
+                  path: /home/g/greenflow/.vscode
+              finish pytest_ignore_collect --> True [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/Justfile
+                  path: /home/g/greenflow/Justfile
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/Justfile
+                  path: /home/g/greenflow/Justfile
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/README.md
+                  path: /home/g/greenflow/README.md
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/README.md
+                  path: /home/g/greenflow/README.md
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/__pycache__
+                  path: /home/g/greenflow/__pycache__
+              finish pytest_ignore_collect --> True [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/ansible
+                  path: /home/g/greenflow/ansible
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_directory [hook]
+                  path: /home/g/greenflow/ansible
+                  parent: <Dir greenflow>
+              finish pytest_collect_directory --> <Dir ansible> [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/api-proxy-lille-grid5000-fr-chain.pem
+                  path: /home/g/greenflow/api-proxy-lille-grid5000-fr-chain.pem
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/api-proxy-lille-grid5000-fr-chain.pem
+                  path: /home/g/greenflow/api-proxy-lille-grid5000-fr-chain.pem
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/bench.py
+                  path: /home/g/greenflow/bench.py
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/bench.py
+                  path: /home/g/greenflow/bench.py
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/book
+                  path: /home/g/greenflow/book
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_directory [hook]
+                  path: /home/g/greenflow/book
+                  parent: <Dir greenflow>
+              finish pytest_collect_directory --> <Dir book> [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/charts
+                  path: /home/g/greenflow/charts
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_directory [hook]
+                  path: /home/g/greenflow/charts
+                  parent: <Dir greenflow>
+              finish pytest_collect_directory --> <Dir charts> [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/deploy
+                  path: /home/g/greenflow/deploy
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_directory [hook]
+                  path: /home/g/greenflow/deploy
+                  parent: <Dir greenflow>
+              finish pytest_collect_directory --> <Dir deploy> [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/embed.py
+                  path: /home/g/greenflow/embed.py
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/embed.py
+                  path: /home/g/greenflow/embed.py
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/entrypoint.py
+                  path: /home/g/greenflow/entrypoint.py
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/entrypoint.py
+                  path: /home/g/greenflow/entrypoint.py
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/env.yaml
+                  path: /home/g/greenflow/env.yaml
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/env.yaml
+                  path: /home/g/greenflow/env.yaml
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/flake.lock
+                  path: /home/g/greenflow/flake.lock
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/flake.lock
+                  path: /home/g/greenflow/flake.lock
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/flake.nix
+                  path: /home/g/greenflow/flake.nix
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/flake.nix
+                  path: /home/g/greenflow/flake.nix
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/gin
+                  path: /home/g/greenflow/gin
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_directory [hook]
+                  path: /home/g/greenflow/gin
+                  parent: <Dir greenflow>
+              finish pytest_collect_directory --> <Dir gin> [hook]
+              pytest_collect_directory [hook]
+                  path: /home/g/greenflow/greenflow
+                  parent: <Dir greenflow>
+              finish pytest_collect_directory --> <Package greenflow> [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/kubeconfig
+                  path: /home/g/greenflow/kubeconfig
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/kubeconfig
+                  path: /home/g/greenflow/kubeconfig
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/mitogen
+                  path: /home/g/greenflow/mitogen
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_directory [hook]
+                  path: /home/g/greenflow/mitogen
+                  parent: <Dir greenflow>
+              finish pytest_collect_directory --> <Dir mitogen> [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/mypy.ini
+                  path: /home/g/greenflow/mypy.ini
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/mypy.ini
+                  path: /home/g/greenflow/mypy.ini
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/plots
+                  path: /home/g/greenflow/plots
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_directory [hook]
+                  path: /home/g/greenflow/plots
+                  parent: <Dir greenflow>
+              finish pytest_collect_directory --> <Dir plots> [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/poetry.lock
+                  path: /home/g/greenflow/poetry.lock
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/poetry.lock
+                  path: /home/g/greenflow/poetry.lock
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/pyproject.toml
+                  path: /home/g/greenflow/pyproject.toml
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_file [hook]
+                  parent: <Dir greenflow>
+                  file_path: /home/g/greenflow/pyproject.toml
+                  path: /home/g/greenflow/pyproject.toml
+              finish pytest_collect_file --> [] [hook]
+              pytest_ignore_collect [hook]
+                  config: <_pytest.config.Config object at 0x7febbc7707f0>
+                  collection_path: /home/g/greenflow/storage
+                  path: /home/g/greenflow/storage
+              finish pytest_ignore_collect --> None [hook]
+              pytest_collect_directory [hook]
+                  path: /home/g/greenflow/storage
+                  parent: <Dir greenflow>
+              finish pytest_collect_directory --> <Dir storage> [hook]
+            finish pytest_make_collect_report --> <CollectReport '.' lenresult=9 outcome='passed'> [hook]
+        finish pytest_make_collect_report --> <CollectReport '' lenresult=1 outcome='passed'> [hook]
+        pytest_collectreport [hook]
+            report: <CollectReport '' lenresult=1 outcome='passed'>
+        finish pytest_collectreport --> [] [hook]
+    genitems <Package greenflow> [collection]
+      pytest_collectstart [hook]
+          collector: <Package greenflow>
+      finish pytest_collectstart --> [] [hook]
+      pytest_make_collect_report [hook]
+          collector: <Package greenflow>
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/__init__.py
+            path: /home/g/greenflow/greenflow/__init__.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/__init__.py
+            path: /home/g/greenflow/greenflow/__init__.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/__pycache__
+            path: /home/g/greenflow/greenflow/__pycache__
+        finish pytest_ignore_collect --> True [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/adaptive.py
+            path: /home/g/greenflow/greenflow/adaptive.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/adaptive.py
+            path: /home/g/greenflow/greenflow/adaptive.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/analysis
+            path: /home/g/greenflow/greenflow/analysis
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_directory [hook]
+            path: /home/g/greenflow/greenflow/analysis
+            parent: <Package greenflow>
+        finish pytest_collect_directory --> <Package analysis> [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/deployment.py
+            path: /home/g/greenflow/greenflow/deployment.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/deployment.py
+            path: /home/g/greenflow/greenflow/deployment.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/destroy.py
+            path: /home/g/greenflow/greenflow/destroy.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/destroy.py
+            path: /home/g/greenflow/greenflow/destroy.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/exp_ng
+            path: /home/g/greenflow/greenflow/exp_ng
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_directory [hook]
+            path: /home/g/greenflow/greenflow/exp_ng
+            parent: <Package greenflow>
+        finish pytest_collect_directory --> <Package exp_ng> [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/experiment.py
+            path: /home/g/greenflow/greenflow/experiment.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/experiment.py
+            path: /home/g/greenflow/greenflow/experiment.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/factors.py
+            path: /home/g/greenflow/greenflow/factors.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/factors.py
+            path: /home/g/greenflow/greenflow/factors.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/g.py
+            path: /home/g/greenflow/greenflow/g.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/g.py
+            path: /home/g/greenflow/greenflow/g.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/g5k.py
+            path: /home/g/greenflow/greenflow/g5k.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/g5k.py
+            path: /home/g/greenflow/greenflow/g5k.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/glue.py
+            path: /home/g/greenflow/greenflow/glue.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/glue.py
+            path: /home/g/greenflow/greenflow/glue.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/ovh.py
+            path: /home/g/greenflow/greenflow/ovh.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/ovh.py
+            path: /home/g/greenflow/greenflow/ovh.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/platform.py
+            path: /home/g/greenflow/greenflow/platform.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/platform.py
+            path: /home/g/greenflow/greenflow/platform.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/playbook.py
+            path: /home/g/greenflow/greenflow/playbook.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/playbook.py
+            path: /home/g/greenflow/greenflow/playbook.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/protocols
+            path: /home/g/greenflow/greenflow/protocols
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_directory [hook]
+            path: /home/g/greenflow/greenflow/protocols
+            parent: <Package greenflow>
+        finish pytest_collect_directory --> <Package protocols> [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/provision.py
+            path: /home/g/greenflow/greenflow/provision.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/provision.py
+            path: /home/g/greenflow/greenflow/provision.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/pytestdebug.log
+            path: /home/g/greenflow/greenflow/pytestdebug.log
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/pytestdebug.log
+            path: /home/g/greenflow/greenflow/pytestdebug.log
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/redis_storage.py
+            path: /home/g/greenflow/greenflow/redis_storage.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/redis_storage.py
+            path: /home/g/greenflow/greenflow/redis_storage.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/screen.py
+            path: /home/g/greenflow/greenflow/screen.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/screen.py
+            path: /home/g/greenflow/greenflow/screen.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/state.py
+            path: /home/g/greenflow/greenflow/state.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/state.py
+            path: /home/g/greenflow/greenflow/state.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/storage.py
+            path: /home/g/greenflow/greenflow/storage.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/storage.py
+            path: /home/g/greenflow/greenflow/storage.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/tests
+            path: /home/g/greenflow/greenflow/tests
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_directory [hook]
+            path: /home/g/greenflow/greenflow/tests
+            parent: <Package greenflow>
+        finish pytest_collect_directory --> <Dir tests> [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/utils.py
+            path: /home/g/greenflow/greenflow/utils.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/utils.py
+            path: /home/g/greenflow/greenflow/utils.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/vmon.py
+            path: /home/g/greenflow/greenflow/vmon.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package greenflow>
+            file_path: /home/g/greenflow/greenflow/vmon.py
+            path: /home/g/greenflow/greenflow/vmon.py
+        finish pytest_collect_file --> [] [hook]
+      finish pytest_make_collect_report --> <CollectReport 'greenflow' lenresult=4 outcome='passed'> [hook]
+    genitems <Package analysis> [collection]
+      pytest_collectstart [hook]
+          collector: <Package analysis>
+      finish pytest_collectstart --> [] [hook]
+      pytest_make_collect_report [hook]
+          collector: <Package analysis>
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/analysis/__init__.py
+            path: /home/g/greenflow/greenflow/analysis/__init__.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package analysis>
+            file_path: /home/g/greenflow/greenflow/analysis/__init__.py
+            path: /home/g/greenflow/greenflow/analysis/__init__.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/analysis/__pycache__
+            path: /home/g/greenflow/greenflow/analysis/__pycache__
+        finish pytest_ignore_collect --> True [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/analysis/cache.py
+            path: /home/g/greenflow/greenflow/analysis/cache.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package analysis>
+            file_path: /home/g/greenflow/greenflow/analysis/cache.py
+            path: /home/g/greenflow/greenflow/analysis/cache.py
+        finish pytest_collect_file --> [] [hook]
+      finish pytest_make_collect_report --> <CollectReport 'greenflow/analysis' lenresult=0 outcome='passed'> [hook]
+      pytest_collectreport [hook]
+          report: <CollectReport 'greenflow/analysis' lenresult=0 outcome='passed'>
+      finish pytest_collectreport --> [] [hook]
+    genitems <Package exp_ng> [collection]
+      pytest_collectstart [hook]
+          collector: <Package exp_ng>
+      finish pytest_collectstart --> [] [hook]
+      pytest_make_collect_report [hook]
+          collector: <Package exp_ng>
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/exp_ng/__init__.py
+            path: /home/g/greenflow/greenflow/exp_ng/__init__.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package exp_ng>
+            file_path: /home/g/greenflow/greenflow/exp_ng/__init__.py
+            path: /home/g/greenflow/greenflow/exp_ng/__init__.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/exp_ng/__pycache__
+            path: /home/g/greenflow/greenflow/exp_ng/__pycache__
+        finish pytest_ignore_collect --> True [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/exp_ng/exp_ng.py
+            path: /home/g/greenflow/greenflow/exp_ng/exp_ng.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package exp_ng>
+            file_path: /home/g/greenflow/greenflow/exp_ng/exp_ng.py
+            path: /home/g/greenflow/greenflow/exp_ng/exp_ng.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/exp_ng/hammer.py
+            path: /home/g/greenflow/greenflow/exp_ng/hammer.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package exp_ng>
+            file_path: /home/g/greenflow/greenflow/exp_ng/hammer.py
+            path: /home/g/greenflow/greenflow/exp_ng/hammer.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/exp_ng/prometheus.py
+            path: /home/g/greenflow/greenflow/exp_ng/prometheus.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package exp_ng>
+            file_path: /home/g/greenflow/greenflow/exp_ng/prometheus.py
+            path: /home/g/greenflow/greenflow/exp_ng/prometheus.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/exp_ng/synchronized_perf_script.py
+            path: /home/g/greenflow/greenflow/exp_ng/synchronized_perf_script.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package exp_ng>
+            file_path: /home/g/greenflow/greenflow/exp_ng/synchronized_perf_script.py
+            path: /home/g/greenflow/greenflow/exp_ng/synchronized_perf_script.py
+        finish pytest_collect_file --> [] [hook]
+      finish pytest_make_collect_report --> <CollectReport 'greenflow/exp_ng' lenresult=0 outcome='passed'> [hook]
+      pytest_collectreport [hook]
+          report: <CollectReport 'greenflow/exp_ng' lenresult=0 outcome='passed'>
+      finish pytest_collectreport --> [] [hook]
+    genitems <Package protocols> [collection]
+      pytest_collectstart [hook]
+          collector: <Package protocols>
+      finish pytest_collectstart --> [] [hook]
+      pytest_make_collect_report [hook]
+          collector: <Package protocols>
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/protocols/__init__.py
+            path: /home/g/greenflow/greenflow/protocols/__init__.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package protocols>
+            file_path: /home/g/greenflow/greenflow/protocols/__init__.py
+            path: /home/g/greenflow/greenflow/protocols/__init__.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/protocols/__pycache__
+            path: /home/g/greenflow/greenflow/protocols/__pycache__
+        finish pytest_ignore_collect --> True [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/protocols/mem_cpu.py
+            path: /home/g/greenflow/greenflow/protocols/mem_cpu.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package protocols>
+            file_path: /home/g/greenflow/greenflow/protocols/mem_cpu.py
+            path: /home/g/greenflow/greenflow/protocols/mem_cpu.py
+        finish pytest_collect_file --> [] [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/protocols/protocols.py
+            path: /home/g/greenflow/greenflow/protocols/protocols.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Package protocols>
+            file_path: /home/g/greenflow/greenflow/protocols/protocols.py
+            path: /home/g/greenflow/greenflow/protocols/protocols.py
+        finish pytest_collect_file --> [] [hook]
+      finish pytest_make_collect_report --> <CollectReport 'greenflow/protocols' lenresult=0 outcome='passed'> [hook]
+      pytest_collectreport [hook]
+          report: <CollectReport 'greenflow/protocols' lenresult=0 outcome='passed'>
+      finish pytest_collectreport --> [] [hook]
+    genitems <Dir tests> [collection]
+      pytest_collectstart [hook]
+          collector: <Dir tests>
+      finish pytest_collectstart --> [] [hook]
+      pytest_make_collect_report [hook]
+          collector: <Dir tests>
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/tests/__pycache__
+            path: /home/g/greenflow/greenflow/tests/__pycache__
+        finish pytest_ignore_collect --> True [hook]
+        pytest_ignore_collect [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            collection_path: /home/g/greenflow/greenflow/tests/test_exp_redis.py
+            path: /home/g/greenflow/greenflow/tests/test_exp_redis.py
+        finish pytest_ignore_collect --> None [hook]
+        pytest_collect_file [hook]
+            parent: <Dir tests>
+            file_path: /home/g/greenflow/greenflow/tests/test_exp_redis.py
+            path: /home/g/greenflow/greenflow/tests/test_exp_redis.py
+          pytest_pycollect_makemodule [hook]
+              parent: <Dir tests>
+              module_path: /home/g/greenflow/greenflow/tests/test_exp_redis.py
+              path: /home/g/greenflow/greenflow/tests/test_exp_redis.py
+          finish pytest_pycollect_makemodule --> <Module test_exp_redis.py> [hook]
+        finish pytest_collect_file --> [<Module test_exp_redis.py>] [hook]
+      finish pytest_make_collect_report --> <CollectReport 'greenflow/tests' lenresult=1 outcome='passed'> [hook]
+    genitems <Module test_exp_redis.py> [collection]
+      pytest_collectstart [hook]
+          collector: <Module test_exp_redis.py>
+      finish pytest_collectstart --> [] [hook]
+      pytest_make_collect_report [hook]
+          collector: <Module test_exp_redis.py>
+      find_module called for: test_exp_redis [assertion]
+      matched test file '/home/g/greenflow/greenflow/tests/test_exp_redis.py' [assertion]
+      found cached rewritten pyc for /home/g/greenflow/greenflow/tests/test_exp_redis.py [assertion]
+      early skip of rewriting module: pendulum [assertion]
+      early skip of rewriting module: pendulum.__version__ [assertion]
+      early skip of rewriting module: pendulum.constants [assertion]
+      early skip of rewriting module: pendulum.date [assertion]
+      early skip of rewriting module: pendulum.day [assertion]
+      early skip of rewriting module: pendulum.exceptions [assertion]
+      early skip of rewriting module: pendulum.parsing [assertion]
+      early skip of rewriting module: pendulum.parsing.exceptions [assertion]
+      early skip of rewriting module: pendulum._pendulum [assertion]
+      early skip of rewriting module: pendulum.helpers [assertion]
+      early skip of rewriting module: pendulum.formatting [assertion]
+      early skip of rewriting module: pendulum.formatting.formatter [assertion]
+      early skip of rewriting module: pendulum.locales [assertion]
+      early skip of rewriting module: pendulum.locales.locale [assertion]
+      early skip of rewriting module: pendulum.utils [assertion]
+      early skip of rewriting module: pendulum.utils._compat [assertion]
+      early skip of rewriting module: pendulum.utils._zoneinfo [assertion]
+      early skip of rewriting module: importlib.resources [assertion]
+      early skip of rewriting module: importlib._common [assertion]
+      early skip of rewriting module: importlib._adapters [assertion]
+      early skip of rewriting module: pendulum.formatting.difference_formatter [assertion]
+      early skip of rewriting module: importlib.readers [assertion]
+      early skip of rewriting module: pendulum.locales.en [assertion]
+      early skip of rewriting module: pendulum.locales.en.locale [assertion]
+      early skip of rewriting module: pendulum.locales.en.custom [assertion]
+      early skip of rewriting module: pendulum.interval [assertion]
+      early skip of rewriting module: pendulum.duration [assertion]
+      early skip of rewriting module: pendulum.mixins [assertion]
+      early skip of rewriting module: pendulum.mixins.default [assertion]
+      early skip of rewriting module: pendulum.datetime [assertion]
+      early skip of rewriting module: pendulum.time [assertion]
+      early skip of rewriting module: pendulum.tz [assertion]
+      early skip of rewriting module: pendulum.tz.local_timezone [assertion]
+      early skip of rewriting module: pendulum.tz.exceptions [assertion]
+      early skip of rewriting module: pendulum.tz.timezone [assertion]
+      early skip of rewriting module: pendulum.parser [assertion]
+      early skip of rewriting module: pendulum.testing [assertion]
+      early skip of rewriting module: pendulum.testing.traveller [assertion]
+      early skip of rewriting module: redis_om [assertion]
+      early skip of rewriting module: redis_om.sync_redis [assertion]
+      early skip of rewriting module: redis_om.checks [assertion]
+      early skip of rewriting module: redis_om.connections [assertion]
+      early skip of rewriting module: redis_om.model [assertion]
+      early skip of rewriting module: redis_om.model.migrations [assertion]
+      early skip of rewriting module: redis_om.model.migrations.migrator [assertion]
+      early skip of rewriting module: pkgutil [assertion]
+      early skip of rewriting module: redis_om.model.model [assertion]
+      early skip of rewriting module: more_itertools [assertion]
+      early skip of rewriting module: more_itertools.more [assertion]
+      early skip of rewriting module: more_itertools.recipes [assertion]
+      early skip of rewriting module: redis.commands.json [assertion]
+      early skip of rewriting module: redis.commands.json.commands [assertion]
+      early skip of rewriting module: redis.commands.json._util [assertion]
+      early skip of rewriting module: redis.commands.json.decoders [assertion]
+      early skip of rewriting module: redis.commands.json.path [assertion]
+      early skip of rewriting module: ulid [assertion]
+      early skip of rewriting module: ulid.base32 [assertion]
+      early skip of rewriting module: ulid.constants [assertion]
+      early skip of rewriting module: redis_om._compat [assertion]
+      early skip of rewriting module: pydantic [assertion]
+      early skip of rewriting module: pydantic._migration [assertion]
+      early skip of rewriting module: pydantic.version [assertion]
+      early skip of rewriting module: pydantic.errors [assertion]
+      early skip of rewriting module: pydantic.main [assertion]
+      early skip of rewriting module: pydantic_core [assertion]
+      early skip of rewriting module: pydantic_core._pydantic_core [assertion]
+      early skip of rewriting module: pydantic_core.core_schema [assertion]
+      early skip of rewriting module: pydantic._internal [assertion]
+      early skip of rewriting module: pydantic._internal._config [assertion]
+      early skip of rewriting module: pydantic.aliases [assertion]
+      early skip of rewriting module: pydantic._internal._internal_dataclass [assertion]
+      early skip of rewriting module: pydantic.config [assertion]
+      early skip of rewriting module: pydantic.warnings [assertion]
+      early skip of rewriting module: pydantic._internal._decorators [assertion]
+      early skip of rewriting module: pydantic._internal._core_utils [assertion]
+      early skip of rewriting module: pydantic._internal._repr [assertion]
+      early skip of rewriting module: pydantic._internal._typing_extra [assertion]
+      early skip of rewriting module: pydantic._internal._fields [assertion]
+      early skip of rewriting module: pydantic._internal._docs_extraction [assertion]
+      early skip of rewriting module: pydantic._internal._forward_ref [assertion]
+      early skip of rewriting module: pydantic._internal._generics [assertion]
+      early skip of rewriting module: pydantic._internal._utils [assertion]
+      early skip of rewriting module: pydantic._internal._mock_val_ser [assertion]
+      early skip of rewriting module: pydantic.plugin [assertion]
+      early skip of rewriting module: pydantic.plugin._schema_validator [assertion]
+      early skip of rewriting module: pydantic._internal._model_construction [assertion]
+      early skip of rewriting module: pydantic._internal._generate_schema [assertion]
+      early skip of rewriting module: pydantic.annotated_handlers [assertion]
+      early skip of rewriting module: pydantic.json_schema [assertion]
+      early skip of rewriting module: pydantic._internal._core_metadata [assertion]
+      early skip of rewriting module: pydantic._internal._schema_generation_shared [assertion]
+      early skip of rewriting module: pydantic._internal._discriminated_union [assertion]
+      early skip of rewriting module: pydantic._internal._known_annotated_metadata [assertion]
+      early skip of rewriting module: pydantic._internal._signature [assertion]
+      early skip of rewriting module: pydantic._internal._validate_call [assertion]
+      early skip of rewriting module: pydantic.type_adapter [assertion]
+      early skip of rewriting module: pydantic.deprecated [assertion]
+      early skip of rewriting module: pydantic.deprecated.class_validators [assertion]
+      early skip of rewriting module: pydantic._internal._decorators_v1 [assertion]
+      early skip of rewriting module: pydantic.deprecated.json [assertion]
+      early skip of rewriting module: pydantic.color [assertion]
+      early skip of rewriting module: colorsys [assertion]
+      early skip of rewriting module: pydantic.networks [assertion]
+      early skip of rewriting module: pydantic.types [assertion]
+      early skip of rewriting module: annotated_types [assertion]
+      early skip of rewriting module: pydantic._internal._validators [assertion]
+      early skip of rewriting module: pydantic.fields [assertion]
+      early skip of rewriting module: pydantic.v1 [assertion]
+      early skip of rewriting module: pydantic.v1.dataclasses [assertion]
+      early skip of rewriting module: pydantic.v1.class_validators [assertion]
+      early skip of rewriting module: pydantic.v1.errors [assertion]
+      early skip of rewriting module: pydantic.v1.typing [assertion]
+      early skip of rewriting module: pydantic.v1.utils [assertion]
+      early skip of rewriting module: pydantic.v1.version [assertion]
+      early skip of rewriting module: cython [assertion]
+      early skip of rewriting module: pydantic.v1.config [assertion]
+      early skip of rewriting module: pydantic.v1.error_wrappers [assertion]
+      early skip of rewriting module: pydantic.v1.json [assertion]
+      early skip of rewriting module: pydantic.v1.color [assertion]
+      early skip of rewriting module: pydantic.v1.networks [assertion]
+      early skip of rewriting module: pydantic.v1.validators [assertion]
+      early skip of rewriting module: pydantic.v1.datetime_parse [assertion]
+      early skip of rewriting module: pydantic.v1.types [assertion]
+      early skip of rewriting module: pydantic.v1.fields [assertion]
+      early skip of rewriting module: pydantic.v1.main [assertion]
+      early skip of rewriting module: pydantic.v1.parse [assertion]
+      early skip of rewriting module: pydantic.v1.schema [assertion]
+      early skip of rewriting module: pydantic.v1.annotated_types [assertion]
+      early skip of rewriting module: pydantic.v1.decorator [assertion]
+      early skip of rewriting module: pydantic.v1.env_settings [assertion]
+      early skip of rewriting module: pydantic.v1.tools [assertion]
+      early skip of rewriting module: redis_om.util [assertion]
+      early skip of rewriting module: redis_om.model.encoders [assertion]
+      early skip of rewriting module: redis_om.model.render_tree [assertion]
+      early skip of rewriting module: redis_om.model.token_escaper [assertion]
+      early skip of rewriting module: pydantic._internal._std_types_schema [assertion]
+      early skip of rewriting module: pydantic.plugin._loader [assertion]
+      early skip of rewriting module: pydantic_extra_types [assertion]
+      early skip of rewriting module: pydantic_extra_types.pendulum_dt [assertion]
+      find_module called for: greenflow [assertion]
+      early skip of rewriting module: greenflow.redis_storage [assertion]
+        pytest_warning_recorded [hook]
+            warning_message: {message : PytestAssertRewriteWarning('Module already imported so cannot be rewritten: redis'), category : 'PytestAssertRewriteWarning', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/config/__init__.py', lineno : 831, line : None}
+            when: config
+            nodeid: 
+            location: ('/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/config/__init__.py', 831, '_import_plugin_specs')
+        finish pytest_warning_recorded --> [] [hook]
+        pytest_plugin_registered [hook]
+            plugin: <module 'redis' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/__init__.py'>
+            plugin_name: redis
+            manager: <_pytest.config.PytestPluginManager object at 0x7febbd0592a0>
+        finish pytest_plugin_registered --> [] [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: @py_builtins
+            obj: <module 'builtins' (built-in)>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: @pytest_ar
+            obj: <module '_pytest.assertion.rewrite' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/_pytest/assertion/rewrite.py'>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: pytest
+            obj: <module 'pytest' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pytest/__init__.py'>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: pendulum
+            obj: <module 'pendulum' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pendulum/__init__.py'>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: Migrator
+            obj: <class 'redis_om.model.migrations.migrator.Migrator'>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: DateTime
+            obj: <class 'pydantic_extra_types.pendulum_dt.DateTime'>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: getenv
+            obj: <function getenv at 0x7febbd177b50>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: Experiment
+            obj: <class 'greenflow.redis_storage.Experiment'>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: ExperimentMetadata
+            obj: <class 'greenflow.redis_storage.ExperimentMetadata'>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: ExpStorage
+            obj: <class 'greenflow.redis_storage.ExpStorage'>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: pytest_plugins
+            obj: ['redis']
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: factories
+            obj: <module 'pytest_redis.factories' from '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pytest_redis/factories/__init__.py'>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: redis_proc
+            obj: <function redis_proc.<locals>.redis_proc_fixture at 0x7febba9efb50>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: redisdb
+            obj: <function redisdb.<locals>.redisdb_factory at 0x7febba8a81f0>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: storage
+            obj: <function storage at 0x7febba8a8670>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: sample_experiment
+            obj: <function sample_experiment at 0x7febba8a8790>
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            collector: <Module test_exp_redis.py>
+            name: TestExperiment
+            obj: <class 'test_exp_redis.TestExperiment'>
+        finish pytest_pycollect_makeitem --> <Class TestExperiment> [hook]
+      finish pytest_make_collect_report --> <CollectReport 'greenflow/tests/test_exp_redis.py' lenresult=1 outcome='passed'> [hook]
+    genitems <Class TestExperiment> [collection]
+      pytest_collectstart [hook]
+          collector: <Class TestExperiment>
+      finish pytest_collectstart --> [] [hook]
+      pytest_make_collect_report [hook]
+          collector: <Class TestExperiment>
+        pytest_pycollect_makeitem [hook]
+            collector: <Class TestExperiment>
+            name: test_create_experiment
+            obj: <function TestExperiment.test_create_experiment at 0x7febba8a88b0>
+          pytest_generate_tests [hook]
+              metafunc: <_pytest.python.Metafunc object at 0x7febba8b2380>
+          finish pytest_generate_tests --> [] [hook]
+        finish pytest_pycollect_makeitem --> [<Function test_create_experiment>] [hook]
+      finish pytest_make_collect_report --> <CollectReport 'greenflow/tests/test_exp_redis.py::TestExperiment' lenresult=1 outcome='passed'> [hook]
+    genitems <Function test_create_experiment> [collection]
+      pytest_itemcollected [hook]
+          item: <Function test_create_experiment>
+      finish pytest_itemcollected --> [] [hook]
+      pytest_collectreport [hook]
+          report: <CollectReport 'greenflow/tests/test_exp_redis.py::TestExperiment' lenresult=1 outcome='passed'>
+      finish pytest_collectreport --> [] [hook]
+      pytest_collectreport [hook]
+          report: <CollectReport 'greenflow/tests/test_exp_redis.py' lenresult=1 outcome='passed'>
+      finish pytest_collectreport --> [] [hook]
+      pytest_collectreport [hook]
+          report: <CollectReport 'greenflow/tests' lenresult=1 outcome='passed'>
+      finish pytest_collectreport --> [] [hook]
+      pytest_collectreport [hook]
+          report: <CollectReport 'greenflow' lenresult=4 outcome='passed'>
+      finish pytest_collectreport --> [] [hook]
+      pytest_collection_modifyitems [hook]
+          session: <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+          config: <_pytest.config.Config object at 0x7febbc7707f0>
+          items: [<Function test_create_experiment>]
+      finish pytest_collection_modifyitems --> [] [hook]
+      pytest_collection_finish [hook]
+          session: <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+        pytest_report_collectionfinish [hook]
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+            items: [<Function test_create_experiment>]
+            start_path: /home/g/greenflow/greenflow
+            startdir: /home/g/greenflow/greenflow
+        finish pytest_report_collectionfinish --> [] [hook]
+      finish pytest_collection_finish --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/redis_om/model/model.py', lineno : 1503, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('`allow_reuse` is deprecated and will be ignored; it should no longer be necessary'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/deprecated/class_validators.py', lineno : 121, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+      pytest_warning_recorded [hook]
+          warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+          nodeid: 
+          when: collect
+          location: None
+      finish pytest_warning_recorded --> [] [hook]
+    finish pytest_collection --> None [hook]
+    pytest_runtestloop [hook]
+        session: <Session  exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=1>
+      pytest_runtest_protocol [hook]
+          item: <Function test_create_experiment>
+          nextitem: None
+        pytest_runtest_logstart [hook]
+            nodeid: greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment
+            location: ('greenflow/tests/test_exp_redis.py', 43, 'TestExperiment.test_create_experiment')
+        finish pytest_runtest_logstart --> [] [hook]
+        pytest_runtest_setup [hook]
+            item: <Function test_create_experiment>
+          pytest_fixture_setup [hook]
+              fixturedef: <FixtureDef argname='redisdb' scope='function' baseid='greenflow/tests/test_exp_redis.py'>
+              request: <SubRequest 'redisdb' for <Function test_create_experiment>>
+            pytest_fixture_setup [hook]
+                fixturedef: <FixtureDef argname='tmp_path_factory' scope='session' baseid=''>
+                request: <SubRequest 'tmp_path_factory' for <Function test_create_experiment>>
+            finish pytest_fixture_setup --> TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7febbc65c6d0>, _basetemp=None, _retention_count=3, _retention_policy='all') [hook]
+            pytest_fixture_setup [hook]
+                fixturedef: <FixtureDef argname='redis_proc' scope='session' baseid='greenflow/tests/test_exp_redis.py'>
+                request: <SubRequest 'redis_proc' for <Function test_create_experiment>>
+            early skip of rewriting module: getpass [assertion]
+            early skip of rewriting module: termios [assertion]
+            new basetemp /tmp/pytest-of-g/pytest-6 [config:tmpdir]
+            mktemp /tmp/pytest-of-g/pytest-6/pytest-redis-redis_proc0 [config:tmpdir]
+            finish pytest_fixture_setup --> <pytest_redis.executor.process.RedisExecutor: "keydb-server --daemonize no --rdbcompression no --rdbchecksum no --appendonly no --databases 8 --timeout 30 --pidfile /tmp/pytest-of-g/pytest-6/pytest-redis-redis_proc0/redis-server.16379.pid --unixsocket /tmp/pytest-of-g/pytest-6/pytest-redis-redis_proc0/redis.16379.sock --dbfilename dump.16379.rdb --logfile /tmp/pytest-of-g/pytest-6/pytest-redis-redis_proc0/redis-server.16379.log --loglevel notice --syslog-enabled no --bind 127.0.0.1 --port 16379 --dir /tmp/pytest-of-g/pytest-6/pytest-redis-redis_proc0" 0x7febba8b2bc0> [hook]
+          finish pytest_fixture_setup --> <redis.client.Redis(<redis.connection.ConnectionPool(<redis.connection.UnixDomainSocketConnection(path=/tmp/pytest-of-g/pytest-6/pytest-redis-redis_proc0/redis.16379.sock,db=0)>)>)> [hook]
+          pytest_fixture_setup [hook]
+              fixturedef: <FixtureDef argname='storage' scope='function' baseid='greenflow/tests/test_exp_redis.py'>
+              request: <SubRequest 'storage' for <Function test_create_experiment>>
+          matched marked file 'redis.commands.search' (from 'redis') [assertion]
+          find_module called for: redis.commands.search [assertion]
+          found cached rewritten pyc for /home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/commands/search/__init__.py [assertion]
+          matched marked file 'redis.commands.search.commands' (from 'redis') [assertion]
+          find_module called for: redis.commands.search.commands [assertion]
+          found cached rewritten pyc for /home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/commands/search/commands.py [assertion]
+          matched marked file 'redis.commands.search._util' (from 'redis') [assertion]
+          find_module called for: redis.commands.search._util [assertion]
+          found cached rewritten pyc for /home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/commands/search/_util.py [assertion]
+          matched marked file 'redis.commands.search.aggregation' (from 'redis') [assertion]
+          find_module called for: redis.commands.search.aggregation [assertion]
+          found cached rewritten pyc for /home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/commands/search/aggregation.py [assertion]
+          matched marked file 'redis.commands.search.document' (from 'redis') [assertion]
+          find_module called for: redis.commands.search.document [assertion]
+          found cached rewritten pyc for /home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/commands/search/document.py [assertion]
+          matched marked file 'redis.commands.search.field' (from 'redis') [assertion]
+          find_module called for: redis.commands.search.field [assertion]
+          found cached rewritten pyc for /home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/commands/search/field.py [assertion]
+          matched marked file 'redis.commands.search.indexDefinition' (from 'redis') [assertion]
+          find_module called for: redis.commands.search.indexDefinition [assertion]
+          found cached rewritten pyc for /home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/commands/search/indexDefinition.py [assertion]
+          matched marked file 'redis.commands.search.query' (from 'redis') [assertion]
+          find_module called for: redis.commands.search.query [assertion]
+          found cached rewritten pyc for /home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/commands/search/query.py [assertion]
+          matched marked file 'redis.commands.search.result' (from 'redis') [assertion]
+          find_module called for: redis.commands.search.result [assertion]
+          found cached rewritten pyc for /home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/commands/search/result.py [assertion]
+          matched marked file 'redis.commands.search.suggestion' (from 'redis') [assertion]
+          find_module called for: redis.commands.search.suggestion [assertion]
+          found cached rewritten pyc for /home/g/greenflow/.mamba/lib/python3.10/site-packages/redis/commands/search/suggestion.py [assertion]
+          early skip of rewriting module: encodings.idna [assertion]
+          early skip of rewriting module: stringprep [assertion]
+        pytest_runtest_makereport [hook]
+            item: <Function test_create_experiment>
+            call: <CallInfo when='setup' excinfo=<ExceptionInfo AuthenticationError('Authentication required.') tblen=51>>
+        finish pytest_runtest_makereport --> <TestReport 'greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment' when='setup' outcome='failed'> [hook]
+        pytest_runtest_logreport [hook]
+            report: <TestReport 'greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment' when='setup' outcome='failed'>
+          pytest_report_teststatus [hook]
+              report: <TestReport 'greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment' when='setup' outcome='failed'>
+              config: <_pytest.config.Config object at 0x7febbc7707f0>
+          finish pytest_report_teststatus --> ('error', 'E', 'ERROR') [hook]
+        finish pytest_runtest_logreport --> [] [hook]
+        pytest_exception_interact [hook]
+            node: <Function test_create_experiment>
+            call: <CallInfo when='setup' excinfo=<ExceptionInfo AuthenticationError('Authentication required.') tblen=51>>
+            report: <TestReport 'greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment' when='setup' outcome='failed'>
+        finish pytest_exception_interact --> [] [hook]
+        pytest_runtest_teardown [hook]
+            item: <Function test_create_experiment>
+            nextitem: None
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='storage' scope='function' baseid='greenflow/tests/test_exp_redis.py'>
+              request: <SubRequest 'storage' for <Function test_create_experiment>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='storage' scope='function' baseid='greenflow/tests/test_exp_redis.py'>
+              request: <SubRequest 'storage' for <Function test_create_experiment>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='redisdb' scope='function' baseid='greenflow/tests/test_exp_redis.py'>
+              request: <SubRequest 'redisdb' for <Function test_create_experiment>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='redis_proc' scope='session' baseid='greenflow/tests/test_exp_redis.py'>
+              request: <SubRequest 'redis_proc' for <Function test_create_experiment>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='redis_proc' scope='session' baseid='greenflow/tests/test_exp_redis.py'>
+              request: <SubRequest 'redis_proc' for <Function test_create_experiment>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='tmp_path_factory' scope='session' baseid=''>
+              request: <SubRequest 'tmp_path_factory' for <Function test_create_experiment>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+        finish pytest_runtest_teardown --> None [hook]
+        pytest_runtest_makereport [hook]
+            item: <Function test_create_experiment>
+            call: <CallInfo when='teardown' result: None>
+        finish pytest_runtest_makereport --> <TestReport 'greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment' when='teardown' outcome='passed'> [hook]
+        pytest_runtest_logreport [hook]
+            report: <TestReport 'greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment' when='teardown' outcome='passed'>
+          pytest_report_teststatus [hook]
+              report: <TestReport 'greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment' when='teardown' outcome='passed'>
+              config: <_pytest.config.Config object at 0x7febbc7707f0>
+          finish pytest_report_teststatus --> ('', '', '') [hook]
+        finish pytest_runtest_logreport --> [] [hook]
+        pytest_runtest_logfinish [hook]
+            nodeid: greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment
+            location: ('greenflow/tests/test_exp_redis.py', 43, 'TestExperiment.test_create_experiment')
+        finish pytest_runtest_logfinish --> [] [hook]
+        pytest_warning_recorded [hook]
+            warning_message: {message : PydanticDeprecatedSince20('The `__fields__` attribute is deprecated, use `model_fields` instead.'), category : 'PydanticDeprecatedSince20', filename : '/home/g/greenflow/.mamba/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py', lineno : 268, line : None}
+            nodeid: greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment
+            when: runtest
+            location: None
+        finish pytest_warning_recorded --> [] [hook]
+      finish pytest_runtest_protocol --> True [hook]
+    finish pytest_runtestloop --> True [hook]
+    pytest_sessionfinish [hook]
+        session: <Session  exitstatus=<ExitCode.TESTS_FAILED: 1> testsfailed=1 testscollected=1>
+        exitstatus: 1
+      pytest_terminal_summary [hook]
+          terminalreporter: <_pytest.terminal.TerminalReporter object at 0x7febbc65c9d0>
+          exitstatus: 1
+          config: <_pytest.config.Config object at 0x7febbc7707f0>
+      early skip of rewriting module: pygments [assertion]
+      early skip of rewriting module: pygments.lexers [assertion]
+      early skip of rewriting module: pygments.lexers._mapping [assertion]
+      early skip of rewriting module: pygments.modeline [assertion]
+      early skip of rewriting module: pygments.plugin [assertion]
+      early skip of rewriting module: pygments.util [assertion]
+      early skip of rewriting module: pygments.lexers.python [assertion]
+      early skip of rewriting module: pygments.lexer [assertion]
+      early skip of rewriting module: pygments.filter [assertion]
+      early skip of rewriting module: pygments.filters [assertion]
+      early skip of rewriting module: pygments.token [assertion]
+      early skip of rewriting module: pygments.regexopt [assertion]
+      early skip of rewriting module: pygments.unistring [assertion]
+      early skip of rewriting module: pygments.formatters [assertion]
+      early skip of rewriting module: pygments.formatters._mapping [assertion]
+      early skip of rewriting module: pygments.formatters.terminal [assertion]
+      early skip of rewriting module: pygments.formatter [assertion]
+      early skip of rewriting module: pygments.styles [assertion]
+      early skip of rewriting module: pygments.styles._mapping [assertion]
+      early skip of rewriting module: pygments.console [assertion]
+        pytest_report_teststatus [hook]
+            report: <TestReport 'greenflow/tests/test_exp_redis.py::TestExperiment::test_create_experiment' when='setup' outcome='failed'>
+            config: <_pytest.config.Config object at 0x7febbc7707f0>
+        finish pytest_report_teststatus --> ('error', 'E', 'ERROR') [hook]
+      finish pytest_terminal_summary --> [] [hook]
+    finish pytest_sessionfinish --> [] [hook]
+    pytest_unconfigure [hook]
+        config: <_pytest.config.Config object at 0x7febbc7707f0>
+    finish pytest_unconfigure --> [] [hook]

@@ -17,7 +17,10 @@ class _g:
         self.deployment_type = deployment_type
         if deployment_type == "test":
             import os
-            os.environ["EXPERIMENT_STORAGE_URL"] = os.environ["TEST_EXPERIMENT_STORAGE_URL"]
+
+            os.environ["EXPERIMENT_STORAGE_URL"] = os.environ[
+                "TEST_EXPERIMENT_STORAGE_URL"
+            ]
             os.environ["PROMETHEUS_URL"] = os.environ["TEST_PROMETHEUS_URL"]
             os.environ["EXPERIMENT_PUSHGATEWAY_URL"] = os.environ[
                 "TEST_EXPERIMENT_PUSHGATEWAY_URL"
@@ -26,14 +29,14 @@ class _g:
 
     @cached_property
     def storage(self):
-        from .storage import ExpStorage
-        from unittest.mock import Mock
+        # from .storage import ExpStorage
+        from .mongo_storage import ExpStorage
 
         if self.deployment_type == "production":
             return ExpStorage()
         elif self.deployment_type == "test":
             return ExpStorage(
-                path=f"{self.gitroot}/storage/test_experiment-history.yaml"
+                db_name="test-greenflow",
             )
 
     @cached_property
@@ -61,7 +64,8 @@ class _g:
         transaction.commit()
 
     def init_exp(self, experiment_description):
-        from .experiment import Experiment
+        # from .experiment import Experiment
+        from .mongo_storage import Experiment
 
         exp_name = factors()["exp_name"]
 
@@ -70,7 +74,6 @@ class _g:
         transaction.commit()
 
     def end_exp(self):
-        from .g import g
         stopped_ts = pendulum.now()
         self.root.current_experiment.stopped_ts = stopped_ts.to_iso8601_string()
         transaction.commit()
@@ -80,8 +83,7 @@ class _g:
         #     self.root.current_experiment = None
         #     transaction.commit()
         #     return
-        # #TODO: A bit sus
-        g.storage.commit_experiment()
+        self.storage.commit_experiment()
 
     @staticmethod
     def get_g() -> "_g":

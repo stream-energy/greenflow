@@ -1,4 +1,4 @@
-synchronized_perf_script = """
+producer_script = """
 #!/bin/bash
 
 # Echo out the command line arguments
@@ -114,4 +114,112 @@ echo "Total test duration: $ACTUAL_DURATION seconds"
 
 # Exit with the status of the performance test
 exit 0
+"""
+
+
+consumer_script = """
+#!/bin/bash
+
+# Echo out the command line arguments
+echo "$@"
+
+# Function to parse command line arguments
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --topic)
+                TOPIC="$2"
+                shift 2
+                ;;
+            --bootstrap-server)
+                BOOTSTRAP_SERVER="$2"
+                shift 2
+                ;;
+            --start-timestamp)
+                START_TIMESTAMP="$2"
+                shift 2
+                ;;
+            --durationSeconds)
+                DURATION_SECONDS="$2"
+                shift 2
+                ;;
+            *)
+                echo "Unknown option: $1"
+                exit 1
+                ;;
+        esac
+    done
+}
+
+# Parse command line arguments
+parse_args "$@"
+
+# Add 5 seconds to the duration to allow for graceful termination
+DURATION_SECONDS=$((DURATION_SECONDS + 5))
+
+# Validate required parameters
+if [[ -z "$TOPIC" || -z "$BOOTSTRAP_SERVER" || -z "$START_TIMESTAMP" || -z "$DURATION_SECONDS" ]]; then
+    echo "Missing required parameters. Usage:"
+    echo "./synchronized_kafka_consumer_perf_test.sh --topic <topic> --bootstrap-server <server:port> --start-timestamp <unix_timestamp> --durationSeconds <seconds>"
+    exit 1
+fi
+
+# Wait until the specified start time
+CURRENT_TIME=$(date +%s)
+if [ "$START_TIMESTAMP" -gt "$CURRENT_TIME" ]; then
+    SLEEP_DURATION=$((START_TIMESTAMP - CURRENT_TIME))
+    echo "Waiting for $SLEEP_DURATION seconds before starting the consumer test..."
+    echo "Waiting until $(date -d @$START_TIMESTAMP)"
+    sleep $SLEEP_DURATION
+else
+    echo "Warning: Start time is in the past. Starting immediately."
+fi
+
+# Log the actual start time
+ACTUAL_START_TIME=$(date +%s)
+echo "Consumer test started at: $(date -d @$ACTUAL_START_TIME)"
+
+# Run the Kafka consumer performance test in the background
+kafka-consumer-perf-test \
+    --bootstrap-server "$BOOTSTRAP_SERVER" \
+    --topic "$TOPIC" \
+    --messages 100000000000 \
+    --show-detailed-stats \
+    --reporting-interval 1000 \
+    --timeout 100000000 &
+
+CONSUMER_PID=$!
+
+# Set up the time bomb
+(
+    echo "Will stop the consumer test in $DURATION_SECONDS seconds at $(date -d @$((ACTUAL_START_TIME + DURATION_SECONDS)))"
+    sleep "$DURATION_SECONDS"
+    echo "Time's up! Stopping the consumer test."
+    kill -TERM $CONSUMER_PID
+    sleep 5
+    if kill -0 $CONSUMER_PID 2>/dev/null; then
+        echo "Consumer test didn't terminate gracefully. Forcing kill."
+        kill -KILL $CONSUMER_PID
+    fi
+) &
+TIMEBOMB_PID=$!
+
+# Wait for the consumer test to finish or be killed
+wait $CONSUMER_PID
+TEST_EXIT_STATUS=$?
+
+# Kill the time bomb if the test finishes before the time is up
+kill $TIMEBOMB_PID 2>/dev/null
+
+# Log the end time
+END_TIME=$(date +%s)
+echo "Consumer test ended at: $(date -d @$END_TIME)"
+
+# Calculate and print the total duration
+ACTUAL_DURATION=$((END_TIME - ACTUAL_START_TIME))
+echo "Total consumer test duration: $ACTUAL_DURATION seconds"
+
+# Exit with the status of the consumer test
+exit $TEST_EXIT_STATUS
+
 """

@@ -27,10 +27,13 @@ class G5KPlatform(Platform):
         project: str = gin.REQUIRED,
     ):
         network = en.G5kNetworkConf(type="prod", roles=["my_network"], site=site)
+        import logging
+
+        en.init_logging(level=logging.DEBUG)
 
         return (
             en.G5kConf.from_settings(
-                job_type=["allow_classic_ssh","exotic"],
+                job_type=["allow_classic_ssh", "exotic"],
                 job_name=job_name,
                 queue=queue,
                 walltime=walltime,
@@ -78,6 +81,7 @@ class G5KPlatform(Platform):
 
     def set_platform_metadata(self):
         from .g import g
+
         self.metadata["type"] = "g5k"
         self.metadata["job_id"] = self.jobs[0].uid
         self.metadata["job_site"] = self.jobs[0].site
@@ -108,16 +112,17 @@ class G5KPlatform(Platform):
                         host.alias
                     ] = {"kubernetes_role": "broker"}
         g.reinit_deployment(self)
-    
+
     def handle_hardware_quirks(self):
         # if self.get_conf().cluster == "paravance":
         from .playbook import quirks
+
         quirks("paravance")
-            # Run the parasilo playbook
-        
+        # Run the parasilo playbook
 
     def post_provision(self):
         from .g import g
+
         self.set_platform_metadata()
 
         with open(f"{g.gitroot}/ansible/inventory/hosts.yaml", "w") as f:

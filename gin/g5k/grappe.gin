@@ -1,0 +1,3 @@
+greenflow.g5k.G5KPlatform.get_conf.site = "nancy"
+greenflow.g5k.G5KPlatform.get_conf.cluster = "grappe"
+greenflow.g5k.G5KPlatform.get_conf.queue = "production"

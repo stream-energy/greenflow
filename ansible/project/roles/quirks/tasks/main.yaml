@@ -1,6 +1,21 @@
 ---
 # vim: set ft=yaml:
 # Block to handle hardware quirks (Paravance cluster)
+- name: Taurus
+  when: "'taurus' in inventory_hostname"
+  ansible.builtin.command:
+    cmd: sudo rm -rf /etc/apt/sources.list.d/repo.radeon.com-amdgpu.list
+  ignore_errors: true
+- name: Taurus
+  when: "'taurus' in inventory_hostname"
+  ansible.builtin.command:
+    cmd: sudo apt update
+  ignore_errors: true
+- name: Taurus
+  when: "'taurus' in inventory_hostname"
+  ansible.builtin.command:
+    cmd: sudo apt install -y python3-apt
+  ignore_errors: true
 - name: Install parted
   ansible.builtin.package:
     name: parted
@@ -9,7 +24,7 @@
   tags: [always]
   ansible.builtin.command:
     cmd: modprobe intel_rapl_common
-  ignore_errors: yes
+  ignore_errors: true
 - name: Disable node exporter
   tags: [always]
   ansible.builtin.service:
@@ -39,7 +54,7 @@
         cmd: mount -t tmpfs -o size=100G none /var/lib/rancher
 
 - name: Temporary mount points
-  when: "'chiclet' in inventory_hostname or 'montcalm' in inventory_hostname or 'neowise' in inventory_hostname or 'chirop' in inventory_hostname"
+  when: "'chiclet' in inventory_hostname or 'montcalm' in inventory_hostname or 'neowise' in inventory_hostname or 'chirop' in inventory_hostname or 'taurus' in inventory_hostname or 'gros' in inventory_hostname or 'grappe' in inventory_hostname"
   block:
     - name: Create all directories
       command:
@@ -79,11 +94,11 @@
     - name: Unmount partitions on {{ src_dev }}
       command:
         cmd: umount -l {{ src_dev }}1
-      ignore_errors: yes
+      ignore_errors: true
     - name: Unmount partitions on {{ src_dev }}
       command:
         cmd: umount -l {{ src_dev }}2
-      ignore_errors: yes
+      ignore_errors: true
 
     # - name: Wipe filesystem signatures on {{ src_dev }}
     #   command:
@@ -113,7 +128,7 @@
     #     device: "{{ src_dev }}"
     #     # number: 1
     #     state: absent
-    #   ignore_errors: yes
+    #   ignore_errors: true
 
     # - name: Make GPT label on {{ src_dev }}
     #   community.general.parted:
@@ -186,11 +201,11 @@
     - name: Unmount partitions on {{ src_dev }}
       command:
         cmd: umount -l {{ src_dev }}1
-      ignore_errors: yes
+      ignore_errors: true
     - name: Unmount partitions on {{ src_dev }}
       command:
         cmd: umount -l {{ src_dev }}2
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Delete partition table on {{ src_dev }}
       command:

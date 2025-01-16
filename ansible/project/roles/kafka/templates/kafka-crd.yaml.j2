@@ -9,10 +9,10 @@ spec:
 {% if deployment_type == "production" %}
     resources:
       requests:
-        memory: "{{exp_params.broker_mem}}"
+        memory: "30Gi"
         cpu: "{{exp_params.broker_cpu}}"
       limits:
-        memory: "{{exp_params.broker_mem}}"
+        memory: "30Gi"
         cpu: "{{exp_params.broker_cpu}}"
 {% elif deployment_type == "test" %}
     resources: {}
@@ -41,18 +41,22 @@ spec:
 
 {% if deployment_type == "production" %}
     jvmOptions:
-      "-Xmx": "12G"
-      "-Xms": "12G"
+      "-Xmx": "{{ exp_params.broker_mem | replace('i', '') }}"
+      "-Xms": "{{ exp_params.broker_mem | replace('i', '') }}"
 {% endif %}
-    # metricsConfig:
-    #   type: jmxPrometheusExporter
-    #   valueFrom:
-    #     configMapKeyRef:
-    #       name: theodolite-kafka-metrics
-    #       key: kafka-metrics-config.yml
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: theodolite-kafka-metrics
+          key: kafka-metrics-config.yml
     config:
       "auto.create.topics.enable": false
       "num.partitions": "1"
+      "num.io.threads": "{{exp_params.broker_io_threads}}"
+      "num.network.threads": "{{exp_params.broker_network_threads}}"
+      "default.replication.factor": "1"
+      "offsets.topic.replication.factor": "1"
 {% if deployment_type == "production" %}
 {% elif deployment_type == "test" %}
       "default.replication.factor": "1"
@@ -71,7 +75,7 @@ spec:
         type: internal
         tls: false
 {% if deployment_type == "production" %}
-    replicas: 3
+    replicas: {{exp_params.broker_replicas}}
 {% elif deployment_type == "test" %}
     replicas: 1
 {% endif %}

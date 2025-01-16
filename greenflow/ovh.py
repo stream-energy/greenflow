@@ -1,5 +1,6 @@
 from pulumi_ovh import BaremetalServer
 
+
 @gin.register()
 class OvhBaremetalPlatform(Platform):
     def __init__(self):
@@ -18,29 +19,28 @@ class OvhBaremetalPlatform(Platform):
 
     def provision(self):
         print("Provisioning OVH Baremetal server with Pulumi")
-        
+
         # Create a Pulumi stack
         config = pulumi.Config()
         project_name = config.require("project_name")
         stack_name = config.require("stack_name")
-        
+
         stack = pulumi.automation.create_or_select_stack(stack_name, project_name)
-        
+
         def pulumi_program():
             # Define the OVH Baremetal server
-            server = BaremetalServer("my-server",
-                                     flavor="eg-15",
-                                     image="ubuntu-20.04",
-                                     region="GRA1")
+            server = BaremetalServer(
+                "my-server", flavor="eg-15", image="ubuntu-20.04", region="GRA1"
+            )
             pulumi.export("server_ip", server.public_ip)
-        
+
         # Run the Pulumi program
         stack.up(on_output=print)
-        
+
         # Retrieve the server IP
         outputs = stack.outputs()
         server_ip = outputs.get("server_ip").value
-        
+
         self.metadata["server_ip"] = server_ip
         return self.metadata
 
@@ -57,17 +57,17 @@ class OvhBaremetalPlatform(Platform):
     def teardown(self):
         self.pre_teardown()
         print("Tearing down OVH Baremetal server with Pulumi")
-        
+
         # Create a Pulumi stack
         config = pulumi.Config()
         project_name = config.require("project_name")
         stack_name = config.require("stack_name")
-        
+
         stack = pulumi.automation.create_or_select_stack(stack_name, project_name)
-        
+
         # Destroy the Pulumi stack
         stack.destroy(on_output=print)
-        
+
         self.post_teardown()
 
     def post_teardown(self):
@@ -83,7 +83,7 @@ class OvhBaremetalPlatform(Platform):
                     "ovh_baremetal": {
                         "ansible_host": self.metadata.get("server_ip"),
                         "ansible_user": "root",
-                        "ansible_ssh_private_key_file": "/path/to/private/key"
+                        "ansible_ssh_private_key_file": "/path/to/private/key",
                     }
                 }
             }

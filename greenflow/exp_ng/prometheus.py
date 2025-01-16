@@ -30,7 +30,10 @@ def reinit_prometheus(deployment_started_ts, experiment_started_ts):
 
     # Apply the patch
     prometheus.patch(patch_data)
-    prometheus.wait(["condition=Available", "condition=Reconciled"], mode="all", timeout=60)
+    prometheus.wait(
+        ["condition=Available", "condition=Reconciled"], mode="all", timeout=60
+    )
+
 
 def scale_prometheus(replicas):
     # Create a CustomResource object for the Prometheus CRD
@@ -38,4 +41,6 @@ def scale_prometheus(replicas):
         "kp-kube-prometheus-stack-prometheus", namespace="default"
     )
     prometheus.scale(replicas)
-    prometheus.wait(["condition=Available", "condition=Reconciled"], mode="all", timeout=60)
+    prometheus.wait(
+        ["condition=Available", "condition=Reconciled"], mode="all", timeout=60
+    )

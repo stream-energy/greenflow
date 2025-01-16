@@ -31,6 +31,5 @@ def provision(*, platform: type[Platform] = gin.REQUIRED):
     #             yaml.dump(p.get_ansible_inventory(), f)
 
 
-
 if __name__ == "__main__":
     provision()

@@ -28,6 +28,7 @@ __all__ = [
 
 def _playbook(playbook_name, extra=None):
     from .g import g
+
     extra = extra or {}
     rc = ansible_runner.run(
         playbook=playbook_name,
@@ -61,6 +62,7 @@ def quirks(flavour):
     extra_vars["flavour"] = flavour
     _playbook("quirks.yaml", extra_vars)
 
+
 def deploy_k3s():
     _playbook("deploy_k3s.yaml", get_deployment_state_vars())
 
@@ -72,6 +74,7 @@ def run_playbook(playbook_name):
 
 def exp(exp_name, experiment_description):
     from .g import g
+
     g.init_exp(exp_name, experiment_description)
     extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
     _playbook("generate_experiment.yaml", extra_vars)
