@@ -11,7 +11,7 @@ from .prometheus import reinit_prometheus, scale_prometheus
 from ..state import get_deployment_state_vars, get_experiment_state_vars
 from ..factors import factors
 from .synchronized_perf_script import producer_script, consumer_script
-from ..analysis import get_observed_throughput_of_last_experiment
+from ..analysis.tiny import get_observed_throughput_of_last_experiment
 
 
 def exp_consumer_job(extra_vars) -> Job:

@@ -2,7 +2,7 @@ import logging
 import traceback
 
 
-def memory_cpu_impact_10_10_100(exp_description):
+def memory_cpu_impact_10_10_120(exp_description):
     from greenflow.exp_ng.hammer import hammer
     from greenflow.exp_ng.exp_ng import killexp
     from greenflow.playbook import exp
@@ -15,14 +15,12 @@ def memory_cpu_impact_10_10_100(exp_description):
         redpanda_context,
     )
 
-    cpus = [1, 2, 4, 8, 10]
-
-    # # Kafka experiments
     exp_name = "ingest-kafka"
     mems = ["1Gi", "2Gi", "4Gi", "8Gi", "16Gi"]
+    cpus = [1, 2, 4, 6, 8]
     load_gin(exp_name)
     rebind_parameters(
-        consumerInstances=10, producerInstances=10, partitions=100, brokerReplicas=3
+        consumerInstances=10, producerInstances=10, partitions=120, brokerReplicas=3
     )
 
     for _ in range(3):
@@ -49,10 +47,8 @@ def memory_cpu_impact_10_10_100(exp_description):
     # Redpanda experiments
     exp_name = "ingest-redpanda"
     load_gin(exp_name)
-    cpus = [1, 2, 4, 8, 10]
-    mems = ["1Gi", "2Gi", "4Gi", "8Gi", "16Gi", "25Gi"]
     rebind_parameters(
-        consumerInstances=10, producerInstances=10, partitions=100, brokerReplicas=3
+        consumerInstances=10, producerInstances=10, partitions=120, brokerReplicas=3
     )
 
     # Helper function to convert memory string to GiB number
@@ -103,8 +99,8 @@ def memory_cpu_impact_1_1_1(exp_description):
 
     # # Kafka experiments
     exp_name = "ingest-kafka"
-    mems = ["1Gi", "2Gi", "4Gi", "8Gi", "16Gi", "25Gi"]
-    cpus = [1, 2, 4, 8, 10]
+    mems = ["1Gi", "2Gi", "4Gi", "8Gi", "16Gi"]
+    cpus = [1, 2, 4, 6, 8]
     load_gin(exp_name)
     rebind_parameters(
         consumerInstances=1, producerInstances=1, partitions=1, brokerReplicas=1
@@ -134,8 +130,9 @@ def memory_cpu_impact_1_1_1(exp_description):
     # Redpanda experiments
     exp_name = "ingest-redpanda"
     load_gin(exp_name)
-    cpus = [1, 2, 4, 8, 10]
-    mems = ["1Gi", "2Gi", "4Gi", "8Gi", "16Gi", "25Gi"]
+    rebind_parameters(
+        consumerInstances=10, producerInstances=10, partitions=120, brokerReplicas=3
+    )
 
     # Helper function to convert memory string to GiB number
     def mem_to_gib(mem_str):
@@ -168,7 +165,3 @@ def memory_cpu_impact_1_1_1(exp_description):
                     continue  # Move to next iteration
 
     send_notification("Experiment complete. On to the next.")
-    messageSizes = [
-        128,
-        512,
-    ] + list(range(1024, 10241, 1024))

@@ -128,7 +128,7 @@ def ingest_set(exp_description, **kwargs):
     from greenflow.protocols import (
         safety_curve,
         scaling_behaviour,
-        memory_cpu_impact_10_10_100,
+        memory_cpu_impact_10_10_120,
         memory_cpu_impact_1_1_1,
     )
 
@@ -138,7 +138,7 @@ def ingest_set(exp_description, **kwargs):
         safety_curve(exp_description)
     elif "memImpact=true" in exp_description:
         memory_cpu_impact_1_1_1(exp_description)
-        memory_cpu_impact_10_10_100(exp_description)
+        memory_cpu_impact_10_10_120(exp_description)
 
 
 @click.command("setup")

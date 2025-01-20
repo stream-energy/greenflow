@@ -13,8 +13,10 @@ class _g:
     def __init__(
         self,
         deployment_type: str = gin.REQUIRED,
+        storage_type: str = gin.REQUIRED,
     ):
         self.deployment_type = deployment_type
+        self.storage_type = storage_type
         if deployment_type == "test":
             import os
 
@@ -29,15 +31,24 @@ class _g:
 
     @cached_property
     def storage(self):
-        # from .storage import ExpStorage
-        from .mongo_storage import ExpStorage
+        if self.storage_type == "mongo":
+            from .mongo_storage import ExpStorage
+            if self.deployment_type == "production":
+                return ExpStorage()
+            elif self.deployment_type == "test":
+                return ExpStorage(
+                    db_name="test-greenflow",
+                )
+        elif self.storage_type == "tinydb":
+            from .storage import ExpStorage
+            if self.deployment_type == "production":
+                return ExpStorage()
+            elif self.deployment_type == "test":
+                return ExpStorage(
+                    path=f"{self.gitroot}/storage/test_experiment-history.yaml"
+                )
 
-        if self.deployment_type == "production":
-            return ExpStorage()
-        elif self.deployment_type == "test":
-            return ExpStorage(
-                db_name="test-greenflow",
-            )
+
 
     @cached_property
     def gitroot(self):

@@ -23,13 +23,14 @@ def embed(globals, locals):
 ntfy_url = os.getenv("NTFY_URL", "http://ntfy.sh/YOUR_URL_HERE")
 
 
-def patch_global_g(deployment_type):
+def patch_global_g(deployment_type, storage_type="tinydb"):
     import greenflow.g
     from greenflow.g import _g
     import gin
 
     with gin.unlock_config():
         gin.bind_parameter("greenflow.g._g.deployment_type", deployment_type)
+        gin.bind_parameter("greenflow.g._g.storage_type", storage_type)
     g = _g.get_g()
     try:
         _ = greenflow.g.g

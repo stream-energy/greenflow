@@ -31,3 +31,6 @@
 [submodule "charts/kminion"]
 	path = charts/kminion
 	url = https://github.com/redpanda-data/helm-charts
+[submodule "charts/iperf-on-kubernetes"]
+	path = charts/iperf-on-kubernetes
+	url = https://github.com/tmgstevens/iperf-on-kubernetes

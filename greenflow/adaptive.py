@@ -146,7 +146,7 @@ def execute(initial_params: dict[str, Any]) -> History:
 
 def experiment(state: State) -> Result:
     from greenflow.exp_ng.exp_ng import exp
-    from greenflow.analysis import get_observed_throughput_of_last_experiment
+    from greenflow.analysis.tiny import get_observed_throughput_of_last_experiment
     from entrypoint import rebind_parameters
 
     params = state.params
@@ -261,7 +261,7 @@ def threshold_hammer(
 ) -> list[ThresholdResult]:
     from .exp_ng.exp_ng import exp
     from .exp_ng.hammer import hammer
-    from .analysis import get_observed_throughput_of_last_experiment
+    from .analysis.tiny import get_observed_throughput_of_last_experiment
 
     results = []
 
