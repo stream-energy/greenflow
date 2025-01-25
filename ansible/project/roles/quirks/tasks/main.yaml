@@ -34,8 +34,8 @@
 - name: Install Docker
   tags: [always]
   shell:
-    # cmd: /grid5000/code/bin/g5k-setup-docker -t
-    cmd: curl -sSL https://get.docker.com/ | sh -s -- --version 24
+    cmd: /grid5000/code/bin/g5k-setup-docker -t
+    # cmd: curl -sSL https://get.docker.com/ | sh -s -- --version 24
 
 - name: Setup tmpfs for /var/lib/docker and /var/lib/rancher
   when: "'impossible' in inventory_hostname"

@@ -20,8 +20,8 @@ def safety_curve(exp_description) -> None:
     exp_name = "ingest-kafka"
     load_gin("ingest-kafka")
 
-    # Message sizes up to 100KB
-    messageSizes = [2 ** i for i in range(5, 18, 2)]
+    # Message sizes up to 1MB (with 
+    messageSizes = [2 ** i for i in range(5, 17)] + [1048376]
 
     for _ in range(3):
         try:
