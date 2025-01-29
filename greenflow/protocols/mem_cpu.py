@@ -131,7 +131,7 @@ def memory_cpu_impact_1_1_1(exp_description):
     exp_name = "ingest-redpanda"
     load_gin(exp_name)
     rebind_parameters(
-        consumerInstances=10, producerInstances=10, partitions=120, brokerReplicas=3
+        consumerInstances=1, producerInstances=1, partitions=1, brokerReplicas=1
     )
 
     # Helper function to convert memory string to GiB number

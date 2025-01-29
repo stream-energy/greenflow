@@ -1,6 +1,6 @@
 from pdb import post_mortem
 from box import Box
-from greenflow.exp_ng.hammer import hammer
+from greenflow.exp_ng.hammer import hammer, stress_test
 from greenflow.exp_ng.exp_ng import killexp
 from entrypoint import (
     rebind_parameters,
@@ -48,7 +48,7 @@ def run_single_hammer(exp_name, *, exp_description, **params):
     try:
         rebind_parameters(**params)
         with ctx_manager():
-            hammer(exp_description)
+            return hammer(exp_description)
     except Exception as e:
         traceback.print_exc()
         send_notification(
@@ -69,23 +69,39 @@ def scaling_behaviour(exp_description) -> None:
     load_gin(exp_name)
     rebind_parameters(consumerInstances=10, producerInstances=10, partitions=120)
 
-    for _ in range(5):
+    for _ in range(3):
         for replicas in brokerReplicaList:
             run_single_hammer(
                 exp_name,
                 exp_description=exp_description,
                 brokerReplicas=replicas,
+                partitions=replicas*10,
             )
 
     exp_name = "ingest-redpanda"
     load_gin(exp_name)
     rebind_parameters(consumerInstances=10, producerInstances=10, partitions=120)
-    for _ in range(5):
+    for _ in range(3):
         for replicas in brokerReplicaList:
             run_single_hammer(
                 exp_name,
                 exp_description=exp_description,
                 brokerReplicas=replicas,
+                partitions=replicas*10,
             )
 
     send_notification("Experiment complete. On to the next.")
+
+def proportionality(exp_description) -> None:
+    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+        load_gin(exp_name)
+        
+        # First run hammer to get baseline
+        baseline = run_single_hammer(exp_name, exp_description=exp_description)
+                
+        # Then test at 10% intervals
+        for percentage in range(10, 101, 10):
+            load_factor = percentage / 100.0
+            stress_test(target_load=baseline * load_factor, exp_description=exp_description)
+    
+    send_notification("Proportionality experiments complete.")

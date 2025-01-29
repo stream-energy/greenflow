@@ -101,7 +101,7 @@ def deploy_hammer_with_consumer(extra_vars) -> tuple[Job, Job]:
 def exp_hammer_job(extra_vars) -> Job:
     # TODO: Merge this with normal job
     exp_params = extra_vars["exp_params"]
-    total_messages = 1 * 10**9
+    total_messages = extra_vars["exp_params"]["load"] * extra_vars["exp_params"]["durationSeconds"]
     start_timestamp = int(time.time()) + 20  # 20 seconds in the future
 
     return Job(
@@ -196,6 +196,40 @@ def hammer(experiment_description="Hammer") -> float:
     create_kafka_topic(extra_vars)
     deploy_hammer_with_consumer(extra_vars)
     # deploy_hammer(extra_vars)
+
+    # Let the metrics get scraped before deleting the kafka topic
+    time.sleep(15)
+    scale_prometheus(0)
+
+    delete_kafka_topic(extra_vars)
+    g.end_exp()
+
+    last_throughput = get_observed_throughput_of_last_experiment(minimum_current_ts=now)
+    return last_throughput
+
+def stress_test(target_load: float, experiment_description="Stress Test") -> float:
+    from pprint import pprint
+    from ..g import g
+
+    now = pendulum.now()
+    g.init_exp(experiment_description)
+    extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
+    extra_vars = Box(extra_vars)
+    
+    logging.warning(
+        dict(
+            msg="Stress testing",
+            messageSize=extra_vars.exp_params.messageSize,
+            target_throughput=target_load,
+        )
+    )
+
+    reinit_prometheus(
+        extra_vars["deployment_started_ts"], extra_vars["experiment_started_ts"]
+    )
+    create_kafka_topic(extra_vars)
+    
+    deploy_hammer_with_consumer(extra_vars)
 
     # Let the metrics get scraped before deleting the kafka topic
     time.sleep(15)
