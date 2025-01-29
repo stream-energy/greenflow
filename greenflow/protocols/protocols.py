@@ -20,8 +20,23 @@ def safety_curve(exp_description) -> None:
     exp_name = "ingest-kafka"
     load_gin("ingest-kafka")
 
+<<<<<<< Updated upstream
     # Message sizes up to 1MB (with 
     messageSizes = [2 ** i for i in range(5, 17)] + [1048376]
+=======
+    # Message sizes up to 100KB
+    # messageSizes = [2 ** i for i in range(5, 18, 2)]
+    new_sizes = [
+        32,       # 2^5  (32 bytes)
+        32768,    # 2^15 (32 KB)
+        131072,   # 2^17 (128 KB)
+        262144,   # 2^18 (256 KB)
+        524288,   # 2^19 (512 KB)
+        1048576   # 2^20 (1 MB)
+    ]
+    messageSizes = new_sizes
+
+>>>>>>> Stashed changes
 
     for _ in range(3):
         try:
