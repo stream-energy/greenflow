@@ -130,6 +130,7 @@ def ingest_set(exp_description, **kwargs):
         scaling_behaviour,
         memory_cpu_impact_10_10_120,
         memory_cpu_impact_1_1_1,
+        proportionality,
     )
 
     if "scalingBehaviour=true" in exp_description:
@@ -139,6 +140,8 @@ def ingest_set(exp_description, **kwargs):
     elif "memImpact=true" in exp_description:
         memory_cpu_impact_1_1_1(exp_description)
         memory_cpu_impact_10_10_120(exp_description)
+    elif "proportionality=true" in exp_description:
+        proportionality(exp_description)
 
 
 @click.command("setup")
