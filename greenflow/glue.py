@@ -23,7 +23,7 @@ def embed(globals, locals):
 ntfy_url = os.getenv("NTFY_URL", "http://ntfy.sh/YOUR_URL_HERE")
 
 
-def patch_global_g(deployment_type, storage_type="tinydb"):
+def patch_global_g(deployment_type, storage_type="mongo"):
     import greenflow.g
     from greenflow.g import _g
     import gin

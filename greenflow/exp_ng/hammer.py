@@ -3,6 +3,7 @@ from box import Box
 from kr8s.objects import Job
 import pendulum
 import time
+import numpy as np
 
 from entrypoint import rebind_parameters
 from .exp_ng import create_kafka_topic, delete_kafka_topic
@@ -11,7 +12,6 @@ from .prometheus import reinit_prometheus, scale_prometheus
 from ..state import get_deployment_state_vars, get_experiment_state_vars
 from ..factors import factors
 from .synchronized_perf_script import producer_script, consumer_script
-from ..analysis.tiny import get_observed_throughput_of_last_experiment
 
 
 def exp_consumer_job(extra_vars) -> Job:
@@ -100,9 +100,16 @@ def deploy_hammer_with_consumer(extra_vars) -> tuple[Job, Job]:
 
 def exp_hammer_job(extra_vars) -> Job:
     # TODO: Merge this with normal job
-    exp_params = extra_vars["exp_params"]
-    total_messages = extra_vars["exp_params"]["load"] * extra_vars["exp_params"]["durationSeconds"]
+    extra_vars = Box(extra_vars)
+    exp_params = extra_vars.exp_params
+    load = exp_params.load / exp_params.producer_instances
+    total_messages = load * exp_params.durationSeconds
+    producer_instances = exp_params.producer_instances
     start_timestamp = int(time.time()) + 20  # 20 seconds in the future
+    if load == 1 * 10**9:
+        throughput = -1
+    else:
+        throughput = int(load)
 
     return Job(
         dict(
@@ -110,8 +117,8 @@ def exp_hammer_job(extra_vars) -> Job:
             kind="Job",
             metadata={"name": "kafka-producer-perf-test", "namespace": "default"},
             spec={
-                "parallelism": exp_params["producer_instances"],
-                "completions": exp_params["producer_instances"],
+                "parallelism": producer_instances,
+                "completions": producer_instances,
                 "backoffLimit": 0,
                 # "ttlSecondsAfterFinished": 100,
                 "template": {
@@ -136,10 +143,10 @@ chmod +x /tmp/synchronized_kafka_perf_test.sh
 /tmp/synchronized_kafka_perf_test.sh \
     --topic input \
     --num-records {int(total_messages)} \
-    --record-size {exp_params['messageSize']} \
-    --throughput -1 \
-    --producer-props bootstrap.servers={exp_params['kafka_bootstrap_servers']} \
-    --durationSeconds {exp_params['durationSeconds']} \
+    --record-size {exp_params.messageSize} \
+    --throughput {throughput} \
+    --producer-props bootstrap.servers={exp_params.kafka_bootstrap_servers} \
+    --durationSeconds {exp_params.durationSeconds} \
     --start-timestamp {start_timestamp}
                                     """,
                                 ],
@@ -177,9 +184,12 @@ def deploy_hammer(extra_vars) -> Job:
 def hammer(experiment_description="Hammer") -> float:
     from pprint import pprint
     from ..g import g
+    from ..analysis import get_observed_throughput_of_last_experiment
+    from entrypoint import rebind_parameters
 
     now = pendulum.now()
     g.init_exp(experiment_description)
+    rebind_parameters(load=1 * 10**9)
     extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
     extra_vars = Box(extra_vars)
     logging.warning(
@@ -207,15 +217,26 @@ def hammer(experiment_description="Hammer") -> float:
     last_throughput = get_observed_throughput_of_last_experiment(minimum_current_ts=now)
     return last_throughput
 
-def stress_test(target_load: float, experiment_description="Stress Test") -> float:
+
+def stress_test(target_load: float, exp_description="Stress Test") -> float:
     from pprint import pprint
     from ..g import g
+    from ..analysis import get_observed_throughput_of_last_experiment
 
     now = pendulum.now()
-    g.init_exp(experiment_description)
+    g.init_exp(exp_description)
+    # Convert target_load to standard Python float if it's a numpy float
+    if isinstance(target_load, (np.floating, np.float32, np.float64)):
+        target_load = target_load.item()
+    else:
+        target_load = float(
+            target_load
+        )  # Ensure it's a float even if passed as int/string
+
+    rebind_parameters(load=target_load)
     extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
     extra_vars = Box(extra_vars)
-    
+
     logging.warning(
         dict(
             msg="Stress testing",
@@ -228,7 +249,7 @@ def stress_test(target_load: float, experiment_description="Stress Test") -> flo
         extra_vars["deployment_started_ts"], extra_vars["experiment_started_ts"]
     )
     create_kafka_topic(extra_vars)
-    
+
     deploy_hammer_with_consumer(extra_vars)
 
     # Let the metrics get scraped before deleting the kafka topic

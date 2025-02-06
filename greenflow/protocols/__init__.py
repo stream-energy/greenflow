@@ -1,2 +1,2 @@
 from .mem_cpu import *
-from .protocols import scaling_behaviour, safety_curve
+from .protocols import scaling_behaviour, safety_curve, proportionality

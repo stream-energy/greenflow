@@ -5,11 +5,17 @@ import pendulum
 from tinydb import TinyDB, Query
 from os import getenv
 
-from greenflow.analysis.tiny import get_experiments
-from greenflow.analysis.tiny import filter_experiments
-from greenflow.analysis.tiny import interest
+from .tiny import get_experiments
+from .tiny import filter_experiments
+from .tiny import interest
 from .cache import cache
-from .tiny import *
+
+import greenflow
+
+if greenflow.g.g.storage_type == "mongo":
+    from .mongo import *
+elif greenflow.g.g.storage_type == "tinydb":
+    from .tiny import *
 
 # Assuming your data is in the 'redpanda_kafka_data' DataFrame
 import matplotlib.pyplot as plt
@@ -27,15 +33,43 @@ def full_analytical_pipeline_nocache(
     type=None,
     **kwargs,
 ):
-    experiments = get_experiments()
-    redpanda_kafka_data = filter_experiments(
-        experiments,
-        interest(cluster=cluster, type=type, **kwargs),
-        cutoff_begin=cutoff_begin,
-        cutoff_end=cutoff_end,
-    )
-    redpanda_kafka_data = enrich_dataframe(redpanda_kafka_data)
-    return redpanda_kafka_data
+    if greenflow.g.g.storage_type == "tinydb":
+        experiments = get_experiments()
+        redpanda_kafka_data = filter_experiments(
+            experiments,
+            interest(cluster=cluster, type=type, **kwargs),
+            cutoff_begin=cutoff_begin,
+            cutoff_end=cutoff_end,
+        )
+        redpanda_kafka_data = enrich_dataframe(redpanda_kafka_data)
+        return redpanda_kafka_data
+    else:
+        from ..g import g
+        from ..mongo_storage import ExpStorage, Experiment
+
+        storage: ExpStorage = g.storage
+        query = {
+            "experiment_description": {
+                "$regex": f"(?=.*{type}=true)(?=.*cluster={cluster})"
+            },
+            "started_ts": {"$gte": cutoff_begin, "$lte": cutoff_end},
+        }
+
+        for k, v in kwargs.items():
+            query[f"experiment_metadata.factors.exp_params.{k}"] = v
+
+        matching_experiments = storage.collection.find(
+            query,
+            sort=[("started_ts", -1)],
+            # limit=1,
+        ).to_list()
+
+        listExperiment = [Experiment.from_doc(exp) for exp in matching_experiments]
+        filtered_experiments = [exp.to_dict() for exp in listExperiment]
+
+        df = pd.DataFrame(filtered_experiments).set_index("exp_id")
+        redpanda_kafka_data = enrich_dataframe(df)
+        return redpanda_kafka_data
 
 
 # @cache.pyarrow_cache
@@ -196,6 +230,7 @@ def create_qgrid_widget(df: pd.DataFrame):
 
     qgrid_widget = qgrid.show_grid(df, show_toolbar=True)
     return qgrid_widget
+
 
 def calculate_observed_throughput(row: pd.Series):
     started_ts = pendulum.parse(row["started_ts"])

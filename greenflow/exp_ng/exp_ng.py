@@ -23,25 +23,29 @@ def create_job(extra_vars) -> Job:
     exp_params = extra_vars["exp_params"]
 
     # First, check if the topic exists
-    check_topic_args = BoxList([
-        "--bootstrap-server",
-        exp_params.kafka_bootstrap_servers,
-        "--topic",
-        "input",
-        "--describe"
-    ])
+    check_topic_args = BoxList(
+        [
+            "--bootstrap-server",
+            exp_params.kafka_bootstrap_servers,
+            "--topic",
+            "input",
+            "--describe",
+        ]
+    )
 
-    create_topic_args = BoxList([
-        "--bootstrap-server",
-        exp_params.kafka_bootstrap_servers,
-        "--topic",
-        "input",
-        "--partitions",
-        f"{exp_params.partitions}",
-        "--replication-factor",
-        f"{exp_params.replicationFactor}",
-        "--create"
-    ])
+    create_topic_args = BoxList(
+        [
+            "--bootstrap-server",
+            exp_params.kafka_bootstrap_servers,
+            "--topic",
+            "input",
+            "--partitions",
+            f"{exp_params.partitions}",
+            "--replication-factor",
+            f"{exp_params.replicationFactor}",
+            "--create",
+        ]
+    )
 
     return Job(
         dict(

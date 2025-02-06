@@ -1,4 +1,5 @@
 from pdb import post_mortem
+import time
 from box import Box
 from greenflow.exp_ng.hammer import hammer, stress_test
 from greenflow.exp_ng.exp_ng import killexp
@@ -12,6 +13,10 @@ from entrypoint import (
 import traceback
 import logging
 
+from greenflow.exp_ng.prometheus import reinit_prometheus
+from ..state import get_deployment_state_vars, get_experiment_state_vars
+from ..factors import factors
+
 
 def safety_curve(exp_description) -> None:
     from greenflow.playbook import exp
@@ -20,23 +25,8 @@ def safety_curve(exp_description) -> None:
     exp_name = "ingest-kafka"
     load_gin("ingest-kafka")
 
-<<<<<<< Updated upstream
-    # Message sizes up to 1MB (with 
-    messageSizes = [2 ** i for i in range(5, 17)] + [1048376]
-=======
-    # Message sizes up to 100KB
-    # messageSizes = [2 ** i for i in range(5, 18, 2)]
-    new_sizes = [
-        32,       # 2^5  (32 bytes)
-        32768,    # 2^15 (32 KB)
-        131072,   # 2^17 (128 KB)
-        262144,   # 2^18 (256 KB)
-        524288,   # 2^19 (512 KB)
-        1048576   # 2^20 (1 MB)
-    ]
-    messageSizes = new_sizes
-
->>>>>>> Stashed changes
+    # Message sizes up to 1MB (with
+    messageSizes = [2**i for i in range(5, 17)] + [1048376]
 
     for _ in range(3):
         try:
@@ -67,7 +57,7 @@ def run_single_hammer(exp_name, *, exp_description, **params):
     except Exception as e:
         traceback.print_exc()
         send_notification(
-            f"Error in {exp_name} experiment with replicas={params.brokerReplicas}: {str(e)}",
+            f"Error in {exp_name} experiment with: {str(e)}",
             priority="max",
         )
         traceback.print_exc()
@@ -90,7 +80,7 @@ def scaling_behaviour(exp_description) -> None:
                 exp_name,
                 exp_description=exp_description,
                 brokerReplicas=replicas,
-                partitions=replicas*10,
+                partitions=replicas * 10,
             )
 
     exp_name = "ingest-redpanda"
@@ -102,21 +92,71 @@ def scaling_behaviour(exp_description) -> None:
                 exp_name,
                 exp_description=exp_description,
                 brokerReplicas=replicas,
-                partitions=replicas*10,
+                partitions=replicas * 10,
             )
 
     send_notification("Experiment complete. On to the next.")
 
+
 def proportionality(exp_description) -> None:
+    # for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+    #     ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+    #     load_gin(exp_name)
+    #     with ctx_manager():
+    #         rebind_parameters(durationSeconds=300)
+    #         baseline = stress_test(
+    #             target_load=100, exp_description=exp_description
+    #         )
+    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+        ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+        load_gin(exp_name)
+        with ctx_manager():
+            from ..g import g
+
+            rebind_parameters(durationSeconds=300, load=0)
+            g.init_exp(exp_description)
+            extra_vars = (
+                get_deployment_state_vars() | get_experiment_state_vars() | factors()
+            )
+            extra_vars = Box(extra_vars)
+            reinit_prometheus(
+                extra_vars["deployment_started_ts"], extra_vars["experiment_started_ts"]
+            )
+            time.sleep(300)
+            g.end_exp()
+            # rebind_parameters(durationSeconds=300)
+            # baseline = stress_test(
+            #     target_load=100, exp_description=exp_description
+            # )
+    # for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+    #     load_gin(exp_name)
+    #     ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+
+    #     with ctx_manager():
+    #         baseline = stress_test(
+    #             target_load=1 * 10**9, exp_description=exp_description
+    #         )
+    #         # Then test at 10% intervals
+    #         for percentage in range(10, 101, 10):
+    #             load_factor = percentage / 100.0
+    #             stress_test(
+    #                 target_load=baseline * load_factor, exp_description=exp_description
+    #             )
+
     for exp_name in ["ingest-kafka", "ingest-redpanda"]:
         load_gin(exp_name)
-        
-        # First run hammer to get baseline
-        baseline = run_single_hammer(exp_name, exp_description=exp_description)
-                
-        # Then test at 10% intervals
-        for percentage in range(10, 101, 10):
-            load_factor = percentage / 100.0
-            stress_test(target_load=baseline * load_factor, exp_description=exp_description)
-    
+        rebind_parameters(partitions=300, consumerInstances=10, producerInstances=10)
+        ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+
+        with ctx_manager():
+            baseline = stress_test(
+                target_load=1 * 10**9, exp_description=exp_description
+            )
+            # Then test at 10% intervals
+            for percentage in range(10, 101, 10):
+                load_factor = percentage / 100.0
+                stress_test(
+                    target_load=baseline * load_factor, exp_description=exp_description
+                )
+
     send_notification("Proportionality experiments complete.")

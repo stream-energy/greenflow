@@ -4,14 +4,17 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
-            "name": "Entrypoint test",
+            "name": "Ingest test",
             "type": "debugpy",
             "request": "launch",
             "program": "entrypoint.py",
             "console": "integratedTerminal",
+            "justMyCode": true,
             "args": [
-                "test"
+                "ingest",
+                "cluster=ovhnvme bw=25G proportionality=true"
             ]
         },
         {

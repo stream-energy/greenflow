@@ -111,19 +111,19 @@ class Experiment(Persistent):
     def from_doc(cls, doc: ExperimentDoc) -> "Experiment":
         return cls(**doc)
 
-    def to_dict(self) -> dict:
-        """Convert experiment to dictionary format matching the document structure"""
-        self.calculate_results()
+    # def to_dict(self) -> dict:
+    #     """Convert experiment to dictionary format matching the document structure"""
+    #     self.calculate_results()
 
-        return deepcopy(
-            {
-                "exp_name": self.exp_name,
-                "experiment_description": self.experiment_description,
-                "started_ts": self.started_ts,
-                "stopped_ts": self.stopped_ts,
-                "experiment_metadata": self.experiment_metadata,
-            }
-        )
+    #     return deepcopy(
+    #         {
+    #             "exp_name": self.exp_name,
+    #             "experiment_description": self.experiment_description,
+    #             "started_ts": self.started_ts,
+    #             "stopped_ts": self.stopped_ts,
+    #             "experiment_metadata": self.experiment_metadata,
+    #         }
+    #     )
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Experiment":
@@ -165,8 +165,54 @@ class Experiment(Persistent):
         self.experiment_metadata["results"] = self.results
 
 
-class ExpStorage:
+    def to_dict(self) -> dict:
+        self.calculate_results()
+        metadata = self.experiment_metadata
+        params = metadata["factors"]["exp_params"]
 
+        # Parse experiment description parameters first
+        desc_params = {}
+
+        desc_parts = self.experiment_description.split()
+        for part in desc_parts:
+            if "=" in part:
+                key, value = part.split("=", 1)
+                desc_params[key] = value  # Store without prefix initially
+
+        # Define relevant parameters
+        relevant_params = [
+            "load",
+            "durationSeconds",
+            "messageSize",
+            "broker_cpu",
+            "broker_mem",
+            "cluster",
+            "bw",
+            "broker_replicas",
+            "cluster",
+        ]
+
+        result = {
+            "exp_id": self._id,
+            "exp_name": self.exp_name,
+            "started_ts": self.started_ts,
+            "stopped_ts": self.stopped_ts,
+            **metadata.get("results", {}),
+        }
+
+        # Filter and add parameters from both sources
+        # Priority: metadata params first, then description params if not already present
+        filtered_params = {}
+        for param in relevant_params:
+            if param in params:
+                filtered_params[param] = params[param]
+            elif param in desc_params:
+                filtered_params[f"{param}"] = desc_params[param]
+
+        return {**result, **filtered_params}
+
+
+class ExpStorage:
     def __init__(
         self,
         *,
@@ -180,6 +226,7 @@ class ExpStorage:
         # Update indexes for common queries
         self.collection.create_index("exp_name")
         self.collection.create_index("started_ts")
+        self.collection.create_index("experiment_description")
         self.collection.create_index(
             "experiment_metadata.factors.exp_params"
         )  # Index for params
@@ -215,6 +262,13 @@ class ExpStorage:
         docs = self.collection.find(query)
         # for doc in docs:
         #     print(f"Found document: {doc}")
+        return [Experiment.from_doc(doc) for doc in docs]
+
+    def find_experiments_by_deployment_ts(self, deployment_ts: str) -> List[Experiment]:
+        docs = self.collection.find(
+            {"experiment_metadata.deployment_metadata.job_started_ts": deployment_ts},
+            sort=[("started_ts", -1)],  # 1 for ascending, -1 for descending
+        )
         return [Experiment.from_doc(doc) for doc in docs]
 
     def find_experiments_by_timerange(self, start: str, end: str) -> List[Experiment]:

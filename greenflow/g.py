@@ -33,6 +33,7 @@ class _g:
     def storage(self):
         if self.storage_type == "mongo":
             from .mongo_storage import ExpStorage
+
             if self.deployment_type == "production":
                 return ExpStorage()
             elif self.deployment_type == "test":
@@ -41,14 +42,13 @@ class _g:
                 )
         elif self.storage_type == "tinydb":
             from .storage import ExpStorage
+
             if self.deployment_type == "production":
                 return ExpStorage()
             elif self.deployment_type == "test":
                 return ExpStorage(
                     path=f"{self.gitroot}/storage/test_experiment-history.yaml"
                 )
-
-
 
     @cached_property
     def gitroot(self):

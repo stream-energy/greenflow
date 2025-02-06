@@ -27,6 +27,7 @@ def get_observed_throughput_of_last_experiment(
 ) -> float:
     from ..g import g
     import logging
+
     url = getenv("PROMETHEUS_URL")
     prom = PrometheusConnect(url=url)
 
@@ -175,7 +176,9 @@ def filter_experiments(
     return pd.DataFrame(filtered_experiments).set_index("exp_id")
 
 
-def interest(*, cluster=None, type=None, exp_name=None, **kwargs) -> Callable[[Any], bool]:
+def interest(
+    *, cluster=None, type=None, exp_name=None, **kwargs
+) -> Callable[[Any], bool]:
     def _interest(exp):
         params = exp["experiment_metadata"]["factors"]["exp_params"]
         for k, v in params.items():

@@ -84,7 +84,9 @@ class TestExpStorage:
         assert any(exp.exp_name == "past" for exp in results)
         assert any(exp.exp_name == "present" for exp in results)
 
-    def test_find_experiments_by_params(self, storage: ExpStorage, sample_experiment_data):
+    def test_find_experiments_by_params(
+        self, storage: ExpStorage, sample_experiment_data
+    ):
         """Test finding experiments with specific parameters"""
         exp1 = Experiment.from_dict(sample_experiment_data)
 
