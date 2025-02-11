@@ -132,6 +132,7 @@ def ingest_set(exp_description, **kwargs):
         memory_cpu_impact_1_1_1,
         proportionality,
         smoketest,
+        partitioning,
     )
 
     if "scalingBehaviour=true" in exp_description:
@@ -145,6 +146,8 @@ def ingest_set(exp_description, **kwargs):
         proportionality(exp_description)
     elif "smoketest=true" in exp_description:
         smoketest(exp_description)
+    elif "partitioning=true" in exp_description:
+        partitioning(exp_description)
 
 
 @click.command("setup")

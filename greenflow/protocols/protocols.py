@@ -94,6 +94,32 @@ def run_single_hammer(exp_name, *, exp_description, **params):
         except Exception as cleanup_error:
             logging.error(f"Error during cleanup: {str(cleanup_error)}")
 
+def partitioning(exp_description) -> None:
+    partitions = [1, 3, 9, 30, 120, 300]
+    exp_name = "ingest-kafka"
+    load_gin(exp_name)
+    rep = 1
+    with kafka_context():
+        for partition in partitions:
+            for _ in range(rep):
+                rebind_parameters(partitions=partition, consumerInstances=10, producerInstances=10)
+                run_single_hammer(
+                    exp_name,
+                    exp_description=exp_description,
+                )
+
+    exp_name = "ingest-redpanda"
+    load_gin(exp_name)
+    with redpanda_context():
+        for partition in partitions:
+            for _ in range(rep):
+                rebind_parameters(partitions=partition, consumerInstances=10, producerInstances=10)
+                run_single_hammer(
+                    exp_name,
+                    exp_description=exp_description,
+                )
+
+    send_notification("Experiment complete. On to the next.")
 
 def scaling_behaviour(exp_description) -> None:
     brokerReplicaList = list(range(3, 6))
