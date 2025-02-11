@@ -1,3 +1,4 @@
+from box import Box
 from persistent import Persistent
 from typing_extensions import TypedDict, NotRequired, Dict, Any, Optional, List
 from datetime import datetime
@@ -29,34 +30,41 @@ class ExperimentDoc(TypedDict):
 class Experiment(Persistent):
     def __init__(
         self,
-        exp_name: str,
-        experiment_description: str = "",
-        started_ts: Optional[str] = None,
-        stopped_ts: Optional[str] = None,
-        experiment_metadata: Optional[Dict[str, Any]] = None,
-        _id: Optional[ObjectId] = ObjectId(),
+        # exp_name: str,
+        # experiment_description: str = "",
+        # started_ts: Optional[str] = None,
+        # stopped_ts: Optional[str] = None,
+        # experiment_metadata: Optional[Dict[str, Any]] = None,
+        # _id: Optional[ObjectId] = ObjectId(),
+        **kwargs
     ):
-
         from .deployment import Deployment
         from .factors import factors
         from .utils import generate_explore_url, generate_grafana_dashboard_url
         from entrypoint import load_gin
 
         # load_gin("ingest-kafka")
+        kwargs = Box(kwargs, default_box=True, default_box_attr=None)
+        experiment_metadata = kwargs.experiment_metadata
+        exp_name = kwargs.exp_name
+        experiment_description = kwargs.experiment_description
 
         from .g import g
 
         self.exp_name = exp_name
         self.experiment_description = experiment_description
         now = pendulum.now()
-        self.started_ts = started_ts or now.to_iso8601_string()
-        self.stopped_ts = stopped_ts or now.to_iso8601_string()
+        self.started_ts = kwargs.started_ts or now.to_iso8601_string()
+        self.stopped_ts = kwargs.stopped_ts or now.to_iso8601_string()
 
-        try:
-            self.deployment_metadata = deepcopy(g.root.current_deployment.metadata)
-        except AttributeError:
-            g.root.current_deployment = Deployment(metadata={"type": "mock"})
-            self.deployment_metadata = {}
+        if not experiment_metadata.deployment_metadata:
+            try:
+                self.deployment_metadata = deepcopy(g.root.current_deployment.metadata)
+            except AttributeError:
+                g.root.current_deployment = Deployment(metadata={"type": "mock"})
+                self.deployment_metadata = {}
+        else:
+            self.deployment_metadata = kwargs.experiment_metadata.deployment_metadata
 
         # Initialize experiment_metadata
         base_metadata = {
@@ -77,7 +85,7 @@ class Experiment(Persistent):
         stopped_ts = pendulum.parse(self.stopped_ts)
 
         self.results = deepcopy(self.experiment_metadata.get("results", {}))
-        self._id = ObjectId() if not _id else _id
+        self._id = ObjectId() if not kwargs._id else kwargs._id
 
         # Add Prometheus metrics calculation here if needed
         # Similar to your original implementation
@@ -193,7 +201,7 @@ class Experiment(Persistent):
         ]
 
         result = {
-            "exp_id": self._id,
+            "exp_id": str(self._id),
             "exp_name": self.exp_name,
             "started_ts": self.started_ts,
             "stopped_ts": self.stopped_ts,

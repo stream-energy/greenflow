@@ -13,9 +13,36 @@ from entrypoint import (
 import traceback
 import logging
 
-from greenflow.exp_ng.prometheus import reinit_prometheus
+from greenflow.exp_ng.prometheus import reinit_prometheus, scale_prometheus
 from ..state import get_deployment_state_vars, get_experiment_state_vars
 from ..factors import factors
+
+
+def smoketest(exp_description) -> None:
+    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+        ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+        load_gin(exp_name)
+
+        from ..g import g
+
+        replica = 3
+        multiplier = 1
+
+        rebind_parameters(
+            brokerReplicas=replica,
+            partitions=replica * multiplier,
+            consumerInstances=10,
+            producerInstances=10,
+        )
+        with ctx_manager():
+            rebind_parameters(durationSeconds=30)
+            max_throughput = stress_test(
+                target_load=1 * 10**9,  # High initial load to find limits
+                exp_description=exp_description,
+            )
+            print("Observed max throughput: ", max_throughput)
+
+    send_notification("Smoketest complete.")
 
 
 def safety_curve(exp_description) -> None:
@@ -25,8 +52,8 @@ def safety_curve(exp_description) -> None:
     exp_name = "ingest-kafka"
     load_gin("ingest-kafka")
 
-    # Message sizes up to 1MB (with 
-    messageSizes = [2 ** i for i in range(5, 17)] + [1048376]
+    # Message sizes up to 1MB (with
+    messageSizes = [2**i for i in range(5, 17)] + [1048376]
 
     for _ in range(3):
         try:
@@ -69,7 +96,7 @@ def run_single_hammer(exp_name, *, exp_description, **params):
 
 
 def scaling_behaviour(exp_description) -> None:
-    brokerReplicaList = list(range(1, 11))
+    brokerReplicaList = list(range(3, 6))
     exp_name = "ingest-kafka"
     load_gin(exp_name)
     rebind_parameters(consumerInstances=10, producerInstances=10, partitions=120)
@@ -99,64 +126,55 @@ def scaling_behaviour(exp_description) -> None:
 
 
 def proportionality(exp_description) -> None:
-    # for exp_name in ["ingest-kafka", "ingest-redpanda"]:
-    #     ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
-    #     load_gin(exp_name)
-    #     with ctx_manager():
-    #         rebind_parameters(durationSeconds=300)
-    #         baseline = stress_test(
-    #             target_load=100, exp_description=exp_description
-    #         )
+    # Common parameters
+    test_duration = 100  # seconds for non-idle tests
+    broker_replicas = [3, 4, 5]
+
     for exp_name in ["ingest-kafka", "ingest-redpanda"]:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
-        with ctx_manager():
-            from ..g import g
 
-            rebind_parameters(durationSeconds=300, load=0)
-            g.init_exp(exp_description)
-            extra_vars = (
-                get_deployment_state_vars() | get_experiment_state_vars() | factors()
-            )
-            extra_vars = Box(extra_vars)
-            reinit_prometheus(
-                extra_vars["deployment_started_ts"], extra_vars["experiment_started_ts"]
-            )
-            time.sleep(300)
-            g.end_exp()
-            # rebind_parameters(durationSeconds=300)
-            # baseline = stress_test(
-            #     target_load=100, exp_description=exp_description
-            # )
-    # for exp_name in ["ingest-kafka", "ingest-redpanda"]:
-    #     load_gin(exp_name)
-    #     ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+        from ..g import g
 
-    #     with ctx_manager():
-    #         baseline = stress_test(
-    #             target_load=1 * 10**9, exp_description=exp_description
-    #         )
-    #         # Then test at 10% intervals
-    #         for percentage in range(10, 101, 10):
-    #             load_factor = percentage / 100.0
-    #             stress_test(
-    #                 target_load=baseline * load_factor, exp_description=exp_description
-    #             )
-
-    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
-        load_gin(exp_name)
-        rebind_parameters(partitions=300, consumerInstances=10, producerInstances=10)
-        ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
-
-        with ctx_manager():
-            baseline = stress_test(
-                target_load=1 * 10**9, exp_description=exp_description
-            )
-            # Then test at 10% intervals
-            for percentage in range(10, 101, 10):
-                load_factor = percentage / 100.0
-                stress_test(
-                    target_load=baseline * load_factor, exp_description=exp_description
+        for replica in broker_replicas:
+            for multiplier in [1, 10, 30]:
+                rebind_parameters(
+                    brokerReplicas=replica,
+                    partitions=replica * multiplier,
+                    consumerInstances=10,
+                    producerInstances=10,
                 )
+                with ctx_manager():
+                    # Idle resource monitoring (longer duration)
+                    rebind_parameters(durationSeconds=300, load=0)
+                    g.init_exp(exp_description)
+                    extra_vars = (
+                        get_deployment_state_vars()
+                        | get_experiment_state_vars()
+                        | factors()
+                    )
+                    reinit_prometheus(
+                        extra_vars["deployment_started_ts"],
+                        extra_vars["experiment_started_ts"],
+                    )
+                    time.sleep(200)
+                    g.end_exp()
+                    time.sleep(15)
+                    scale_prometheus(0)
+
+                    # Find maximum throughput with hammer method
+                    rebind_parameters(durationSeconds=test_duration)
+                    max_throughput = stress_test(
+                        target_load=1 * 10**9,  # High initial load to find limits
+                        exp_description=exp_description,
+                    )
+
+                    # Proportionality tests at 10% intervals
+                    for percentage in range(10, 101, 10):
+                        load_factor = percentage / 100.0
+                        stress_test(
+                            target_load=max_throughput * load_factor,
+                            exp_description=exp_description,
+                        )
 
     send_notification("Proportionality experiments complete.")

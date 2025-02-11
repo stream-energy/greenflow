@@ -12,11 +12,11 @@ load_gin("ingest-kafka", test=False)
 from greenflow.analysis.tiny import get_experiments
 
 def load_tinydb_data(file_path: str) -> Dict[str, Any]:
-    return get_experiments()
+    # return get_experiments()
     # """Load TinyDB YAML data from file"""
-    # with open(file_path, 'r') as f:
-    #     data = yaml.safe_load(f)
-    # return data.get('_default', {})
+    with open(file_path, 'r') as f:
+        data = yaml.safe_load(f)
+    return data.get('_default', {})
 
 def transform_experiment(exp_id: str, exp_data: Dict[str, Any]) -> Dict[str, Any]:
     """Transform TinyDB experiment entry to MongoDB schema"""
@@ -40,11 +40,11 @@ def transform_experiment(exp_id: str, exp_data: Dict[str, Any]) -> Dict[str, Any
             transformed['experiment_metadata'][field] = exp_data['experiment_metadata'][field]
     
     # Add numeric experiment ID from TinyDB as reference
-    transformed['legacy_ids'] = [exp_id]
+    transformed['legacy_id'] = exp_id
     
     return transformed
 
-def migrate(source_file: str, mongodb_uri: str = None, db_name: str = "greenflow", collection_name: str = "experiments_test"):
+def migrate(source_file: str, mongodb_uri: str = None, db_name: str = "greenflow", collection_name: str = "experiments"):
     """Main migration function"""
     # Connect to MongoDB
     client = MongoClient(mongodb_uri or os.getenv("MONGO_URL", "mongodb://localhost:27017/"))
@@ -70,6 +70,6 @@ def migrate(source_file: str, mongodb_uri: str = None, db_name: str = "greenflow
 # Example usage
 if __name__ == "__main__":
     migrate(
-        source_file="storage/experiment_history.yaml",
-        mongodb_uri="mongodb://localhost:27017/"
+        source_file="storage/experiment-history.yaml",
+        # mongodb_uri="mongodb://localhost:27017/"
     )
