@@ -23,9 +23,9 @@ def memory_cpu_impact_10_10_120(exp_description):
         consumerInstances=10, producerInstances=10, partitions=120, brokerReplicas=3
     )
 
-    for _ in range(3):
-        for mem in mems:
-            for cpu in cpus:
+    for mem in mems:
+        for cpu in cpus:
+            for _ in range(3):
                 try:
                     rebind_parameters(brokerMem=mem, brokerCpu=cpu)
                     with kafka_context():
@@ -55,10 +55,10 @@ def memory_cpu_impact_10_10_120(exp_description):
     def mem_to_gib(mem_str):
         return int(mem_str.replace("Gi", ""))
 
-    for _ in range(3):
-        for mem in mems:
-            mem_gib = mem_to_gib(mem)
-            for cpu in cpus:
+    for mem in mems:
+        mem_gib = mem_to_gib(mem)
+        for cpu in cpus:
+            for _ in range(3):
                 # Skip if memory per core is less than 1GiB
                 if mem_gib / cpu < 1:
                     logging.info(

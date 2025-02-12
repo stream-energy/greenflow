@@ -95,16 +95,17 @@ def run_single_hammer(exp_name, *, exp_description, **params):
             logging.error(f"Error during cleanup: {str(cleanup_error)}")
 
 def partitioning(exp_description) -> None:
-    partitions = [1, 3, 9, 30, 120, 300]
+    # partitions = [1, 3, 9, 30, 120, 300, 600]
+    partitions = [900, 1500, 3000]
     exp_name = "ingest-kafka"
     load_gin(exp_name)
-    rep = 1
+    rep = 3
     with kafka_context():
         for partition in partitions:
             for _ in range(rep):
                 rebind_parameters(partitions=partition, consumerInstances=10, producerInstances=10)
-                run_single_hammer(
-                    exp_name,
+                stress_test(
+                    target_load=1 * 10**9,
                     exp_description=exp_description,
                 )
 
@@ -114,8 +115,8 @@ def partitioning(exp_description) -> None:
         for partition in partitions:
             for _ in range(rep):
                 rebind_parameters(partitions=partition, consumerInstances=10, producerInstances=10)
-                run_single_hammer(
-                    exp_name,
+                stress_test(
+                    target_load=1 * 10**9,
                     exp_description=exp_description,
                 )
 
@@ -129,12 +130,16 @@ def scaling_behaviour(exp_description) -> None:
 
     for _ in range(3):
         for replicas in brokerReplicaList:
-            run_single_hammer(
-                exp_name,
+            stress_test(
+                target_load=1 * 10**9,
                 exp_description=exp_description,
-                brokerReplicas=replicas,
-                partitions=replicas * 10,
             )
+            # run_single_hammer(
+            #     exp_name,
+            #     exp_description=exp_description,
+            #     brokerReplicas=replicas,
+            #     partitions=replicas * 10,
+            # )
 
     exp_name = "ingest-redpanda"
     load_gin(exp_name)
@@ -171,23 +176,11 @@ def proportionality(exp_description) -> None:
                     producerInstances=10,
                 )
                 with ctx_manager():
-                    # Idle resource monitoring (longer duration)
-                    rebind_parameters(durationSeconds=300, load=0)
-                    g.init_exp(exp_description)
-                    extra_vars = (
-                        get_deployment_state_vars()
-                        | get_experiment_state_vars()
-                        | factors()
+                    rebind_parameters(durationSeconds=300)
+                    max_throughput = stress_test(
+                        target_load=0,  # Idle load to find idle power
+                        exp_description=exp_description,
                     )
-                    reinit_prometheus(
-                        extra_vars["deployment_started_ts"],
-                        extra_vars["experiment_started_ts"],
-                    )
-                    time.sleep(200)
-                    g.end_exp()
-                    time.sleep(15)
-                    scale_prometheus(0)
-
                     # Find maximum throughput with hammer method
                     rebind_parameters(durationSeconds=test_duration)
                     max_throughput = stress_test(

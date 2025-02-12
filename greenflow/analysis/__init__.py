@@ -25,15 +25,16 @@ url = getenv("PROMETHEUS_URL")
 prom = PrometheusConnect(url=url)
 
 
-
 def get_observed_throughput_of_last_experiment(
     minimum_current_ts: pendulum.DateTime,
 ) -> float:
     if greenflow.g.g.storage_type == "tinydb":
         from .tiny import get_observed_throughput_of_last_experiment
+
         return get_observed_throughput_of_last_experiment(minimum_current_ts)
     elif greenflow.g.g.storage_type == "mongo":
         from .mongo import get_observed_throughput_of_last_experiment
+
         return get_observed_throughput_of_last_experiment(minimum_current_ts)
 
 
@@ -65,6 +66,7 @@ def full_analytical_pipeline_nocache(
                 "$regex": f"(?=.*{type}=true)(?=.*cluster={cluster})"
             },
             "started_ts": {"$gte": cutoff_begin, "$lte": cutoff_end},
+            "experiment_metadata.results.duration": {"$gte": 100, "$lte": 3600},
         }
 
         for k, v in kwargs.items():
@@ -81,6 +83,7 @@ def full_analytical_pipeline_nocache(
 
         df = pd.DataFrame(filtered_experiments).set_index("exp_id")
         redpanda_kafka_data = enrich_dataframe(df)
+        # redpanda_kafka_data = df
         return redpanda_kafka_data
 
 

@@ -57,14 +57,19 @@ class Experiment(Persistent):
         self.started_ts = kwargs.started_ts or now.to_iso8601_string()
         self.stopped_ts = kwargs.stopped_ts or now.to_iso8601_string()
 
-        if not experiment_metadata.deployment_metadata:
-            try:
-                self.deployment_metadata = deepcopy(g.root.current_deployment.metadata)
-            except AttributeError:
-                g.root.current_deployment = Deployment(metadata={"type": "mock"})
-                self.deployment_metadata = {}
-        else:
+        try:
             self.deployment_metadata = kwargs.experiment_metadata.deployment_metadata
+        except AttributeError:
+            self.deployment_metadata = deepcopy(g.root.current_deployment.metadata)
+        # if not experiment_metadata:
+        #     try:
+        #         self.deployment_metadata = deepcopy(g.root.current_deployment.metadata)
+        #     except AttributeError:
+        #         g.root.current_deployment = Deployment(metadata={"type": "mock"})
+        #         self.deployment_metadata = {}
+
+        #     else:
+        #         self.deployment_metadata = kwargs.experiment_metadata.deployment_metadata
 
         # Initialize experiment_metadata
         base_metadata = {
@@ -198,6 +203,8 @@ class Experiment(Persistent):
             "bw",
             "broker_replicas",
             "cluster",
+            "partitions",
+            "replicationFactor"
         ]
 
         result = {

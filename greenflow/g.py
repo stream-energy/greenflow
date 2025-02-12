@@ -80,7 +80,7 @@ class _g:
 
         exp_name = factors()["exp_name"]
 
-        e = Experiment(exp_name, experiment_description)
+        e = Experiment(exp_name=exp_name, experiment_description=experiment_description)
         self.root.current_experiment = e
         transaction.commit()
 

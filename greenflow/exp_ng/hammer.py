@@ -223,8 +223,6 @@ def stress_test(target_load: float, exp_description="Stress Test") -> float:
     from ..g import g
     from ..analysis import get_observed_throughput_of_last_experiment
 
-    now = pendulum.now()
-    g.init_exp(exp_description)
     # Convert target_load to standard Python float if it's a numpy float
     if isinstance(target_load, (np.floating, np.float32, np.float64)):
         target_load = target_load.item()
@@ -234,6 +232,9 @@ def stress_test(target_load: float, exp_description="Stress Test") -> float:
         )  # Ensure it's a float even if passed as int/string
 
     rebind_parameters(load=target_load)
+
+    now = pendulum.now()
+    g.init_exp(exp_description)
     extra_vars = get_deployment_state_vars() | get_experiment_state_vars() | factors()
     extra_vars = Box(extra_vars)
 

@@ -140,7 +140,7 @@ def ingest_set(exp_description, **kwargs):
     elif "safetyCurve=true" in exp_description:
         safety_curve(exp_description)
     elif "memImpact=true" in exp_description:
-        memory_cpu_impact_1_1_1(exp_description)
+        # memory_cpu_impact_1_1_1(exp_description)
         memory_cpu_impact_10_10_120(exp_description)
     elif "proportionality=true" in exp_description:
         proportionality(exp_description)
