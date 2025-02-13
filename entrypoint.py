@@ -135,11 +135,14 @@ def ingest_set(exp_description, **kwargs):
         smoketest,
         partitioning,
         idle,
-        system
+        system,
+        baseline
     )
 
     if "scalingBehaviour=true" in exp_description:
         scaling_behaviour(exp_description)
+    elif "baseline=true" in exp_description:
+        baseline(exp_description)
     elif "safetyCurve=true" in exp_description:
         safety_curve(exp_description)
     elif "memImpact=true" in exp_description:
