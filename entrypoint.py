@@ -135,6 +135,7 @@ def ingest_set(exp_description, **kwargs):
         smoketest,
         partitioning,
         idle,
+        system
     )
 
     if "scalingBehaviour=true" in exp_description:
@@ -152,6 +153,8 @@ def ingest_set(exp_description, **kwargs):
         partitioning(exp_description)
     elif "idle=true" in exp_description:
         idle(exp_description)
+    elif "system=true" in exp_description:
+        system(exp_description)
 
 
 @click.command("setup")

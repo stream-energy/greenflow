@@ -381,21 +381,25 @@ def calculate_energy_cost(row: pd.Series):
     if row.cluster == "taurus":
         if row.exp_name == "ingest-redpanda":
             idle_power_base = 31.63
-        elif row.exp_name == "ingest-redpanda":
+        elif row.exp_name == "ingest-kafka":
             idle_power_base = 32.63
     elif row.cluster == "grappe":
         idle_power_base = 181.4/3
     elif row.cluster == "ovhnvme":
-        idle_power_base = 63.6
+        if row.exp_name == "ingest-redpanda":
+            idle_power_base = 19.9
+        elif row.exp_name == "ingest-kafka":
+            idle_power_base = 20.5
     
-    # idle_power = idle_power_base * row.broker_replicas
+    idle_power = idle_power_base * row.num_broker_nodes
 
 
-    # row["average_power"] = row["average_power"] - idle_power
-    # if row.average_power < 0:
-    #     row["energy_cost"] = 0
-    #     return row
-    energy_cost = row["average_power"] / row["throughput_MBps"]
+    row["adjusted_power"] = row["average_power"] - idle_power
+    if row.average_power < 0:
+        breakpoint()
+        row["energy_cost"] = 0
+        return row
+    energy_cost = row["adjusted_power"] / row["throughput_MBps"]
     # energy_cost = 1 / energy_cost
     row["energy_cost"] = energy_cost
 

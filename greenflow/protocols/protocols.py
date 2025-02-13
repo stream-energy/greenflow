@@ -55,6 +55,23 @@ def smoketest(exp_description) -> None:
                 exp_description=exp_description,
             )
             print("Observed max throughput: ", max_throughput)
+    send_notification("Smoketest complete.")
+
+def system(exp_description) -> None:
+    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+        ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+        load_gin(exp_name)
+
+        rebind_parameters(
+            partitions=30,
+            producerInstances=10,
+        )
+        with ctx_manager():
+            max_throughput = stress_test(
+                target_load=1 * 10**9,
+                exp_description=exp_description,
+            )
+            print("Observed max throughput: ", max_throughput)
 
     send_notification("Smoketest complete.")
 
@@ -171,7 +188,7 @@ def proportionality(exp_description) -> None:
     # Common parameters
     test_duration = 100  # seconds for non-idle tests
     broker_replicas = [3, 4, 5, 6, 7, 8]
-    rep = 3
+    rep = 1
 
     for exp_name in ["ingest-kafka", "ingest-redpanda"]:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
@@ -180,7 +197,7 @@ def proportionality(exp_description) -> None:
         from ..g import g
 
         for replica in broker_replicas:
-            for multiplier in [40]:
+            for multiplier in [10]:
                 for _ in range(rep):
                     rebind_parameters(
                         brokerReplicas=replica,
@@ -189,11 +206,11 @@ def proportionality(exp_description) -> None:
                         producerInstances=10,
                     )
                     with ctx_manager():
-                        rebind_parameters(durationSeconds=300)
-                        max_throughput = stress_test(
-                            target_load=0,  # Idle load to find idle power
-                            exp_description=exp_description,
-                        )
+                        # rebind_parameters(durationSeconds=300)
+                        # max_throughput = stress_test(
+                        #     target_load=0,  # Idle load to find idle power
+                        #     exp_description=exp_description,
+                        # )
                         # Find maximum throughput with hammer method
                         rebind_parameters(durationSeconds=test_duration)
                         max_throughput = stress_test(
