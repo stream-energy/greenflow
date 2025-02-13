@@ -252,6 +252,9 @@ def calculate_observed_throughput(row: pd.Series):
     stopped_ts = pendulum.parse(row["stopped_ts"])
 
     query = f'kminion_kafka_topic_high_water_mark_sum{{namespace="{"redpanda" if "redpanda" in row["exp_name"] else "default"}", topic_name="input", experiment_started_ts="{row["started_ts"]}"}}'
+    if row.load == 0:
+        row["observed_throughput"] = 0
+        return row
     try:
         data = MetricRangeDataFrame(
             prom.get_metric_range_data(
@@ -367,29 +370,80 @@ def calculate_average_power(row: pd.Series):
     return row
 
 
+def calculate_energy_cost(row: pd.Series):
+    """
+    Calculate the energy cost in USD
+    """
+    if row["throughput_MBps"] == 0:
+        row["energy_cost"] = 0
+        return row
+    # idle_power = 0
+    if row.cluster == "taurus":
+        if row.exp_name == "ingest-redpanda":
+            idle_power_base = 31.63
+        elif row.exp_name == "ingest-redpanda":
+            idle_power_base = 32.63
+    elif row.cluster == "grappe":
+        idle_power_base = 181.4/3
+    elif row.cluster == "ovhnvme":
+        idle_power_base = 63.6
+    
+    # idle_power = idle_power_base * row.broker_replicas
+
+
+    # row["average_power"] = row["average_power"] - idle_power
+    # if row.average_power < 0:
+    #     row["energy_cost"] = 0
+    #     return row
+    energy_cost = row["average_power"] / row["throughput_MBps"]
+    # energy_cost = 1 / energy_cost
+    row["energy_cost"] = energy_cost
+
+    return row
+
+
 def convert_broker_cpu(row: pd.Series):
     """Convert the broker cpu from a string to an integer"""
-    broker_cpu = row["broker_cpu"]
-    if broker_cpu:
-        row["broker_cpu"] = int(broker_cpu)
-    return row
+    try:
+        row["broker_cpu"] = int(row["broker_cpu"])
+        return row
+    except:
+        return row
 
 
 def enrich_dataframe(df):
     calculations = [
         calculate_observed_throughput,
-        # calculate_throughput_gap,
-        calculate_latency,
+        # calculate_latency,
         calculate_average_power,
         calculate_throughput_MBps,
-        calculate_disk_throughput,
-        calculate_disk_utilization,
+        # calculate_disk_throughput,
+        # calculate_disk_utilization,
         calculate_throughput_per_watt,
-        convert_broker_cpu,
-        calculate_network_saturation,
+        calculate_energy_cost,
+        # calculate_network_saturation,
+        # calculate_throughput_gap,
+        # convert_broker_cpu,
     ]
 
     for calc in calculations:
-        df = df.apply(calc, axis=1)
+        try:
+            # Process one calculation at a time
+            print(f"Running calculation: {calc.__name__}")
+            df = df.apply(lambda row: safe_calculate(row, calc), axis=1)
+        except Exception as e:
+            print(f"Error in calculation {calc.__name__}: {str(e)}")
 
     return df
+
+
+def safe_calculate(row, calculation):
+    try:
+        return calculation(row)
+    except Exception as e:
+        print(f"Error in row {row.name} for {calculation.__name__}:")
+        print(f"Error message: {str(e)}")
+        print("Row data:")
+        print(row.to_dict())
+        # Return the original row unchanged
+        return row

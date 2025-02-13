@@ -36,7 +36,7 @@ class Experiment(Persistent):
         # stopped_ts: Optional[str] = None,
         # experiment_metadata: Optional[Dict[str, Any]] = None,
         # _id: Optional[ObjectId] = ObjectId(),
-        **kwargs
+        **kwargs,
     ):
         from .deployment import Deployment
         from .factors import factors
@@ -177,7 +177,6 @@ class Experiment(Persistent):
         # self.results["avg_host_power"] = joules / duration
         self.experiment_metadata["results"] = self.results
 
-
     def to_dict(self) -> dict:
         self.calculate_results()
         metadata = self.experiment_metadata
@@ -200,11 +199,12 @@ class Experiment(Persistent):
             "broker_cpu",
             "broker_mem",
             "cluster",
-            "bw",
+            # "bw",
             "broker_replicas",
-            "cluster",
             "partitions",
-            "replicationFactor"
+            "replicationFactor",
+            "producer_instances",
+            # "consumer_instances",
         ]
 
         result = {
@@ -223,6 +223,13 @@ class Experiment(Persistent):
                 filtered_params[param] = params[param]
             elif param in desc_params:
                 filtered_params[f"{param}"] = desc_params[param]
+
+        if filtered_params["cluster"] == "ovhnvme":
+            filtered_params["num_broker_nodes"] = 3
+        else:
+            filtered_params["num_broker_nodes"] = len(
+                self.experiment_metadata.deployment_metadata.ansible_inventory.all.children.broker.hosts
+            )
 
         return {**result, **filtered_params}
 

@@ -249,16 +249,21 @@ def stress_test(target_load: float, exp_description="Stress Test") -> float:
     reinit_prometheus(
         extra_vars["deployment_started_ts"], extra_vars["experiment_started_ts"]
     )
-    create_kafka_topic(extra_vars)
+    if target_load != 0:
+        create_kafka_topic(extra_vars)
 
-    deploy_hammer_with_consumer(extra_vars)
+        deploy_hammer_with_consumer(extra_vars)
 
-    # Let the metrics get scraped before deleting the kafka topic
-    time.sleep(15)
-    scale_prometheus(0)
+        # Let the metrics get scraped before deleting the kafka topic
+        time.sleep(15)
+        scale_prometheus(0)
 
-    delete_kafka_topic(extra_vars)
-    g.end_exp()
+        delete_kafka_topic(extra_vars)
+        g.end_exp()
 
-    last_throughput = get_observed_throughput_of_last_experiment(minimum_current_ts=now)
-    return last_throughput
+        last_throughput = get_observed_throughput_of_last_experiment(minimum_current_ts=now)
+        return last_throughput
+    else:
+        time.sleep(extra_vars.exp_params.durationSeconds)
+        scale_prometheus(0)
+        g.end_exp()

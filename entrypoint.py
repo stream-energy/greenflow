@@ -85,9 +85,9 @@ def load_gin(exp_name="ingest-redpanda", test=False):
             # "g5k/montcalm.gin",
             # "g5k/chirop.gin",
             # "g5k/neowise.gin",
-            # "g5k/taurus.gin",
+            "g5k/taurus.gin",
             # "g5k/gros.gin",
-            "g5k/grappe.gin",
+            # "g5k/grappe.gin",
             # "g5k/chiclet.gin",
             f"{exp_name}.gin",
         ]
@@ -109,6 +109,7 @@ def rebind_parameters(**kwargs):
         "brokerCpu": "broker_cpu/macro.value",
         "brokerReplicas": "greenflow.factors.exp_params.broker_replicas",
         "brokerMem": "greenflow.factors.exp_params.broker_mem",
+        "replicationFactor": "greenflow.factors.exp_params.replicationFactor",
     }
 
     with gin.unlock_config():
@@ -133,6 +134,7 @@ def ingest_set(exp_description, **kwargs):
         proportionality,
         smoketest,
         partitioning,
+        idle,
     )
 
     if "scalingBehaviour=true" in exp_description:
@@ -148,6 +150,8 @@ def ingest_set(exp_description, **kwargs):
         smoketest(exp_description)
     elif "partitioning=true" in exp_description:
         partitioning(exp_description)
+    elif "idle=true" in exp_description:
+        idle(exp_description)
 
 
 @click.command("setup")
