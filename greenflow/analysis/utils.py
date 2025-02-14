@@ -35,13 +35,18 @@ def get_observed_throughput_of_last_experiment(
 
 def full_analytical_pipeline_nocache(
     *,
-    cutoff_begin,
-    cutoff_end,
+    cutoff_begin=None,
+    cutoff_end=None,
     cluster=None,
     type=None,
     **kwargs,
 ):
     import greenflow
+    if not cutoff_begin:
+        cutoff_begin = pendulum.now().subtract(years=1).to_iso8601_string()
+    if not cutoff_end:
+        cutoff_end = pendulum.now().to_iso8601_string()
+
 
     if greenflow.g.g.storage_type == "tinydb":
         experiments = get_experiments()
@@ -226,7 +231,7 @@ def calculate_throughput_MBps(row: pd.Series):
     """
     Calculate the throughput in megabytes per second (MBps).
     """
-    messageSize_bytes = row.get("messageSize", 1024)  # Default to 1KB if not specified
+    messageSize_bytes = row.get("messageSize", 0)
     observed_throughput_messages = row.get("observed_throughput", 0)
 
     mbps = (
@@ -234,6 +239,7 @@ def calculate_throughput_MBps(row: pd.Series):
     )  # Convert bytes to MBps
 
     row["throughput_MBps"] = mbps
+    row["adjusted_network_throughput"] = row["throughput_MBps"] * 1.38 * 8 / 1024
     return row
 
 
@@ -390,6 +396,8 @@ def calculate_energy_cost(row: pd.Series):
             idle_power_base = 19.9
         elif row.exp_name == "ingest-kafka":
             idle_power_base = 20.5
+    elif row.cluster == "ecotype":
+        idle_power_base = 28.3
 
     idle_power = idle_power_base * (row.num_broker_nodes - row.broker_replicas)
 
@@ -417,14 +425,14 @@ def convert_broker_cpu(row: pd.Series):
 def enrich_dataframe(df):
     calculations = [
         calculate_observed_throughput,
-        # calculate_latency,
+        calculate_latency,
         calculate_average_power,
         calculate_throughput_MBps,
         # calculate_disk_throughput,
         # calculate_disk_utilization,
-        calculate_throughput_per_watt,
+        # calculate_throughput_per_watt,
         calculate_energy_cost,
-        # calculate_network_saturation,
+        calculate_network_saturation,
         # calculate_throughput_gap,
         # convert_broker_cpu,
     ]

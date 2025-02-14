@@ -49,6 +49,15 @@ class Experiment(Persistent):
         exp_name = kwargs.exp_name
         experiment_description = kwargs.experiment_description
 
+        # Handle experiment type which is a string within experiment_description "type=true"
+
+        # import re
+        # match = re.search(r'(\w+)=true', experiment_description)
+        # if match:
+        #     self.type = match.group(1)
+
+
+
         from .g import g
 
         self.exp_name = exp_name
@@ -204,7 +213,7 @@ class Experiment(Persistent):
             "partitions",
             "replicationFactor",
             "producer_instances",
-            # "consumer_instances",
+            "consumer_instances",
         ]
 
         result = {

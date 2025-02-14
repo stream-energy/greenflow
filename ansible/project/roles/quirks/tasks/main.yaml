@@ -33,9 +33,16 @@
     enabled: false
 - name: Install Docker
   tags: [always]
+  when: "'ecotype' not in inventory_hostname"
   shell:
     cmd: /grid5000/code/bin/g5k-setup-docker -t
     # cmd: curl -sSL https://get.docker.com/ | sh -s -- --version 24
+- name: Install Docker
+  tags: [always]
+  when: "'ecotype' in inventory_hostname"
+  shell:
+    # cmd: /grid5000/code/bin/g5k-setup-docker -t
+    cmd: curl -sSL https://get.docker.com/ | sh -s -- --version 24
 
 - name: Setup tmpfs for /var/lib/docker and /var/lib/rancher
   when: "'impossible' in inventory_hostname"
@@ -54,7 +61,7 @@
         cmd: mount -t tmpfs -o size=100G none /var/lib/rancher
 
 - name: Temporary mount points
-  when: "'chiclet' in inventory_hostname or 'montcalm' in inventory_hostname or 'neowise' in inventory_hostname or 'chirop' in inventory_hostname or 'taurus' in inventory_hostname or 'gros' in inventory_hostname or 'grappe' in inventory_hostname"
+  when: "'chiclet' in inventory_hostname or 'montcalm' in inventory_hostname or 'neowise' in inventory_hostname or 'chirop' in inventory_hostname or 'taurus' in inventory_hostname or 'gros' in inventory_hostname or 'grappe' in inventory_hostname or 'ecotype' in inventory_hostname"
   block:
     - name: Create all directories
       command:
