@@ -33,27 +33,29 @@ def idle(exp_description) -> None:
     send_notification("Idle test complete.")
 
 def baseline(exp_description) -> None:
+    rep = 3
     for exp_name in ["ingest-kafka", "ingest-redpanda"]:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
 
         from ..g import g
         with ctx_manager():
-            # rebind_parameters(partitions=1, consumerInstances=1, producerInstances=1)
-            # stress_test(
-            #     target_load=10**9,
-            #     exp_description=exp_description,
-            # )
-            rebind_parameters(partitions=1, consumerInstances=10, producerInstances=10)
-            stress_test(
-                target_load=10**9,
-                exp_description=exp_description,
-            )
-            rebind_parameters(partitions=30, consumerInstances=10, producerInstances=10)
-            stress_test(
-                target_load=10**9,
-                exp_description=exp_description,
-            )
+            for _ in range(rep):
+                rebind_parameters(partitions=1, consumerInstances=10, producerInstances=10)
+                stress_test(
+                    target_load=10**9,
+                    exp_description=exp_description,
+                )
+                rebind_parameters(partitions=1200, consumerInstances=10, producerInstances=10)
+                stress_test(
+                    target_load=10**9,
+                    exp_description=exp_description,
+                )
+                rebind_parameters(partitions=30, consumerInstances=10, producerInstances=10)
+                stress_test(
+                    target_load=10**9,
+                    exp_description=exp_description,
+                )
 
     send_notification("Idle test complete.")
 

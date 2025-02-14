@@ -239,7 +239,7 @@ def calculate_throughput_MBps(row: pd.Series):
     )  # Convert bytes to MBps
 
     row["throughput_MBps"] = mbps
-    row["adjusted_network_throughput"] = row["throughput_MBps"] * 1.38 * 8 / 1024
+    row["adjusted_network_throughput"] = row["throughput_MBps"] * 1.38 * row.replicationFactor
     return row
 
 
@@ -398,6 +398,8 @@ def calculate_energy_cost(row: pd.Series):
             idle_power_base = 20.5
     elif row.cluster == "ecotype":
         idle_power_base = 28.3
+    elif row.cluster == "parasilo":
+        idle_power_base = 28.3
 
     idle_power = idle_power_base * (row.num_broker_nodes - row.broker_replicas)
 
@@ -440,7 +442,7 @@ def enrich_dataframe(df):
     for calc in calculations:
         try:
             # Process one calculation at a time
-            print(f"Running calculation: {calc.__name__}")
+            # print(f"Running calculation: {calc.__name__}")
             df = df.apply(lambda row: safe_calculate(row, calc), axis=1)
         except Exception as e:
             print(f"Error in calculation {calc.__name__}: {str(e)}")
