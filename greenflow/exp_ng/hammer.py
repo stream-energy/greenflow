@@ -259,6 +259,7 @@ def stress_test(target_load: float, exp_description="Stress Test") -> float:
         scale_prometheus(0)
 
         delete_kafka_topic(extra_vars)
+        time.sleep(15)
         g.end_exp()
 
         last_throughput = get_observed_throughput_of_last_experiment(minimum_current_ts=now)
