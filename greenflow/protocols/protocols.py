@@ -156,15 +156,14 @@ def run_single_hammer(exp_name, *, exp_description, **params):
             logging.error(f"Error during cleanup: {str(cleanup_error)}")
 
 def partitioning(exp_description) -> None:
-    # partitions = [1, 3, 9, 30, 120, 300, 600]
-    partitions = [900, 1500, 3000]
+    partitions = [1, 3, 9, 30, 120, 300, 600, 900, 1500, 3000]
     exp_name = "ingest-kafka"
     load_gin(exp_name)
     rep = 3
     with kafka_context():
         for partition in partitions:
             for _ in range(rep):
-                rebind_parameters(partitions=partition, consumerInstances=10, producerInstances=10)
+                rebind_parameters(partitions=partition, consumerInstances=0, producerInstances=10)
                 stress_test(
                     target_load=1 * 10**9,
                     exp_description=exp_description,
@@ -175,7 +174,7 @@ def partitioning(exp_description) -> None:
     with redpanda_context():
         for partition in partitions:
             for _ in range(rep):
-                rebind_parameters(partitions=partition, consumerInstances=10, producerInstances=10)
+                rebind_parameters(partitions=partition, consumerInstances=0, producerInstances=10)
                 stress_test(
                     target_load=1 * 10**9,
                     exp_description=exp_description,
