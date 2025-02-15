@@ -51,11 +51,11 @@ def baseline(exp_description) -> None:
                     target_load=10**9,
                     exp_description=exp_description,
                 )
-                rebind_parameters(partitions=30, consumerInstances=10, producerInstances=10)
-                stress_test(
-                    target_load=10**9,
-                    exp_description=exp_description,
-                )
+                # rebind_parameters(partitions=30, consumerInstances=10, producerInstances=10)
+                # stress_test(
+                #     target_load=10**9,
+                #     exp_description=exp_description,
+                # )
 
     send_notification("Idle test complete.")
 

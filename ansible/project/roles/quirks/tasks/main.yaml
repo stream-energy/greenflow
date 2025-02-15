@@ -33,13 +33,13 @@
     enabled: false
 - name: Install Docker
   tags: [always]
-  when: "'ecotype' not in inventory_hostname"
+  # when: "'ecotype' not in inventory_hostname"
   shell:
-    cmd: /grid5000/code/bin/g5k-setup-docker -t
-    # cmd: curl -sSL https://get.docker.com/ | sh -s -- --version 24
+    # cmd: /grid5000/code/bin/g5k-setup-docker -t
+    cmd: curl -sSL https://get.docker.com/ | sh -s -- --version 24
 - name: Install Docker
   tags: [always]
-  when: "'ecotype' in inventory_hostname"
+  when: "'ns32373' in inventory_hostname"
   shell:
     # cmd: /grid5000/code/bin/g5k-setup-docker -t
     cmd: curl -sSL https://get.docker.com/ | sh -s -- --version 24

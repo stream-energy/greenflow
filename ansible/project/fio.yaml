@@ -3,11 +3,25 @@
   # gather_facts: true
   become: true
   tasks:
+    - name: Create network interface configuration
+      template:
+        src: interfaces_vrack.yaml.j2
+        dest: /etc/network/interfaces.d/vrack
+        mode: 0600
+      when: ansible_facts['distribution'] == 'Debian'
+
+    - name: Restart networking service
+      service:
+        name: networking
+        state: restarted
+      when: ansible_facts['distribution'] == 'Debian'
+
     - name: Create Netplan configuration for enp10s0f1
       template:
         src: netplan_vrack.yaml.j2
         dest: /etc/netplan/51-netplan_vrack.yaml
         mode: 0600
+      when: ansible_facts['distribution'] == 'Ubuntu'
 
     - name: Apply Netplan configuration
       command: netplan apply
