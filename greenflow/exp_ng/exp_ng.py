@@ -65,49 +65,34 @@ def create_job(extra_vars) -> Job:
                                 "args": [
                                     "-c",
                                     f"""
-                                    # Function to check if topic exists and is not marked for deletion
-                                    check_topic() {{
-                                        /opt/kafka/bin/kafka-topics.sh {' '.join(check_topic_args)}
-                                        return $?
-                                    }}
-
-                                    # Wait for topic to be fully deleted if it exists and is marked for deletion
-                                    MAX_ATTEMPTS=30  # 30 * 2 seconds = 60 seconds total wait time
-                                    ATTEMPT=0
+                                    NUM_ATTEMPTS=40
+                                    SLEEP_SECONDS=3
                                     
-                                    while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-                                        if ! check_topic; then
-                                            echo "Topic does not exist or is fully deleted. Proceeding with creation..."
-                                            break
-                                        fi
-                                        
-                                        echo "Waiting for topic to be fully deleted... (attempt $ATTEMPT)"
-                                        sleep 2
-                                        ATTEMPT=$((ATTEMPT + 1))
-                                    done
-
-                                    if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-                                        echo "Timeout waiting for topic deletion"
-                                        exit 1
-                                    fi
-
-                                    # Create the topic
-                                    /opt/kafka/bin/kafka-topics.sh {' '.join(create_topic_args)}
-                                    
-                                    # Verify topic was created successfully
-                                    VERIFY_ATTEMPTS=0
-                                    while [ $VERIFY_ATTEMPTS -lt 30 ]; do
-                                        if check_topic; then
-                                            echo "Topic 'input' created and verified successfully"
+                                    for i in $(seq 1 $NUM_ATTEMPTS); do
+                                        echo "Executing: /opt/kafka/bin/kafka-topics.sh {' '.join(check_topic_args)}"
+                                        if /opt/kafka/bin/kafka-topics.sh {' '.join(check_topic_args)} 2>/dev/null; then
+                                            echo "Topic 'input' already exists."
                                             exit 0
                                         fi
-                                        echo "Waiting for topic to be fully created..."
-                                        sleep 2
-                                        VERIFY_ATTEMPTS=$((VERIFY_ATTEMPTS + 1))
+                                        
+                                        echo "Executing: /opt/kafka/bin/kafka-topics.sh {' '.join(create_topic_args)}"
+                                        output=$(/opt/kafka/bin/kafka-topics.sh {' '.join(create_topic_args)} 2>&1)
+                                        status=$?
+                                        if [ $status -eq 0 ]; then
+                                            echo "Topic created successfully"
+                                            exit 0
+                                        elif echo "$output" | grep -q "marked for deletion"; then
+                                            echo "Topic is marked for deletion, attempt $i of $NUM_ATTEMPTS. Waiting $SLEEP_SECONDS seconds..."
+                                            sleep $SLEEP_SECONDS
+                                            continue
+                                        else
+                                            echo "Failed to create topic: $output"
+                                            exit 1
+                                        fi
                                     done
-
-                                    echo "Failed to verify topic creation"
+                                    echo "Failed after $NUM_ATTEMPTS attempts - topic still marked for deletion"
                                     exit 1
+
                                     """,
                                 ],
                             }
