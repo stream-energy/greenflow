@@ -17,12 +17,14 @@ from greenflow.exp_ng.prometheus import reinit_prometheus, scale_prometheus
 from ..state import get_deployment_state_vars, get_experiment_state_vars
 from ..factors import factors
 
+
 def idle(exp_description) -> None:
     for exp_name in ["ingest-kafka", "ingest-redpanda"]:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
 
         from ..g import g
+
         with ctx_manager():
             rebind_parameters(durationSeconds=300)
             stress_test(
@@ -32,6 +34,7 @@ def idle(exp_description) -> None:
 
     send_notification("Idle test complete.")
 
+
 def baseline(exp_description) -> None:
     rep = 3
     for exp_name in ["ingest-kafka", "ingest-redpanda"]:
@@ -39,6 +42,7 @@ def baseline(exp_description) -> None:
         load_gin(exp_name)
 
         from ..g import g
+
         with ctx_manager():
             for _ in range(rep):
                 # rebind_parameters(partitions=1, consumerInstances=0, producerInstances=10)
@@ -46,7 +50,9 @@ def baseline(exp_description) -> None:
                 #     target_load=10**9,
                 #     exp_description=exp_description,
                 # )
-                rebind_parameters(partitions=1200, consumerInstances=0, producerInstances=10)
+                rebind_parameters(
+                    partitions=1200, consumerInstances=0, producerInstances=10
+                )
                 stress_test(
                     target_load=10**9,
                     exp_description=exp_description,
@@ -58,6 +64,7 @@ def baseline(exp_description) -> None:
                 # )
 
     send_notification("Idle test complete.")
+
 
 def smoketest(exp_description) -> None:
     for exp_name in ["ingest-kafka", "ingest-redpanda"]:
@@ -83,6 +90,7 @@ def smoketest(exp_description) -> None:
             )
             print("Observed max throughput: ", max_throughput)
     send_notification("Smoketest complete.")
+
 
 def system(exp_description) -> None:
     rep = 3
@@ -155,15 +163,29 @@ def run_single_hammer(exp_name, *, exp_description, **params):
         except Exception as cleanup_error:
             logging.error(f"Error during cleanup: {str(cleanup_error)}")
 
+
 def partitioning(exp_description) -> None:
-    partitions = [1, 3, 9, 30, 120, 300, 600, 900, 1500, 3000]
+    partitions = [
+        # 1,
+        # 3,
+        # 9,
+        # 30,
+        # 120,
+        # 300,
+        # 600,
+        # 900,
+        # 1500,
+        3000,
+    ]
     exp_name = "ingest-kafka"
     load_gin(exp_name)
     rep = 3
     with kafka_context():
         for partition in partitions:
             for _ in range(rep):
-                rebind_parameters(partitions=partition, consumerInstances=0, producerInstances=10)
+                rebind_parameters(
+                    partitions=partition, consumerInstances=0, producerInstances=10
+                )
                 stress_test(
                     target_load=1 * 10**9,
                     exp_description=exp_description,
@@ -174,13 +196,16 @@ def partitioning(exp_description) -> None:
     with redpanda_context():
         for partition in partitions:
             for _ in range(rep):
-                rebind_parameters(partitions=partition, consumerInstances=0, producerInstances=10)
+                rebind_parameters(
+                    partitions=partition, consumerInstances=0, producerInstances=10
+                )
                 stress_test(
                     target_load=1 * 10**9,
                     exp_description=exp_description,
                 )
 
     send_notification("Experiment complete. On to the next.")
+
 
 def scaling_behaviour(exp_description) -> None:
     brokerReplicaList = list(range(3, 9))
@@ -190,7 +215,7 @@ def scaling_behaviour(exp_description) -> None:
     rep = 3
 
     for replicas in brokerReplicaList:
-        rebind_parameters(partitions = replicas * 10, brokerReplicas=replicas)
+        rebind_parameters(partitions=replicas * 10, brokerReplicas=replicas)
         with kafka_context():
             for _ in range(rep):
                 stress_test(
@@ -202,7 +227,7 @@ def scaling_behaviour(exp_description) -> None:
     load_gin(exp_name)
     rebind_parameters(consumerInstances=10, producerInstances=10, replicationFactor=3)
     for replicas in brokerReplicaList:
-        rebind_parameters(partitions = replicas * 10, brokerReplicas=replicas)
+        rebind_parameters(partitions=replicas * 10, brokerReplicas=replicas)
         with redpanda_context():
             for _ in range(rep):
                 stress_test(

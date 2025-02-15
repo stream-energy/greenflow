@@ -65,12 +65,49 @@ def create_job(extra_vars) -> Job:
                                 "args": [
                                     "-c",
                                     f"""
-                                    if /opt/kafka/bin/kafka-topics.sh {' '.join(check_topic_args)} > /dev/null 2>&1; then
-                                        echo "Topic 'input' already exists."
-                                        exit 0
-                                    else
-                                        /opt/kafka/bin/kafka-topics.sh {' '.join(create_topic_args)}
+                                    # Function to check if topic exists and is not marked for deletion
+                                    check_topic() {{
+                                        /opt/kafka/bin/kafka-topics.sh {' '.join(check_topic_args)}
+                                        return $?
+                                    }}
+
+                                    # Wait for topic to be fully deleted if it exists and is marked for deletion
+                                    MAX_ATTEMPTS=30  # 30 * 2 seconds = 60 seconds total wait time
+                                    ATTEMPT=0
+                                    
+                                    while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+                                        if ! check_topic; then
+                                            echo "Topic does not exist or is fully deleted. Proceeding with creation..."
+                                            break
+                                        fi
+                                        
+                                        echo "Waiting for topic to be fully deleted... (attempt $ATTEMPT)"
+                                        sleep 2
+                                        ATTEMPT=$((ATTEMPT + 1))
+                                    done
+
+                                    if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+                                        echo "Timeout waiting for topic deletion"
+                                        exit 1
                                     fi
+
+                                    # Create the topic
+                                    /opt/kafka/bin/kafka-topics.sh {' '.join(create_topic_args)}
+                                    
+                                    # Verify topic was created successfully
+                                    VERIFY_ATTEMPTS=0
+                                    while [ $VERIFY_ATTEMPTS -lt 30 ]; do
+                                        if check_topic; then
+                                            echo "Topic 'input' created and verified successfully"
+                                            exit 0
+                                        fi
+                                        echo "Waiting for topic to be fully created..."
+                                        sleep 2
+                                        VERIFY_ATTEMPTS=$((VERIFY_ATTEMPTS + 1))
+                                    done
+
+                                    echo "Failed to verify topic creation"
+                                    exit 1
                                     """,
                                 ],
                             }
