@@ -41,12 +41,12 @@ def baseline(exp_description) -> None:
         from ..g import g
         with ctx_manager():
             for _ in range(rep):
-                rebind_parameters(partitions=1, consumerInstances=10, producerInstances=10)
-                stress_test(
-                    target_load=10**9,
-                    exp_description=exp_description,
-                )
-                rebind_parameters(partitions=1200, consumerInstances=10, producerInstances=10)
+                # rebind_parameters(partitions=1, consumerInstances=0, producerInstances=10)
+                # stress_test(
+                #     target_load=10**9,
+                #     exp_description=exp_description,
+                # )
+                rebind_parameters(partitions=1200, consumerInstances=0, producerInstances=10)
                 stress_test(
                     target_load=10**9,
                     exp_description=exp_description,
