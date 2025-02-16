@@ -239,7 +239,7 @@ def calculate_throughput_MBps(row: pd.Series):
     )  # Convert bytes to MBps
 
     row["throughput_MBps"] = mbps
-    row["adjusted_network_throughput"] = row["throughput_MBps"] * 1.38 * row.replicationFactor
+    row["adjusted_network_throughput"] = row["throughput_MBps"] * 1.45 * (row.replicationFactor - 1)
     return row
 
 

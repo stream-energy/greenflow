@@ -166,15 +166,15 @@ def run_single_hammer(exp_name, *, exp_description, **params):
 
 def partitioning(exp_description) -> None:
     partitions = [
-        # 1,
-        # 3,
-        # 9,
-        # 30,
-        # 120,
-        # 300,
-        # 600,
-        # 900,
-        # 1500,
+        1,
+        3,
+        9,
+        30,
+        120,
+        300,
+        600,
+        900,
+        1500,
         3000,
     ]
     exp_name = "ingest-kafka"
@@ -211,7 +211,7 @@ def scaling_behaviour(exp_description) -> None:
     brokerReplicaList = list(range(3, 9))
     exp_name = "ingest-kafka"
     load_gin(exp_name)
-    rebind_parameters(consumerInstances=10, producerInstances=10, replicationFactor=3)
+    rebind_parameters(consumerInstances=0, producerInstances=10, replicationFactor=3)
     rep = 3
 
     for replicas in brokerReplicaList:
@@ -225,7 +225,7 @@ def scaling_behaviour(exp_description) -> None:
 
     exp_name = "ingest-redpanda"
     load_gin(exp_name)
-    rebind_parameters(consumerInstances=10, producerInstances=10, replicationFactor=3)
+    rebind_parameters(consumerInstances=0, producerInstances=10, replicationFactor=3)
     for replicas in brokerReplicaList:
         rebind_parameters(partitions=replicas * 10, brokerReplicas=replicas)
         with redpanda_context():

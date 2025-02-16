@@ -1,0 +1,4 @@
+greenflow.g5k.G5KPlatform.get_conf.site = "rennes"
+greenflow.g5k.G5KPlatform.get_conf.cluster = "paradoxe"
+
+greenflow.g5k.G5KPlatform.get_conf.walltime = "2:35:00"
