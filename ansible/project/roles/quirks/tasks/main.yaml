@@ -61,7 +61,7 @@
         cmd: mount -t tmpfs -o size=100G none /var/lib/rancher
 
 - name: Temporary mount points
-  when: "'chiclet' in inventory_hostname or 'montcalm' in inventory_hostname or 'neowise' in inventory_hostname or 'chirop' in inventory_hostname or 'taurus' in inventory_hostname or 'gros' in inventory_hostname or 'grappe' in inventory_hostname or 'ecotype' in inventory_hostname or 'paravance' in inventory_hostname"
+  when: "'chiclet' in inventory_hostname or 'montcalm' in inventory_hostname or 'neowise' in inventory_hostname or 'chirop' in inventory_hostname or 'taurus' in inventory_hostname or 'gros' in inventory_hostname or 'grappe' in inventory_hostname or 'ecotype' in inventory_hostname or 'paravance' in inventory_hostname or 'parasilo' in inventory_hostname"
   block:
     - name: Create all directories
       command:
@@ -194,72 +194,72 @@
         fstype: ext4
         state: mounted
 
-- name: Parasilo cluster quirks
-  when: "'parasilo' in inventory_hostname"
-  block:
-    # - name: Find the hard disk that has less than 300GB
-    #   shell: "lsblk -b | grep disk | awk '{print $4}' | sort -n | head -n 1"
-    #   register: disk_size
+# - name: Parasilo cluster quirks
+#   when: "'parasilo' in inventory_hostname"
+#   block:
+#     # - name: Find the hard disk that has less than 300GB
+#     #   shell: "lsblk -b | grep disk | awk '{print $4}' | sort -n | head -n 1"
+#     #   register: disk_size
 
-    - name: Set src variable to this disk
-      set_fact:
-        src_dev: /dev/sdf
+#     - name: Set src variable to this disk
+#       set_fact:
+#         src_dev: /dev/sdf
 
-    - name: Unmount partitions on {{ src_dev }}
-      command:
-        cmd: umount -l {{ src_dev }}1
-      ignore_errors: true
-    - name: Unmount partitions on {{ src_dev }}
-      command:
-        cmd: umount -l {{ src_dev }}2
-      ignore_errors: true
+#     - name: Unmount partitions on {{ src_dev }}
+#       command:
+#         cmd: umount -l {{ src_dev }}1
+#       ignore_errors: true
+#     - name: Unmount partitions on {{ src_dev }}
+#       command:
+#         cmd: umount -l {{ src_dev }}2
+#       ignore_errors: true
 
-    - name: Delete partition table on {{ src_dev }}
-      command:
-        cmd: parted -s {{ src_dev }} mklabel gpt
+#     - name: Delete partition table on {{ src_dev }}
+#       command:
+#         cmd: parted -s {{ src_dev }} mklabel gpt
 
-    - name: Partition {{src_dev}} into two equal parts
-      community.general.parted:
-        device: "{{ src_dev }}"
-        number: "{{ item.number }}"
-        part_start: "{{ item.part_start }}"
-        part_end: "{{ item.part_end }}"
-        state: present
-      loop:
-        - number: 1
-          part_start: 0%
-          part_end: 50%
-        - number: 2
-          part_start: 50%
-          part_end: 100%
+#     - name: Partition {{src_dev}} into two equal parts
+#       community.general.parted:
+#         device: "{{ src_dev }}"
+#         number: "{{ item.number }}"
+#         part_start: "{{ item.part_start }}"
+#         part_end: "{{ item.part_end }}"
+#         state: present
+#       loop:
+#         - number: 1
+#           part_start: 0%
+#           part_end: 50%
+#         - number: 2
+#           part_start: 50%
+#           part_end: 100%
 
-    - name: Wipe filesystem signature
-      command:
-        cmd: wipefs -a {{ src_dev }}1
-    - name: Wipe filesystem signature
-      command:
-        cmd: wipefs -a {{ src_dev }}2
+#     - name: Wipe filesystem signature
+#       command:
+#         cmd: wipefs -a {{ src_dev }}1
+#     - name: Wipe filesystem signature
+#       command:
+#         cmd: wipefs -a {{ src_dev }}2
 
-    - name: Add filesystem 1
-      community.general.filesystem:
-        dev: "{{ src_dev }}1"
-        fstype: ext4
+#     - name: Add filesystem 1
+#       community.general.filesystem:
+#         dev: "{{ src_dev }}1"
+#         fstype: ext4
 
-    - name: Add filesystem 2
-      community.general.filesystem:
-        dev: "{{ src_dev }}2"
-        fstype: ext4
+#     - name: Add filesystem 2
+#       community.general.filesystem:
+#         dev: "{{ src_dev }}2"
+#         fstype: ext4
 
-    - name: Mount first partition to /var/lib/docker
-      ansible.builtin.mount:
-        path: /var/lib/docker
-        src: "{{ src_dev }}1"
-        fstype: ext4
-        state: mounted
+#     - name: Mount first partition to /var/lib/docker
+#       ansible.builtin.mount:
+#         path: /var/lib/docker
+#         src: "{{ src_dev }}1"
+#         fstype: ext4
+#         state: mounted
 
-    - name: Mount second partition to /var/lib/rancher
-      ansible.builtin.mount:
-        path: /var/lib/rancher
-        src: "{{ src_dev }}2"
-        fstype: ext4
-        state: mounted
+#     - name: Mount second partition to /var/lib/rancher
+#       ansible.builtin.mount:
+#         path: /var/lib/rancher
+#         src: "{{ src_dev }}2"
+#         fstype: ext4
+#         state: mounted
