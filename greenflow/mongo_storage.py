@@ -235,9 +235,13 @@ class Experiment(Persistent):
 
         if filtered_params["cluster"] == "ovhnvme":
             filtered_params["num_broker_nodes"] = 3
+            filtered_params["num_worker_nodes"] = 1
         else:
             filtered_params["num_broker_nodes"] = len(
                 self.experiment_metadata.deployment_metadata.ansible_inventory.all.children.broker.hosts
+            )
+            filtered_params["num_worker_nodes"] = len(
+                self.experiment_metadata.deployment_metadata.ansible_inventory.all.children.worker.hosts
             )
 
         return {**result, **filtered_params}

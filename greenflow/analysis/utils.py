@@ -239,7 +239,7 @@ def calculate_throughput_MBps(row: pd.Series):
     )  # Convert bytes to MBps
 
     row["throughput_MBps"] = mbps
-    row["adjusted_network_throughput"] = row["throughput_MBps"] * 1.45 * (row.replicationFactor - 1)
+    row["adjusted_network_throughput"] = row["throughput_MBps"] * 1.45 
     return row
 
 
@@ -399,6 +399,8 @@ def calculate_energy_cost(row: pd.Series):
     elif row.cluster == "ecotype":
         idle_power_base = 28.3
     elif row.cluster == "parasilo":
+        idle_power_base = 28.3
+    elif row.cluster == "parasilohdd":
         idle_power_base = 28.3
 
     idle_power = idle_power_base * (row.num_broker_nodes - row.broker_replicas)
