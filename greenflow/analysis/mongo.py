@@ -7,6 +7,7 @@ import pandas as pd
 import pendulum
 from tinydb.table import Document
 
+import time
 import requests
 from prometheus_api_client import MetricRangeDataFrame
 
@@ -48,6 +49,7 @@ def get_observed_throughput_of_last_experiment(
 
     # Since we are using VictoriaMetrics, there's an additional flush required
     requests.get(f"{url}/internal/force_flush")
+    time.sleep(5)
 
     latest_exp = Experiment.from_doc(matching_experiment[0])
     latest_exp = Box(latest_exp.to_dict())
