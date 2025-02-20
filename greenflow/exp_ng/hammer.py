@@ -132,6 +132,16 @@ def exp_hammer_job(extra_vars) -> Job:
                                 "name": "kafka-producer-perf-test",
                                 "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/cp-kafka:7.7.0",
                                 "imagePullPolicy": "IfNotPresent",
+                                "resources": {
+                                    "requests": {
+                                        "cpu": "1",
+                                        "memory": "1Gi"
+                                    },
+                                    "limits": {
+                                        "cpu": "1",
+                                        "memory": "1Gi"
+                                    }
+                                },
                                 "command": [
                                     "/bin/sh",
                                     "-c",
