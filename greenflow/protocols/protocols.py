@@ -184,7 +184,9 @@ def partitioning(exp_description) -> None:
         for partition in partitions:
             for _ in range(rep):
                 rebind_parameters(
-                    partitions=partition, consumerInstances=0, producerInstances=1,
+                    partitions=partition,
+                    consumerInstances=0,
+                    producerInstances=10,
                 )
                 stress_test(
                     target_load=1 * 10**9,
@@ -217,7 +219,11 @@ def scaling_behaviour(exp_description) -> None:
     rebind_parameters(consumerInstances=0)
 
     for replicas in brokerReplicaList:
-        rebind_parameters(partitions=replicas * mult, brokerReplicas=replicas, producerInstances=replicas * mult)
+        rebind_parameters(
+            partitions=replicas * mult,
+            brokerReplicas=replicas,
+            producerInstances=replicas * mult,
+        )
         with kafka_context():
             for _ in range(rep):
                 stress_test(
@@ -230,7 +236,11 @@ def scaling_behaviour(exp_description) -> None:
     rebind_parameters(consumerInstances=0)
 
     for replicas in brokerReplicaList:
-        rebind_parameters(partitions=replicas * mult, brokerReplicas=replicas, producerInstances=replicas * mult)
+        rebind_parameters(
+            partitions=replicas * mult,
+            brokerReplicas=replicas,
+            producerInstances=replicas * mult,
+        )
         with redpanda_context():
             for _ in range(rep):
                 stress_test(
