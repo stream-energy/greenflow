@@ -134,11 +134,11 @@ def exp_hammer_job(extra_vars) -> Job:
                                 "imagePullPolicy": "IfNotPresent",
                                 "resources": {
                                     "requests": {
-                                        "cpu": "1",
+                                        "cpu": "500m",
                                         "memory": "1Gi"
                                     },
                                     "limits": {
-                                        "cpu": "1",
+                                        "cpu": "500m",
                                         "memory": "1Gi"
                                     }
                                 },

@@ -186,7 +186,31 @@ def partitioning(exp_description) -> None:
                 rebind_parameters(
                     partitions=partition,
                     consumerInstances=0,
-                    producerInstances=10,
+                    producerInstances=16,
+                )
+                stress_test(
+                    target_load=1 * 10**9,
+                    exp_description=exp_description,
+                )
+    with kafka_context():
+        for partition in partitions:
+            for _ in range(rep):
+                rebind_parameters(
+                    partitions=partition,
+                    consumerInstances=0,
+                    producerInstances=32,
+                )
+                stress_test(
+                    target_load=1 * 10**9,
+                    exp_description=exp_description,
+                )
+    with kafka_context():
+        for partition in partitions:
+            for _ in range(rep):
+                rebind_parameters(
+                    partitions=partition,
+                    consumerInstances=0,
+                    producerInstances=64,
                 )
                 stress_test(
                     target_load=1 * 10**9,
