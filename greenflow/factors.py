@@ -33,6 +33,7 @@ def exp_params(
     broker_mem: str = gin.REQUIRED,
     broker_io_threads: int = gin.REQUIRED,
     broker_network_threads: int = gin.REQUIRED,
+    broker_replica_fetchers: int = gin.REQUIRED,
 ):
     return {
         "warmupSeconds": warmupSeconds,
@@ -50,4 +51,5 @@ def exp_params(
         "broker_mem": broker_mem,
         "broker_io_threads": broker_io_threads,
         "broker_network_threads": broker_network_threads,
+        "broker_replica_fetchers": broker_replica_fetchers,
     }

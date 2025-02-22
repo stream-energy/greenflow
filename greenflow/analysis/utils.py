@@ -256,7 +256,6 @@ def calculate_observed_throughput(row: pd.Series):
 
     query = f'kminion_kafka_topic_high_water_mark_sum{{namespace="{"redpanda" if "redpanda" in row["exp_name"] else "default"}", topic_name="input", experiment_started_ts="{row["started_ts"]}"}}'
     if row.load == 0:
-        row["observed_throughput"] = 0
         return row
     try:
         data = MetricRangeDataFrame(
@@ -402,6 +401,8 @@ def calculate_energy_cost(row: pd.Series):
         idle_power_base = 28.3
     elif row.cluster == "parasilohdd":
         idle_power_base = 28.3
+    else:
+        idle_power_base = 0
 
     idle_power = idle_power_base * (row.num_broker_nodes - row.broker_replicas)
 

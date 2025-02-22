@@ -15,4 +15,5 @@ greenflow.factors.exp_params.broker_cpu = %broker_cpu
 greenflow.factors.exp_params.broker_replicas = 3
 greenflow.factors.exp_params.broker_io_threads = %broker_cpu
 greenflow.factors.exp_params.broker_network_threads = %broker_cpu
+greenflow.factors.exp_params.broker_replica_fetchers = %broker_cpu
 greenflow.factors.factors.exp_name = "ingest-kafka"

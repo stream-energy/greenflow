@@ -87,7 +87,7 @@ def load_gin(exp_name="ingest-redpanda", test=False):
             # "g5k/chirop.gin",
             # "g5k/neowise.gin",
             # "g5k/taurus.gin",
-            "g5k/ecotype.gin",
+            # "g5k/ecotype.gin",
             # "g5k/gros.gin",
             # "g5k/grappe.gin",
             # "g5k/chiclet.gin",
@@ -120,14 +120,12 @@ def rebind_parameters(**kwargs):
                 logging.warning(dict(msg="Rebinding", key=key, value=value))
                 gin.bind_parameter(parameter_mapping[key], value)
 
-
 @click.command("ingest")
 @click.argument("exp_description", type=str)
-@click.option("--load", type=str)
-@click.option("--messageSize", type=int)
-@click.option("--instances", type=int)
-@click.option("--partitions", type=int)
 def ingest_set(exp_description, **kwargs):
+    _ingest_set(exp_description)
+
+def _ingest_set(exp_description):
     from greenflow.protocols import (
         safety_curve,
         scaling_behaviour,
@@ -161,12 +159,25 @@ def ingest_set(exp_description, **kwargs):
     elif "system=true" in exp_description:
         system(exp_description)
 
+@click.command("srun")
+@click.argument("exp_name", type=str, default="ingest-redpanda")
+@click.option("--workers", type=int, default=1)
+@click.option("--brokers", type=int, default=3)
+@click.argument("exp_description", type=str)
+def setup_and_run(exp_name, exp_description):
+    load_gin(exp_name)
+    setup(exp_name, 1, 3, exp_description)
+    ingest_set(exp_description)
 
 @click.command("setup")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
 @click.option("--workers", type=int, default=1)
 @click.option("--brokers", type=int, default=3)
-def setup(exp_name, workers, brokers):
+@click.argument("exp_description", type=str)
+def setup(exp_name, workers, brokers, exp_description):
+    _setup(exp_name, workers, brokers, exp_description)
+
+def _setup(exp_name, workers, brokers, exp_description):
     load_gin(exp_name=exp_name)
 
     from greenflow import provision
@@ -195,6 +206,7 @@ def setup(exp_name, workers, brokers):
         post_mortem()
 
     send_notification("Setup complete")
+    _ingest_set(exp_description)
 
 
 @click.command("test")

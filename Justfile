@@ -28,6 +28,13 @@ setup *args:
         exit 1
     fi
 
+srun *args:
+    #!/usr/bin/env bash
+    if ! python entrypoint.py srun "$@"; then
+        just send --priority max "❌ Setup failed with args: $@"
+        exit 1
+    fi
+
 test *args:
     python entrypoint.py test "$@"
 

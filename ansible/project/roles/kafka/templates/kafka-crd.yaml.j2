@@ -55,6 +55,7 @@ spec:
       "num.partitions": "1"
       "num.io.threads": "{{exp_params.broker_io_threads}}"
       "num.network.threads": "{{exp_params.broker_network_threads}}"
+      "num.replica.fetchers": "{{exp_params.broker_replica_fetchers}}"
       "default.replication.factor": "1"
       "offsets.topic.replication.factor": "1"
 {% if deployment_type == "production" %}
