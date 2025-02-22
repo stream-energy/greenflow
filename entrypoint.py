@@ -164,9 +164,8 @@ def _ingest_set(exp_description):
 @click.option("--workers", type=int, default=1)
 @click.option("--brokers", type=int, default=3)
 @click.argument("exp_description", type=str)
-def setup_and_run(exp_name, exp_description):
-    load_gin(exp_name)
-    setup(exp_name, 1, 3, exp_description)
+def setup_and_run(exp_name, workers, brokers, exp_description):
+    _setup(exp_name, workers, brokers, exp_description)
     ingest_set(exp_description)
 
 @click.command("setup")
@@ -307,6 +306,7 @@ cli.add_command(tkexp)
 cli.add_command(kexp)
 cli.add_command(test)
 cli.add_command(send)
+cli.add_command(setup_and_run)
 
 
 if __name__ == "__main__":
