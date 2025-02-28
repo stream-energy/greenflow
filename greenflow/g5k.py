@@ -29,15 +29,17 @@ class G5KPlatform(Platform):
         network = en.G5kNetworkConf(type="prod", roles=["my_network"], site=site)
         import logging
 
-        en.init_logging(level=logging.DEBUG)
+        en.init_logging(level=logging.INFO)
 
         return (
             en.G5kConf.from_settings(
                 job_type=["allow_classic_ssh", "exotic"],
                 job_name=job_name,
+                env_name="nixos-test",
                 queue=queue,
                 walltime=walltime,
                 project=project,
+                key="~/.ssh/id_ed25519.pub",
             )
             .add_network_conf(network)
             .add_machine(

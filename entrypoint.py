@@ -49,7 +49,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 
 
-logging.basicConfig(handlers=[handler], level=logging.WARN)
+logging.basicConfig(handlers=[handler], level=logging.DEBUG)
 
 _gin_loaded = {}  # Module-level cache to track loaded configurations
 
@@ -89,7 +89,7 @@ def load_gin(exp_name="ingest-redpanda", test=False):
             # "g5k/taurus.gin",
             # "g5k/ecotype.gin",
             # "g5k/gros.gin",
-            # "g5k/grappe.gin",
+            "g5k/grappe.gin",
             # "g5k/chiclet.gin",
             f"{exp_name}.gin",
         ]
@@ -165,18 +165,17 @@ def _ingest_set(exp_description):
 @click.option("--brokers", type=int, default=3)
 @click.argument("exp_description", type=str)
 def setup_and_run(exp_name, workers, brokers, exp_description):
-    _setup(exp_name, workers, brokers, exp_description)
-    ingest_set(exp_description)
+    _setup(exp_name, workers, brokers)
+    _ingest_set(exp_description)
 
 @click.command("setup")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
 @click.option("--workers", type=int, default=1)
 @click.option("--brokers", type=int, default=3)
-@click.argument("exp_description", type=str)
-def setup(exp_name, workers, brokers, exp_description):
-    _setup(exp_name, workers, brokers, exp_description)
+def setup(exp_name, workers, brokers):
+    _setup(exp_name, workers, brokers)
 
-def _setup(exp_name, workers, brokers, exp_description):
+def _setup(exp_name, workers, brokers):
     load_gin(exp_name=exp_name)
 
     from greenflow import provision
@@ -205,7 +204,6 @@ def _setup(exp_name, workers, brokers, exp_description):
         post_mortem()
 
     send_notification("Setup complete")
-    _ingest_set(exp_description)
 
 
 @click.command("test")
