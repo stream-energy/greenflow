@@ -49,7 +49,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 
 
-logging.basicConfig(handlers=[handler], level=logging.DEBUG)
+logging.basicConfig(handlers=[handler], level=logging.INFO)
 
 _gin_loaded = {}  # Module-level cache to track loaded configurations
 
