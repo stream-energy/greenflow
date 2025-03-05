@@ -36,8 +36,12 @@ def idle(exp_description) -> None:
 
 
 def baseline(exp_description) -> None:
+    exp_names = [
+        "ingest-kafka",
+        # "ingest-redpanda",
+    ]
     rep = 3
-    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+    for exp_name in  exp_names:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
 
@@ -45,16 +49,17 @@ def baseline(exp_description) -> None:
 
         with ctx_manager():
             for _ in range(rep):
-                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=10, replicationFactor=1)
-                stress_test(
-                    target_load=10**9,
-                    exp_description=exp_description,
-                )
-                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=10, replicationFactor=2)
-                stress_test(
-                    target_load=10**9,
-                    exp_description=exp_description,
-                )
+                # rebind_parameters(partitions=1, consumerInstances=0, producerInstances=10, replicationFactor=1)
+                # stress_test(
+                #     target_load=10**9,
+                #     exp_description=exp_description,
+                # )
+                # rebind_parameters(partitions=1, consumerInstances=0, producerInstances=10, replicationFactor=2)
+                # stress_test(
+                #     target_load=10**9,
+                #     exp_description=exp_description,
+                # )
+                rebind_parameters(replicationFactor=3)
                 rebind_parameters(partitions=1, consumerInstances=0, producerInstances=10)
                 stress_test(
                     target_load=10**9,
@@ -67,11 +72,11 @@ def baseline(exp_description) -> None:
                     target_load=10**9,
                     exp_description=exp_description,
                 )
-                rebind_parameters(partitions=30, consumerInstances=10, producerInstances=10)
-                stress_test(
-                    target_load=10**9,
-                    exp_description=exp_description,
-                )
+                # rebind_parameters(partitions=30, consumerInstances=10, producerInstances=10)
+                # stress_test(
+                #     target_load=10**9,
+                #     exp_description=exp_description,
+                # )
 
     send_notification("Idle test complete.")
 
@@ -179,12 +184,12 @@ def partitioning(exp_description) -> None:
         1,
         3,
         9,
-        30,
-        120,
-        300,
-        600,
-        900,
-        1500,
+        48,
+        60,
+        # 300,
+        # 600,
+        # 900,
+        # 1500,
         3000,
     ]
     exp_name = "ingest-kafka"
@@ -202,30 +207,30 @@ def partitioning(exp_description) -> None:
                     target_load=1 * 10**9,
                     exp_description=exp_description,
                 )
-    with kafka_context():
-        for partition in partitions:
-            for _ in range(rep):
-                rebind_parameters(
-                    partitions=partition,
-                    consumerInstances=0,
-                    producerInstances=32,
-                )
-                stress_test(
-                    target_load=1 * 10**9,
-                    exp_description=exp_description,
-                )
-    with kafka_context():
-        for partition in partitions:
-            for _ in range(rep):
-                rebind_parameters(
-                    partitions=partition,
-                    consumerInstances=0,
-                    producerInstances=64,
-                )
-                stress_test(
-                    target_load=1 * 10**9,
-                    exp_description=exp_description,
-                )
+    # with kafka_context():
+    #     for partition in partitions:
+    #         for _ in range(rep):
+    #             rebind_parameters(
+    #                 partitions=partition,
+    #                 consumerInstances=0,
+    #                 producerInstances=32,
+    #             )
+    #             stress_test(
+    #                 target_load=1 * 10**9,
+    #                 exp_description=exp_description,
+    #             )
+    # with kafka_context():
+    #     for partition in partitions:
+    #         for _ in range(rep):
+    #             rebind_parameters(
+    #                 partitions=partition,
+    #                 consumerInstances=0,
+    #                 producerInstances=64,
+    #             )
+    #             stress_test(
+    #                 target_load=1 * 10**9,
+    #                 exp_description=exp_description,
+    #             )
 
     # exp_name = "ingest-redpanda"
     # load_gin(exp_name)
