@@ -66,6 +66,9 @@ def quirks(flavour):
 def deploy_k3s():
     _playbook("deploy_k3s.yaml", get_deployment_state_vars())
 
+def deploy_nos_k3s():
+    _playbook("nos_deploy_k3s.yaml", get_deployment_state_vars() | get_experiment_state_vars() | factors())
+
 
 def run_playbook(playbook_name):
     extra_vars = get_deployment_state_vars() | factors()

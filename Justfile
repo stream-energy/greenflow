@@ -24,14 +24,14 @@ test_message_delivery:
 setup *args:
     #!/usr/bin/env bash
     if ! python entrypoint.py setup "$@"; then
-        just send --priority max "❌ Setup failed with args: $@"
+        just send --priority max "Setup failed with args: $@"
         exit 1
     fi
 
 srun *args:
     #!/usr/bin/env bash
     if ! python entrypoint.py srun "$@"; then
-        just send --priority max "❌ Setup failed with args: $@"
+        just send --priority max "Setup failed with args: $@"
         exit 1
     fi
 

@@ -10,6 +10,7 @@ import gin
 
 from .factors import factors
 from .g5k import G5KPlatform
+from .g5knos import G5KNixOSPlatform
 from .platform import MockPlatform, Platform
 from .playbook import _playbook
 
@@ -54,6 +55,10 @@ def destroy(*, platform=gin.REQUIRED):
             pre_destroy()
             p.teardown()
             post_destroy()
+        case G5KNixOSPlatform():
+            pre_destroy()
+            p.teardown()
+            post_destroy()
 
 
 @gin.configurable
@@ -61,4 +66,6 @@ def killjob(*, platform=gin.REQUIRED):
     p: Platform = platform()
     match p:
         case G5KPlatform():
+            p.teardown()
+        case G5KNixOSPlatform():
             p.teardown()

@@ -1,0 +1,3 @@
+greenflow.g5knos.G5KNixOSPlatform.get_conf.site = "rennes"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.cluster = "parasilo"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.walltime = "1:30:00"

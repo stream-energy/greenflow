@@ -1,0 +1,3 @@
+greenflow.g5knos.G5KNixOSPlatform.get_conf.site = "nantes"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.cluster = "ecotype"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.queue = "default"

@@ -1,0 +1,78 @@
+{% set hostname_parts = inventory_hostname.split('.') %}
+{
+  inputs,
+  lib,
+  pkgs,
+  config,
+  ezModules,
+  ...
+}: let
+  name = "{{ hostname_parts[0] }}";
+  site = "{{ hostname_parts[1] }}";
+
+  # Define primary nameserver based on site
+  primaryNameserver =
+    if site == "nancy"
+    then "172.16.79.106"
+    else if site == "lyon"
+    then "172.16.63.113"
+    else "172.16.63.113";
+
+  nameservers = [primaryNameserver "1.1.1.1"];
+
+  networking = {
+    hostName = name;
+    nameservers = nameservers;
+    search = ["${site}.grid5000.fr" "grid5000.fr"];
+    domain = "${site}.grid5000.fr";
+  };
+  {% if inventory_hostname not in groups['control'] -%}
+    {% set control_hostname = groups['control'][0] %}
+    {% set control_hostname_parts = control_hostname.split('.') %}
+    {% set control_name = control_hostname_parts[0] %}
+    {% set control_site = control_hostname_parts[1] if control_hostname_parts|length > 1 else site %}
+    serverAddr = "https://{{ control_name }}.{{ control_site }}.grid5000.fr:6443";
+  {%- endif %}
+in {
+  imports = [
+    ezModules.g5k
+    ezModules.k3s-overlay
+  ];
+
+  networking = networking;
+
+  lollypops.deployment.ssh = {
+    host = "${name}.${site}.grid5000.fr";
+    user = "root";
+  };
+
+  services.k3s = {
+    {% if inventory_hostname in groups['control'] -%}
+      enable = true;
+      token = "Swoosh-Unhealthy-Capillary9";
+      role = "server";
+      extraFlags = lib.concatStringsSep " " [
+        "--disable traefik"
+        "--tls-san ${name}.${site}.grid5000.fr"
+        "--tls-san ${name}"
+        "--node-name=${name}"
+        # "--docker"
+        "--kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%"
+      ];
+    {%- else -%}
+      enable = true;
+      token = "Swoosh-Unhealthy-Capillary9";
+      role = "agent";
+      serverAddr = serverAddr;
+      extraFlags = lib.concatStringsSep " " [
+        {% if inventory_hostname in groups['broker'] -%}
+          "--node-label=node.kubernetes.io/broker=true"
+        {%- elif inventory_hostname in groups['worker'] -%}
+          "--node-label=node.kubernetes.io/worker=true"
+        {%- endif %}
+        "--node-name=${name}"
+        "--kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%"
+      ];
+    {%- endif %}
+  };
+}

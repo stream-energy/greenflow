@@ -49,34 +49,39 @@ def baseline(exp_description) -> None:
 
         with ctx_manager():
             for _ in range(rep):
-                # rebind_parameters(partitions=1, consumerInstances=0, producerInstances=10, replicationFactor=1)
-                # stress_test(
-                #     target_load=10**9,
-                #     exp_description=exp_description,
-                # )
+                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=24, replicationFactor=1)
+                stress_test(
+                    target_load=10**9,
+                    exp_description=exp_description,
+                )
+                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=24, replicationFactor=3)
+                stress_test(
+                    target_load=10**9,
+                    exp_description=exp_description,
+                )
                 # rebind_parameters(partitions=1, consumerInstances=0, producerInstances=10, replicationFactor=2)
                 # stress_test(
                 #     target_load=10**9,
                 #     exp_description=exp_description,
                 # )
-                rebind_parameters(replicationFactor=3)
-                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=10)
-                stress_test(
-                    target_load=10**9,
-                    exp_description=exp_description,
-                )
-                rebind_parameters(
-                    partitions=1200, consumerInstances=0, producerInstances=10
-                )
-                stress_test(
-                    target_load=10**9,
-                    exp_description=exp_description,
-                )
-                # rebind_parameters(partitions=30, consumerInstances=10, producerInstances=10)
+                # rebind_parameters(replicationFactor=3)
+                # rebind_parameters(partitions=1, consumerInstances=0, producerInstances=24)
                 # stress_test(
                 #     target_load=10**9,
                 #     exp_description=exp_description,
                 # )
+                # rebind_parameters(
+                #     partitions=1200, consumerInstances=0, producerInstances=10
+                # )
+                # stress_test(
+                #     target_load=10**9,
+                #     exp_description=exp_description,
+                # )
+                # # rebind_parameters(partitions=30, consumerInstances=10, producerInstances=10)
+                # # stress_test(
+                # #     target_load=10**9,
+                # #     exp_description=exp_description,
+                # # )
 
     send_notification("Idle test complete.")
 
@@ -181,9 +186,9 @@ def run_single_hammer(exp_name, *, exp_description, **params):
 
 def partitioning(exp_description) -> None:
     partitions = [
-        1,
-        3,
-        9,
+        # 1,
+        # 3,
+        # 9,
         48,
         60,
         # 300,
@@ -250,8 +255,8 @@ def partitioning(exp_description) -> None:
 
 def scaling_behaviour(exp_description) -> None:
     rep = 3
-    mult = 10
-    brokerReplicaList = list(range(3, 9))
+    mult = 20
+    brokerReplicaList = list(range(3, 11))
 
     exp_name = "ingest-kafka"
     load_gin(exp_name)
@@ -261,7 +266,7 @@ def scaling_behaviour(exp_description) -> None:
         rebind_parameters(
             partitions=replicas * mult,
             brokerReplicas=replicas,
-            producerInstances=replicas * mult,
+            producerInstances=24,
         )
         with kafka_context():
             for _ in range(rep):
@@ -270,22 +275,22 @@ def scaling_behaviour(exp_description) -> None:
                     exp_description=exp_description,
                 )
 
-    exp_name = "ingest-redpanda"
-    load_gin(exp_name)
-    rebind_parameters(consumerInstances=0)
+    # exp_name = "ingest-redpanda"
+    # load_gin(exp_name)
+    # rebind_parameters(consumerInstances=0)
 
-    for replicas in brokerReplicaList:
-        rebind_parameters(
-            partitions=replicas * mult,
-            brokerReplicas=replicas,
-            producerInstances=replicas * mult,
-        )
-        with redpanda_context():
-            for _ in range(rep):
-                stress_test(
-                    target_load=1 * 10**9,
-                    exp_description=exp_description,
-                )
+    # for replicas in brokerReplicaList:
+    #     rebind_parameters(
+    #         partitions=replicas * mult,
+    #         brokerReplicas=replicas,
+    #         producerInstances=replicas * mult,
+    #     )
+    #     with redpanda_context():
+    #         for _ in range(rep):
+    #             stress_test(
+    #                 target_load=1 * 10**9,
+    #                 exp_description=exp_description,
+    #             )
 
     send_notification("Experiment complete. On to the next.")
 

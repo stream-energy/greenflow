@@ -1,0 +1,3 @@
+greenflow.g5knos.G5KNixOSPlatform.get_conf.site = "lyon"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.cluster = "taurus"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.queue = "default"

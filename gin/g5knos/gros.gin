@@ -1,0 +1,3 @@
+greenflow.g5knos.G5KNixOSPlatform.get_conf.site = "nancy"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.cluster = "gros"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.queue = "default"

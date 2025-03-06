@@ -29,16 +29,6 @@
       in {
         devenv.shells.default = {
           name = "greenflow";
-          devcontainer = {
-            enable = false;
-            settings.updateContentCommand = "nix develop --impure";
-            settings.customizations.vscode.extensions = [
-              "charliermarsh.ruff"
-              "kamadorueda.alejandra"
-              "mkhl.direnv"
-            ];
-          };
-
           packages = with pkgs; [
             sshpass
             dhall

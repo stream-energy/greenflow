@@ -1,0 +1,3 @@
+greenflow.g5knos.G5KNixOSPlatform.get_conf.site = "lille"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.cluster = "chirop"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.queue = "testing"

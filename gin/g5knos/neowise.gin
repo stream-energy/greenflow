@@ -1,0 +1,3 @@
+greenflow.g5knos.G5KNixOSPlatform.get_conf.site = "lyon"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.cluster = "neowise"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.walltime = "9:45:00"

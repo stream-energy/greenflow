@@ -1,0 +1,193 @@
+img $site $user: 
+    #!/usr/bin/env bash
+    set -e
+    set -x
+    export SITE={{site}} USER={{user}}
+    export FILE_IMAGE_BASEURL=http://public.$SITE.grid5000.fr/~$USER
+    nix build .#nixosConfigurations.g5k-base.config.formats.g5k-image --impure -o /tmp/result
+   
+    PUBLIC_DIR="public/"
+    REMOTE_USER="$USER@$SITE.grid5000.fr"
+
+    JSON_FILE="/tmp/result/g5k-image-info.json"
+
+    echo "Found JSON file at: $JSON_FILE"
+
+    # Parse the JSON file to get paths
+    IMAGE_PATH=$(jq -r '.image' "$JSON_FILE")
+    KAENV_PATH=$(jq -r '.kaenv' "$JSON_FILE")
+    IMAGE_FILENAME=$(basename "$IMAGE_PATH")
+    KAENV_FULL_FILENAME=$(basename "$KAENV_PATH")
+    # Extract the part after the last dash if its a Nix store path
+    if [[ "$KAENV_FULL_FILENAME" =~ ^[a-z0-9]+-(.+)$ ]]; then
+        KAENV_FILENAME="${BASH_REMATCH[1]}"
+    else
+        KAENV_FILENAME="$KAENV_FULL_FILENAME"
+    fi
+
+
+    echo "Syncing $IMAGE_FILENAME and $KAENV_FILENAME to $SITE"
+    ssh "$REMOTE_USER" "mkdir -p $PUBLIC_DIR"
+    rsync -avz --progress "$IMAGE_PATH" "$REMOTE_USER:$PUBLIC_DIR/$IMAGE_FILENAME"
+
+    echo "Uploading kaenv file..."
+    # Upload with the clean filename
+    rsync -avz "$KAENV_PATH" "$REMOTE_USER:$PUBLIC_DIR/$KAENV_FILENAME"
+
+    
+    echo "Registering environment with kaenv3..."
+    ssh "$REMOTE_USER" "kaenv3 -d nixos-x86_64-linux -y" || true
+    ssh "$REMOTE_USER" "kaenv3 -a $PUBLIC_DIR/$KAENV_FILENAME"
+    
+host *args:
+    #!/usr/bin/env bash
+
+    # Function to display usage information
+    usage() {
+        echo "Usage: $0 <command> [options]"
+        echo ""
+        echo "Commands:"
+        echo "  server <hostname> [site]       - Generate server configuration"
+        echo "  worker <hostname> <server> [site] - Generate worker configuration"
+        echo "  broker <hostname> <server> [site] - Generate broker configuration"
+        echo ""
+        echo "Examples:"
+        echo "  $0 server grappe-10 nancy"
+        echo "  $0 worker grappe-11 grappe-10 nancy"
+        echo "  $0 broker grappe-12 grappe-10 nancy"
+        exit 1
+    }
+
+    # Check for minimum arguments
+    if [ $# -lt 2 ]; then
+        usage
+    fi
+
+    command="$1"
+    hostname="$2"
+    output_dir="nixos-configurations"
+    mkdir -p "$output_dir"
+
+    # Generate configuration based on command
+    case "$command" in
+        server)
+            site="${3:-nancy}"
+            output_file="${output_dir}/${hostname}.nix"
+            
+            cat > "$output_file" << EOF
+    {
+      inputs,
+      lib,
+      pkgs,
+      config,
+      ezModules,
+      ...
+    }: let
+      name = "${hostname}";
+      site = "${site}";
+    in {
+      imports = [
+        ezModules.g5k
+        ezModules.k3s-overlay
+      ];
+      networking.hostName = name;
+      services.k3s = {
+        role = "server";
+        extraFlags = lib.concatStringsSep " " [
+          "--disable traefik"
+          "--tls-san \${name}.\${site}.grid5000.fr"
+          "--tls-san \${name}"
+          # "--docker"
+          "--kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%"
+        ];
+      };
+    }
+    EOF
+            echo "Server configuration created at: $output_file"
+            ;;
+            
+        worker)
+            if [ $# -lt 3 ]; then
+                echo "Error: Server hostname is required for worker configuration"
+                usage
+            fi
+            server="$3"
+            site="${4:-nancy}"
+            output_file="${output_dir}/${hostname}.nix"
+            
+            cat > "$output_file" << EOF
+    {
+      inputs,
+      lib,
+      pkgs,
+      config,
+      ezModules,
+      ...
+    }: let
+      name = "${hostname}";
+      serverAddr = "https://${server}.${site}.grid5000.fr:6443";
+    in {
+      imports = [
+        ezModules.g5k
+        ezModules.k3s-overlay
+      ];
+      networking.hostName = name;
+      services.k3s = {
+        role = "agent";
+        serverAddr = serverAddr;
+        extraFlags = lib.concatStringsSep " " [
+          "--node-label=node.kubernetes.io/worker=true"
+          "--node-name=\${name}"
+          "--kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%"
+        ];
+      };
+    }
+    EOF
+            echo "Worker configuration created at: $output_file"
+            ;;
+            
+        broker)
+            if [ $# -lt 3 ]; then
+                echo "Error: Server hostname is required for broker configuration"
+                usage
+            fi
+            server="$3"
+            site="${4:-nancy}"
+            output_file="${output_dir}/${hostname}.nix"
+            
+            cat > "$output_file" << EOF
+    {
+      inputs,
+      lib,
+      pkgs,
+      config,
+      ezModules,
+      ...
+    }: let
+      name = "${hostname}";
+      serverAddr = "https://${server}.${site}.grid5000.fr:6443";
+    in {
+      imports = [
+        ezModules.g5k
+        ezModules.k3s-overlay
+      ];
+      networking.hostName = name;
+      services.k3s = {
+        role = "agent";
+        serverAddr = serverAddr;
+        extraFlags = lib.concatStringsSep " " [
+          "--node-label=node.kubernetes.io/broker=true"
+          "--node-name=\${name}"
+          "--kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%"
+        ];
+      };
+    }
+    EOF
+            echo "Broker configuration created at: $output_file"
+            ;;
+            
+        *)
+            echo "Error: Unknown command '$command'"
+            usage
+            ;;
+    esac

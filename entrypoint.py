@@ -49,7 +49,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 
 
-logging.basicConfig(handlers=[handler], level=logging.INFO)
+logging.basicConfig(handlers=[handler], level=logging.WARN)
 
 _gin_loaded = {}  # Module-level cache to track loaded configurations
 
@@ -79,17 +79,17 @@ def load_gin(exp_name="ingest-redpanda", test=False):
         g = patch_global_g("production")
         config_files = [
             "vmon-defaults.gin",
-            "g5k/defaults.gin",
+            "g5knos/defaults.gin",
             # "g5k/paravance.gin",
             # "g5k/parasilo.gin",
             # "g5k/paradoxe.gin",
             # "g5k/montcalm.gin",
             # "g5k/chirop.gin",
             # "g5k/neowise.gin",
-            # "g5k/taurus.gin",
+            "g5knos/taurus.gin",
             # "g5k/ecotype.gin",
             # "g5k/gros.gin",
-            "g5k/grappe.gin",
+            # "g5k/grappe.gin",
             # "g5k/chiclet.gin",
             f"{exp_name}.gin",
         ]
@@ -183,12 +183,14 @@ def _setup(exp_name, workers, brokers):
     if workers is not None:
         with gin.unlock_config():
             gin.bind_parameter("greenflow.g5k.G5KPlatform.get_conf.num_worker", workers)
+            gin.bind_parameter("greenflow.g5knos.G5KNixOSPlatform.get_conf.num_worker", workers)
     if brokers is not None:
         with gin.unlock_config():
             gin.bind_parameter("greenflow.g5k.G5KPlatform.get_conf.num_broker", brokers)
+            gin.bind_parameter("greenflow.g5knos.G5KNixOSPlatform.get_conf.num_broker", brokers)
     try:
         provision.provision()
-        deploy_k3s()
+        # deploy_k3s()
         p(prometheus)
         p(scaphandre)
         p(strimzi)

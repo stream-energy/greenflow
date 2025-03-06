@@ -1,0 +1,2 @@
+greenflow.g5knos.G5KNixOSPlatform.get_conf.site = "toulouse"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.cluster = "montcalm"
