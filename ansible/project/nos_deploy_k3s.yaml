@@ -1,133 +1,133 @@
 # ---
-# - name: Handle hardware quirks
-#   hosts: all
-#   gather_facts: false
-#   tasks:
-#     - name: Temporary mount points
-#       block:
-#         - name: Create all directories
-#           command:
-#             cmd: sudo mkdir -p {{ item.dir }}
-#           loop:
-#             - dir: /tmp/mounts/docker
-#             - dir: /tmp/mounts/rancher
-#             - dir: /var/lib/docker
-#             - dir: /var/lib/rancher
-#             - dir: /etc/lollypops
-#         - name: Create bind mounts for /var/lib/docker and /var/lib/rancher to /tmp/mounts
-#           command:
-#             cmd: sudo mount --bind {{ item.src }} {{ item.dest }}
-#           loop:
-#             - src: /tmp/mounts/docker
-#               dest: /var/lib/docker
-#             - src: /tmp/mounts/rancher
-#               dest: /var/lib/rancher
+- name: Handle hardware quirks
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Temporary mount points
+      block:
+        - name: Create all directories
+          command:
+            cmd: sudo mkdir -p {{ item.dir }}
+          loop:
+            - dir: /tmp/mounts/docker
+            - dir: /tmp/mounts/rancher
+            - dir: /var/lib/docker
+            - dir: /var/lib/rancher
+            - dir: /etc/lollypops
+        - name: Create bind mounts for /var/lib/docker and /var/lib/rancher to /tmp/mounts
+          command:
+            cmd: sudo mount --bind {{ item.src }} {{ item.dest }}
+          loop:
+            - src: /tmp/mounts/docker
+              dest: /var/lib/docker
+            - src: /tmp/mounts/rancher
+              dest: /var/lib/rancher
 
 
-# - name: Generate Nix Configuration Files
-#   hosts: all
-#   gather_facts: false
-#   vars:
-#     # output_dir: "{{ playbook_dir }}/../../nixos/nixos-configurations"
-#     flake_dir: "{{ playbook_dir }}/../../nixos"
-#     temp_dir: "/tmp/nixos-temp"
-#     output_dir: "{{ temp_dir }}/nixos-configurations"
+- name: Generate Nix Configuration Files
+  hosts: all
+  gather_facts: false
+  vars:
+    # output_dir: "{{ playbook_dir }}/../../nixos/nixos-configurations"
+    flake_dir: "{{ playbook_dir }}/../../nixos"
+    temp_dir: "/tmp/nixos-temp"
+    output_dir: "{{ temp_dir }}/nixos-configurations"
 
-#   tasks:
-#     - name: Clean old temporary directories
-#       shell: sudo rm -rf {{ temp_dir }}
-#       delegate_to: localhost
-#       run_once: true
+  tasks:
+    - name: Clean old temporary directories
+      shell: sudo rm -rf {{ temp_dir }}
+      delegate_to: localhost
+      run_once: true
 
-#     - name: Create temporary directory
-#       file:
-#         path: "{{ temp_dir }}"
-#         state: directory
-#         mode: '0755'
-#       delegate_to: localhost
-#       run_once: true
+    - name: Create temporary directory
+      file:
+        path: "{{ temp_dir }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
     
-#     - name: Clone repository to temporary directory
-#       shell: cp -r {{ flake_dir }}/* {{ flake_dir }}/.* {{ temp_dir }}
-#       delegate_to: localhost
-#       run_once: true
+    - name: Clone repository to temporary directory
+      shell: cp -r {{ flake_dir }}/* {{ flake_dir }}/.* {{ temp_dir }}
+      delegate_to: localhost
+      run_once: true
 
-#     - name: Remove .git directory from clone
-#       file:
-#         path: "{{ temp_dir }}/.git"
-#         state: absent
-#       delegate_to: localhost
-#       run_once: true
+    - name: Remove .git directory from clone
+      file:
+        path: "{{ temp_dir }}/.git"
+        state: absent
+      delegate_to: localhost
+      run_once: true
 
-#     - name: Set control plane host variable
-#       set_fact:
-#         control_plane_host: "{{ groups['control'][0].split('.')[0] }}"
-#       run_once: true
+    - name: Set control plane host variable
+      set_fact:
+        control_plane_host: "{{ groups['control'][0].split('.')[0] }}"
+      run_once: true
     
-#     - name: Generate Nix configuration for each host
-#       template:
-#         src: templates/host_config.nix.j2
-#         dest: "{{ output_dir }}/{{ inventory_hostname.split('.')[0] }}.nix"
-#       delegate_to: localhost
-#       vars:
-#         control_plane_host: "{{ hostvars[groups['control'][0]]['inventory_hostname'].split('.')[0] }}"
+    - name: Generate Nix configuration for each host
+      template:
+        src: templates/host_config.nix.j2
+        dest: "{{ output_dir }}/{{ inventory_hostname.split('.')[0] }}.nix"
+      delegate_to: localhost
+      vars:
+        control_plane_host: "{{ hostvars[groups['control'][0]]['inventory_hostname'].split('.')[0] }}"
     
-#     - name: Register all hostnames
-#       set_fact:
-#         my_hostname: "{{ inventory_hostname.split('.')[0] }}"
+    - name: Register all hostnames
+      set_fact:
+        my_hostname: "{{ inventory_hostname.split('.')[0] }}"
       
-#     - name: Gather all hostnames
-#       set_fact:
-#         all_hosts: "{{ all_hosts | default([]) + [hostvars[item]['my_hostname']] }}"
-#       loop: "{{ ansible_play_hosts_all }}"
-#       delegate_to: localhost
-#       run_once: true
+    - name: Gather all hostnames
+      set_fact:
+        all_hosts: "{{ all_hosts | default([]) + [hostvars[item]['my_hostname']] }}"
+      loop: "{{ ansible_play_hosts_all }}"
+      delegate_to: localhost
+      run_once: true
 
-#     - name: Display flake run command
-#       debug:
-#         msg: "nix run --impure . -- {{ all_hosts | unique | sort | join(' ') }} -p"
-#       delegate_to: localhost
-#       run_once: true
+    - name: Display flake run command
+      debug:
+        msg: "nix run --impure . -- {{ all_hosts | unique | sort | join(' ') }} -p"
+      delegate_to: localhost
+      run_once: true
       
-#     - name: Run the flake with all hosts
-#       command: nix run --impure . -- {{ all_hosts | unique | sort | join(' ') }} -p
-#       args:
-#         chdir: "{{ temp_dir }}"
-#       delegate_to: localhost
-#       run_once: true
+    - name: Run the flake with all hosts
+      command: nix run --impure . -- {{ all_hosts | unique | sort | join(' ') }} -p
+      args:
+        chdir: "{{ temp_dir }}"
+      delegate_to: localhost
+      run_once: true
 
-# - name: Post-install localhost configuration
-#   hosts: control
-#   become: true
-#   gather_facts: false
-#   tasks:
-#     - ansible.builtin.fetch:
-#         src: /etc/rancher/k3s/k3s.yaml
-#         dest: "{{ kubeconfig_path }}"
-#         flat: true
+- name: Post-install localhost configuration
+  hosts: control
+  become: true
+  gather_facts: false
+  tasks:
+    - ansible.builtin.fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "{{ kubeconfig_path }}"
+        flat: true
 
-#     - name: Patch kubeconfig - replace 127.0.0.1 with control plane hostname
-#       ansible.builtin.replace:
-#         path: "{{ kubeconfig_path }}"
-#         regexp: 'https://127.0.0.1:6443'
-#         replace: 'https://{{ inventory_hostname }}:6443'
-#       delegate_to: localhost
-#       run_once: true
+    - name: Patch kubeconfig - replace 127.0.0.1 with control plane hostname
+      ansible.builtin.replace:
+        path: "{{ kubeconfig_path }}"
+        regexp: 'https://127.0.0.1:6443'
+        replace: 'https://{{ inventory_hostname }}:6443'
+      delegate_to: localhost
+      run_once: true
     
-#     - name: Patch kubeconfig - replace default with cluster name
-#       ansible.builtin.replace:
-#         path: "{{ kubeconfig_path }}"
-#         regexp: 'default'
-#         replace: 'exp'
-#       delegate_to: localhost
-#       run_once: true
+    - name: Patch kubeconfig - replace default with cluster name
+      ansible.builtin.replace:
+        path: "{{ kubeconfig_path }}"
+        regexp: 'default'
+        replace: 'exp'
+      delegate_to: localhost
+      run_once: true
     
-#     - name: Set correct permissions on kubeconfig
-#       ansible.builtin.file:
-#         path: "{{ kubeconfig_path }}"
-#         mode: '0600'
-#       delegate_to: localhost
-#       run_once: true
+    - name: Set correct permissions on kubeconfig
+      ansible.builtin.file:
+        path: "{{ kubeconfig_path }}"
+        mode: '0600'
+      delegate_to: localhost
+      run_once: true
 
 - name: Pre-pull Docker images on all K3s nodes
   hosts: worker
@@ -137,25 +137,11 @@
     images_to_pull:
       - registry.gitlab.inria.fr/gkovilkk/greenflow/cp-kafka:7.7.0
   tasks:
-    - name: Wait for K3s to be fully operational
-      wait_for:
-        path: /run/k3s/containerd/containerd.sock
-        timeout: 300
-      register: k3s_ready
-      ignore_errors: true
-
     - name: Pre-pull Docker images using containerd directly
       shell: |
-        ctr -a /run/k3s/containerd/containerd.sock -n k8s.io image pull {{ item }}
+        sudo ctr -a /run/k3s/containerd/containerd.sock -n k8s.io image pull {{ item }}
       loop: "{{ images_to_pull }}"
       register: pull_result
       retries: 3
       delay: 10
       until: pull_result is succeeded
-      when: k3s_ready is succeeded
-      
-    - name: Show pull results
-      debug:
-        msg: "Pre-pulled image {{ item.item }} on {{ inventory_hostname }}"
-      loop: "{{ pull_result.results }}"
-      when: k3s_ready is succeeded and item is succeeded
