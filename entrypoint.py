@@ -114,11 +114,14 @@ def rebind_parameters(**kwargs):
         "replicationFactor": "greenflow.factors.exp_params.replicationFactor",
     }
 
+    succeeded_rebindings = {}
     with gin.unlock_config():
         for key, value in kwargs.items():
             if value is not None and key in parameter_mapping:
-                logging.warning(dict(msg="Rebinding", key=key, value=value))
                 gin.bind_parameter(parameter_mapping[key], value)
+                succeeded_rebindings[key] = value
+    logging.warning({"msg": "Rebound", **succeeded_rebindings})
+
 
 @click.command("ingest")
 @click.argument("exp_description", type=str)

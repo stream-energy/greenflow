@@ -147,7 +147,7 @@ def exp_hammer_job(extra_vars) -> Job:
                             {
                                 "name": "kafka-producer-perf-test",
                                 "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/throughput",
-                                "imagePullPolicy": "IfNotPresent",
+                                "imagePullPolicy": "Always",
                                 "env": [
                                     {
                                         "name": "THROUGHPUT_BROKERS",
@@ -163,7 +163,11 @@ def exp_hammer_job(extra_vars) -> Job:
                                     },
                                     {
                                         "name": "THROUGHPUT_NUM_PRODUCERS",
-                                        "value": "1",
+                                        "value": "4",
+                                    },
+                                    {
+                                        "name": "THROUGHPUT_WORKERS_PER_PRODUCER",
+                                        "value": "2",
                                     },
                                     {
                                         "name": "THROUGHPUT_START_TIMESTAMP",

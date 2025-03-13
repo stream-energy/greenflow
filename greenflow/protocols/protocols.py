@@ -49,12 +49,17 @@ def baseline(exp_description) -> None:
 
         with ctx_manager():
             for _ in range(rep):
-                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=24, replicationFactor=1)
+                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=4, replicationFactor=1)
                 stress_test(
                     target_load=10**9,
                     exp_description=exp_description,
                 )
-                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=24, replicationFactor=3)
+                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=4, replicationFactor=3)
+                stress_test(
+                    target_load=10**9,
+                    exp_description=exp_description,
+                )
+                rebind_parameters(partitions=60, consumerInstances=0, producerInstances=4, replicationFactor=3)
                 stress_test(
                     target_load=10**9,
                     exp_description=exp_description,
@@ -266,7 +271,7 @@ def scaling_behaviour(exp_description) -> None:
         rebind_parameters(
             partitions=replicas * mult,
             brokerReplicas=replicas,
-            producerInstances=24,
+            producerInstances=4,
         )
         with kafka_context():
             for _ in range(rep):
