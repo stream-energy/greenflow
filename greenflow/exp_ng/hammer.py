@@ -123,6 +123,7 @@ def exp_hammer_job(extra_vars) -> Job:
                         "restartPolicy": "Never",
                         "terminationGracePeriodSeconds": 0,
                         "nodeSelector": {"node.kubernetes.io/worker": "true"},
+
                         # "affinity": {
                         #     "podAntiAffinity": {
                         #         "requiredDuringSchedulingIgnoredDuringExecution": [
@@ -148,6 +149,16 @@ def exp_hammer_job(extra_vars) -> Job:
                                 "name": "kafka-producer-perf-test",
                                 "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/throughput",
                                 "imagePullPolicy": "Always",
+                                "resources": {
+                                    "requests": {
+                                        "cpu": "4",
+                                        "memory": "2Gi"
+                                    },
+                                    "limits": {
+                                        "cpu": "4",
+                                        "memory": "2Gi"
+                                    }
+                                },
                                 "env": [
                                     {
                                         "name": "THROUGHPUT_BROKERS",
