@@ -99,17 +99,13 @@ def deploy_hammer_with_consumer(extra_vars) -> tuple[Job, Job]:
 
 
 def exp_hammer_job(extra_vars) -> Job:
-    # TODO: Merge this with normal job
-    extra_vars = Box(extra_vars)
-    exp_params = extra_vars.exp_params
-    load = exp_params.load / exp_params.producer_instances
-    total_messages = load * exp_params.durationSeconds
-    producer_instances = exp_params.producer_instances
-    start_timestamp = int(time.time()) + 20  # 20 seconds in the future
-    if load == 1 * 10**9:
-        throughput = -1
-    else:
-        throughput = int(load)
+    exp_params = extra_vars["exp_params"]
+    total_messages = int(
+        exp_params["load"]
+        * exp_params["durationSeconds"]
+        / exp_params["producer_instances"]
+    )
+    start_timestamp = int(time.time()) + 15
 
     return Job(
         dict(
@@ -117,8 +113,8 @@ def exp_hammer_job(extra_vars) -> Job:
             kind="Job",
             metadata={"name": "kafka-producer-perf-test", "namespace": "default"},
             spec={
-                "parallelism": producer_instances,
-                "completions": producer_instances,
+                "parallelism": exp_params.producer_instances,
+                "completions": exp_params.producer_instances,
                 "backoffLimit": 0,
                 # "ttlSecondsAfterFinished": 100,
                 "template": {
@@ -127,38 +123,52 @@ def exp_hammer_job(extra_vars) -> Job:
                         "restartPolicy": "Never",
                         "terminationGracePeriodSeconds": 0,
                         "nodeSelector": {"node.kubernetes.io/worker": "true"},
+                        # "affinity": {
+                        #     "podAntiAffinity": {
+                        #         "requiredDuringSchedulingIgnoredDuringExecution": [
+                        #             {
+                        #                 "labelSelector": {
+                        #                     "matchExpressions": [
+                        #                         {
+                        #                             "key": "app",
+                        #                             "operator": "In",
+                        #                             "values": [
+                        #                                 "kafka-producer-perf-test"
+                        #                             ],
+                        #                         }
+                        #                     ]
+                        #                 },
+                        #                 "topologyKey": "kubernetes.io/hostname",
+                        #             }
+                        #         ]
+                        #     }
+                        # },
                         "containers": [
                             {
                                 "name": "kafka-producer-perf-test",
-                                "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/cp-kafka:7.7.0",
+                                "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/throughput",
                                 "imagePullPolicy": "IfNotPresent",
-                                "resources": {
-                                    "requests": {
-                                        "cpu": "500m",
-                                        "memory": "1Gi"
+                                "env": [
+                                    {
+                                        "name": "THROUGHPUT_BROKERS",
+                                        "value": exp_params.kafka_bootstrap_servers,
                                     },
-                                    "limits": {
-                                        "cpu": "500m",
-                                        "memory": "1Gi"
-                                    }
-                                },
-                                "command": [
-                                    "/bin/sh",
-                                    "-c",
-                                    f"""
-cat << 'EOF' > /tmp/synchronized_kafka_perf_test.sh
-{producer_script}
-EOF
-chmod +x /tmp/synchronized_kafka_perf_test.sh
-/tmp/synchronized_kafka_perf_test.sh \
-    --topic input \
-    --num-records {int(total_messages)} \
-    --record-size {exp_params.messageSize} \
-    --throughput {throughput} \
-    --producer-props bootstrap.servers={exp_params.kafka_bootstrap_servers} \
-    --durationSeconds {exp_params.durationSeconds} \
-    --start-timestamp {start_timestamp}
-                                    """,
+                                    {
+                                        "name": "THROUGHPUT_MESSAGE_SIZE",
+                                        "value": str(exp_params.messageSize),
+                                    },
+                                    {
+                                        "name": "THROUGHPUT_DURATION",
+                                        "value": f"{exp_params.durationSeconds}s",
+                                    },
+                                    {
+                                        "name": "THROUGHPUT_NUM_PRODUCERS",
+                                        "value": "1",
+                                    },
+                                    {
+                                        "name": "THROUGHPUT_START_TIMESTAMP",
+                                        "value": str(start_timestamp),
+                                    },
                                 ],
                             }
                         ],
@@ -167,28 +177,6 @@ chmod +x /tmp/synchronized_kafka_perf_test.sh
             },
         )
     )
-
-
-def deploy_hammer(extra_vars) -> Job:
-    job = exp_hammer_job(extra_vars)
-    job.create()
-
-    # Assume that it can take up to 20 seconds to start the job
-    gracePeriod = 20
-    totalDuration = extra_vars["exp_params"]["durationSeconds"] + gracePeriod
-
-    try:
-        job.wait(["condition=Complete", "condition=Failed"], timeout=totalDuration)
-        if job.status.conditions[0].type == "Complete":
-            job.delete(propagation_policy="Foreground")
-            return
-    except TimeoutError:
-        # breakpoint()
-        job.delete(propagation_policy="Foreground")
-        return
-    except KeyboardInterrupt:
-        job.delete(propagation_policy="Foreground")
-        return
 
 
 def hammer(experiment_description="Hammer") -> float:
@@ -272,7 +260,9 @@ def stress_test(target_load: float, exp_description="Stress Test") -> float:
         time.sleep(15)
         g.end_exp()
 
-        last_throughput = get_observed_throughput_of_last_experiment(minimum_current_ts=now)
+        last_throughput = get_observed_throughput_of_last_experiment(
+            minimum_current_ts=now
+        )
         return last_throughput
     else:
         time.sleep(extra_vars.exp_params.durationSeconds)
