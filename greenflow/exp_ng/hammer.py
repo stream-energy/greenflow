@@ -98,6 +98,7 @@ def deploy_hammer_with_consumer(extra_vars) -> tuple[Job, Job]:
             consumer_job.delete(propagation_policy="Foreground")
 
 
+
 def exp_hammer_job(extra_vars) -> Job:
     exp_params = extra_vars["exp_params"]
     total_messages = int(
@@ -152,11 +153,11 @@ def exp_hammer_job(extra_vars) -> Job:
                                 "resources": {
                                     "requests": {
                                         "cpu": "4",
-                                        "memory": "2Gi"
+                                        "memory": "4Gi"
                                     },
                                     "limits": {
                                         "cpu": "4",
-                                        "memory": "2Gi"
+                                        "memory": "4Gi"
                                     }
                                 },
                                 "env": [

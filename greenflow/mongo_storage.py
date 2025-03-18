@@ -214,6 +214,7 @@ class Experiment(Persistent):
             "replicationFactor",
             "producer_instances",
             "consumer_instances",
+            "type"
         ]
 
         result = {
@@ -232,6 +233,10 @@ class Experiment(Persistent):
                 filtered_params[param] = params[param]
             elif param in desc_params:
                 filtered_params[f"{param}"] = desc_params[param]
+
+        # Ensure type is captured from description if present
+        if "type" in desc_params and "type" not in filtered_params:
+            filtered_params["type"] = desc_params["type"]
 
         if filtered_params["cluster"] == "ovhnvme":
             filtered_params["num_broker_nodes"] = 3

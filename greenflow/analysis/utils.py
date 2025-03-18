@@ -65,7 +65,7 @@ def full_analytical_pipeline_nocache(
         storage: ExpStorage = g.storage
         query = {
             "experiment_description": {
-                "$regex": f"(?=.*{type}=true)(?=.*cluster={cluster})"
+                "$regex": f"(?=.*type={type})(?=.*cluster={cluster})"
             },
             "started_ts": {"$gte": cutoff_begin, "$lte": cutoff_end},
             "experiment_metadata.results.duration": {"$gte": 100, "$lte": 3600},

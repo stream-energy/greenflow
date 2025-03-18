@@ -128,6 +128,7 @@ def rebind_parameters(**kwargs):
 def ingest_set(exp_description, **kwargs):
     _ingest_set(exp_description)
 
+
 def _ingest_set(exp_description):
     from greenflow.protocols import (
         safety_curve,
@@ -139,28 +140,30 @@ def _ingest_set(exp_description):
         partitioning,
         idle,
         system,
-        baseline
+        baseline,
     )
 
-    if "scalingBehaviour=true" in exp_description:
+    if "type=scalingBehaviour" in exp_description:
         scaling_behaviour(exp_description)
-    elif "baseline=true" in exp_description:
+    elif "type=baseline" in exp_description:
         baseline(exp_description)
-    elif "safetyCurve=true" in exp_description:
+    elif "type=safetyCurve" in exp_description:
         safety_curve(exp_description)
-    elif "memImpact=true" in exp_description:
+    elif "type=memImpact" in exp_description:
         # memory_cpu_impact_1_1_1(exp_description)
         memory_cpu_impact_10_10_120(exp_description)
-    elif "proportionality=true" in exp_description:
+    elif "type=proportionality" in exp_description:
         proportionality(exp_description)
-    elif "smoketest=true" in exp_description:
+    elif "type=smoketest" in exp_description:
         smoketest(exp_description)
-    elif "partitioning=true" in exp_description:
+    elif "type=partitioning" in exp_description:
         partitioning(exp_description)
-    elif "idle=true" in exp_description:
+    elif "type=idle" in exp_description:
         idle(exp_description)
-    elif "system=true" in exp_description:
+    elif "type=system" in exp_description:
         system(exp_description)
+
+
 
 @click.command("srun")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
@@ -171,12 +174,14 @@ def setup_and_run(exp_name, workers, brokers, exp_description):
     _setup(exp_name, workers, brokers)
     _ingest_set(exp_description)
 
+
 @click.command("setup")
 @click.argument("exp_name", type=str, default="ingest-redpanda")
 @click.option("--workers", type=int, default=1)
 @click.option("--brokers", type=int, default=3)
 def setup(exp_name, workers, brokers):
     _setup(exp_name, workers, brokers)
+
 
 def _setup(exp_name, workers, brokers):
     load_gin(exp_name=exp_name)
@@ -186,11 +191,15 @@ def _setup(exp_name, workers, brokers):
     if workers is not None:
         with gin.unlock_config():
             gin.bind_parameter("greenflow.g5k.G5KPlatform.get_conf.num_worker", workers)
-            gin.bind_parameter("greenflow.g5knos.G5KNixOSPlatform.get_conf.num_worker", workers)
+            gin.bind_parameter(
+                "greenflow.g5knos.G5KNixOSPlatform.get_conf.num_worker", workers
+            )
     if brokers is not None:
         with gin.unlock_config():
             gin.bind_parameter("greenflow.g5k.G5KPlatform.get_conf.num_broker", brokers)
-            gin.bind_parameter("greenflow.g5knos.G5KNixOSPlatform.get_conf.num_broker", brokers)
+            gin.bind_parameter(
+                "greenflow.g5knos.G5KNixOSPlatform.get_conf.num_broker", brokers
+            )
     try:
         provision.provision()
         # deploy_k3s()
