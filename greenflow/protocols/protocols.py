@@ -165,7 +165,7 @@ def safety_curve(exp_description) -> None:
     # Message sizes up to 1MB (with
     messageSizes = [2**i for i in range(5, 21)]
 
-    for _ in range(1):
+    for _ in range(3):
         with kafka_context():
             for messageSize in messageSizes:
                 rebind_parameters(messageSize=messageSize)
@@ -270,11 +270,11 @@ def partitioning(exp_description) -> None:
 def scaling_behaviour(exp_description) -> None:
     rep = 3
     mult = 20
-    brokerReplicaList = list(range(3, 11))
+    brokerReplicaList = list(range(3, 10))
 
     exp_name = "ingest-kafka"
     load_gin(exp_name)
-    rebind_parameters(consumerInstances=0)
+    rebind_parameters(consumerInstances=0, messageSize=512)
 
     for replicas in brokerReplicaList:
         rebind_parameters(

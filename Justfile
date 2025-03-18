@@ -10,6 +10,7 @@ ingest *args:
     fi
 
 send *args:
+    #!/usr/bin/env bash
     python entrypoint.py send "$@"
 
 docs:
@@ -50,8 +51,9 @@ tkexp *args:
 i *args:
     python entrypoint.py i "$@"
 
-killjob:
-    python entrypoint.py killjob
+killjob *args:
+    #!/usr/bin/env bash
+    python entrypoint.py killjob "$@"
 
 screen:
     #!/usr/bin/env python

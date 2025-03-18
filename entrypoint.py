@@ -54,7 +54,7 @@ logging.basicConfig(handlers=[handler], level=logging.WARN)
 _gin_loaded = {}  # Module-level cache to track loaded configurations
 
 
-def load_gin(exp_name="ingest-redpanda", test=False):
+def load_gin(exp_name="ingest-redpanda", cluster="grappe", test=False):
     cache_key = (exp_name, test)
 
     # If this exact configuration was already loaded, return early
@@ -86,7 +86,7 @@ def load_gin(exp_name="ingest-redpanda", test=False):
             # "g5k/montcalm.gin",
             # "g5k/chirop.gin",
             # "g5k/neowise.gin",
-            "g5knos/taurus.gin",
+            f"g5knos/{cluster}.gin",
             # "g5k/ecotype.gin",
             # "g5k/gros.gin",
             # "g5k/grappe.gin",
@@ -166,25 +166,26 @@ def _ingest_set(exp_description):
 
 
 @click.command("srun")
-@click.argument("exp_name", type=str, default="ingest-redpanda")
+@click.argument("cluster", type=str)
 @click.option("--workers", type=int, default=1)
 @click.option("--brokers", type=int, default=3)
 @click.argument("exp_description", type=str)
-def setup_and_run(exp_name, workers, brokers, exp_description):
-    _setup(exp_name, workers, brokers)
+def setup_and_run(cluster, workers, brokers, exp_description):
+    _setup(cluster, workers, brokers)
+    exp_description = f"cluster={cluster} " + exp_description
     _ingest_set(exp_description)
 
 
 @click.command("setup")
-@click.argument("exp_name", type=str, default="ingest-redpanda")
+@click.argument("cluster", type=str)
 @click.option("--workers", type=int, default=1)
 @click.option("--brokers", type=int, default=3)
-def setup(exp_name, workers, brokers):
-    _setup(exp_name, workers, brokers)
+def setup(cluster, workers, brokers):
+    _setup(cluster, workers, brokers)
 
 
-def _setup(exp_name, workers, brokers):
-    load_gin(exp_name=exp_name)
+def _setup(cluster, workers, brokers):
+    load_gin(exp_name="ingest-kafka", cluster=cluster)
 
     from greenflow import provision
 
@@ -255,8 +256,9 @@ def test(exp_name: str):
 
 
 @click.command("killjob")
-def killjob():
-    load_gin()
+@click.argument("cluster", type=str)
+def killjob(cluster):
+    load_gin(cluster=cluster)
 
     from greenflow import destroy
 
