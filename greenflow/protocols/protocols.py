@@ -41,7 +41,7 @@ def baseline(exp_description) -> None:
         # "ingest-redpanda",
     ]
     rep = 3
-    for exp_name in  exp_names:
+    for exp_name in exp_names:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
 
@@ -49,17 +49,32 @@ def baseline(exp_description) -> None:
 
         with ctx_manager():
             for _ in range(rep):
-                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=4, replicationFactor=1)
+                rebind_parameters(
+                    partitions=1,
+                    consumerInstances=0,
+                    producerInstances=8,
+                    replicationFactor=1,
+                )
                 stress_test(
                     target_load=10**9,
                     exp_description=exp_description,
                 )
-                rebind_parameters(partitions=1, consumerInstances=0, producerInstances=4, replicationFactor=3)
+                rebind_parameters(
+                    partitions=1,
+                    consumerInstances=0,
+                    producerInstances=8,
+                    replicationFactor=3,
+                )
                 stress_test(
                     target_load=10**9,
                     exp_description=exp_description,
                 )
-                rebind_parameters(partitions=60, consumerInstances=0, producerInstances=4, replicationFactor=3)
+                rebind_parameters(
+                    partitions=60,
+                    consumerInstances=0,
+                    producerInstances=8,
+                    replicationFactor=3,
+                )
                 stress_test(
                     target_load=10**9,
                     exp_description=exp_description,
@@ -145,25 +160,19 @@ def safety_curve(exp_description) -> None:
 
     exp_name = "ingest-kafka"
     load_gin("ingest-kafka")
+    rebind_parameters(consumerInstances=0, producerInstances=4, partitions=60)
 
     # Message sizes up to 1MB (with
-    messageSizes = [2**i for i in range(5, 17)] + [1048376]
+    messageSizes = [2**i for i in range(5, 21)]
 
-    for _ in range(3):
-        try:
-            exp_name = "ingest-kafka"
-            load_gin(exp_name)
-            with kafka_context():
-                threshold_hammer(exp_description, messageSizes)
-            exp_name = "ingest-redpanda"
-            load_gin(exp_name)
-            with redpanda_context():
-                threshold_hammer(exp_description, messageSizes)
-        except:
-            send_notification("Error in experiment. Debugging with shell")
-            traceback.print_exc()
-            post_mortem()
-
+    for _ in range(1):
+        with kafka_context():
+            for messageSize in messageSizes:
+                rebind_parameters(messageSize=messageSize)
+                stress_test(
+                    target_load=1 * 10**9,
+                    exp_description=exp_description,
+                )
     send_notification("Experiment complete. On to the next.")
 
 
