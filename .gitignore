@@ -27,3 +27,4 @@ grafana
 .mamba
 .DS_Store
 .secrets.env
+plots/*

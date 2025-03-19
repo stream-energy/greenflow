@@ -124,8 +124,11 @@ def rebind_parameters(**kwargs):
 
 
 @click.command("ingest")
+@click.argument("cluster", type=str)
 @click.argument("exp_description", type=str)
-def ingest_set(exp_description, **kwargs):
+def ingest_set(cluster, exp_description, **kwargs):
+    load_gin(exp_name="ingest-kafka", cluster=cluster)
+    exp_description = f"cluster={cluster} " + exp_description
     _ingest_set(exp_description)
 
 
