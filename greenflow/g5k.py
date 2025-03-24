@@ -16,7 +16,7 @@ class G5KPlatform(Platform):
     def get_conf(
         self,
         *,
-        job_name: str = "eesp-01",
+        job_name: str = "eesp",
         site: str = gin.REQUIRED,
         cluster: str = gin.REQUIRED,
         num_control: int = gin.REQUIRED,
@@ -30,6 +30,7 @@ class G5KPlatform(Platform):
         import logging
 
         en.init_logging(level=logging.INFO)
+        job_name = f"{job_name}-{cluster}"
 
         return (
             en.G5kConf.from_settings(

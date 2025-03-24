@@ -16,7 +16,7 @@ class G5KNixOSPlatform(Platform):
     def get_conf(
         self,
         *,
-        job_name: str = "eesp-01",
+        job_name: str = "eesp",
         site: str = gin.REQUIRED,
         cluster: str = gin.REQUIRED,
         num_control: int = gin.REQUIRED,
@@ -30,6 +30,7 @@ class G5KNixOSPlatform(Platform):
         import logging
 
         en.init_logging(level=logging.INFO)
+        job_name = f"{job_name}-{cluster}"
 
         return (
             en.G5kConf.from_settings(
@@ -39,7 +40,7 @@ class G5KNixOSPlatform(Platform):
                 walltime=walltime,
                 project=project,
                 env_name="nixos-x86_64-linux",
-                key="~/.ssh/id_ed25519.pub",
+                key="~/.ssh/id_g5k_rsa.pub",
             )
             .add_network_conf(network)
             .add_machine(

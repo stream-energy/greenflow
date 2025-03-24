@@ -270,24 +270,29 @@ def partitioning(exp_description) -> None:
 def scaling_behaviour(exp_description) -> None:
     rep = 3
     mult = 20
-    brokerReplicaList = list(range(3, 10))
+    brokerReplicaList = list(range(3, 11))
+    from ..g import g
+
+    workers = len(Box(g.root.current_deployment.metadata).ansible_inventory.all.children.worker.hosts)
 
     exp_name = "ingest-kafka"
     load_gin(exp_name)
-    rebind_parameters(consumerInstances=0, messageSize=512)
+    rebind_parameters(consumerInstances=0)
 
-    for replicas in brokerReplicaList:
-        rebind_parameters(
-            partitions=replicas * mult,
-            brokerReplicas=replicas,
-            producerInstances=4,
-        )
-        with kafka_context():
-            for _ in range(rep):
-                stress_test(
-                    target_load=1 * 10**9,
-                    exp_description=exp_description,
-                )
+    for messageSize in [1024, 4096, 16384]:
+        rebind_parameters(messageSize=messageSize)
+        for replicas in brokerReplicaList:
+            rebind_parameters(
+                partitions=replicas * mult,
+                brokerReplicas=replicas,
+                producerInstances=4*workers,
+            )
+            with kafka_context():
+                for _ in range(rep):
+                    stress_test(
+                        target_load=1 * 10**9,
+                        exp_description=exp_description,
+                    )
 
     # exp_name = "ingest-redpanda"
     # load_gin(exp_name)
