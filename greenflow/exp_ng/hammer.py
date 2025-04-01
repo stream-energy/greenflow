@@ -153,11 +153,11 @@ def exp_hammer_job(extra_vars) -> Job:
                                 "resources": {
                                     "requests": {
                                         "cpu": "4",
-                                        "memory": "3Gi"
+                                        "memory": "4Gi"
                                     },
                                     "limits": {
                                         "cpu": "4",
-                                        "memory": "3Gi"
+                                        "memory": "4Gi"
                                     }
                                 },
                                 "env": [

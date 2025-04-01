@@ -86,7 +86,6 @@
   # };
 
   environment.systemPackages = with pkgs; [
-    restic
     openssh
     k3s
     kubectl
