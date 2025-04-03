@@ -31,6 +31,9 @@ config:
     default_topic_partitions: 1
     default_topic_replications: 1
     internal_topic_replication_factor: 1
+    kafka_batch_max_bytes: 209715200  # 200 MB
+    # raft_replica_max_pending_flush_bytes: 209715200  # 200 MB
+    raft_replicate_batch_window_size: 209715200  # 200 MB
   # node:
   #   developer_mode: true
 {% if exp_params.redpanda_write_caching %}
