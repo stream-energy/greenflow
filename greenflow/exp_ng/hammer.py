@@ -63,7 +63,8 @@ chmod +x /tmp/synchronized_kafka_consumer_test.sh
 
 
 def deploy_hammer_with_consumer(extra_vars) -> tuple[Job, Job]:
-    producer_job = exp_hammer_job(extra_vars)
+    # producer_job = exp_hammer_job(extra_vars)
+    producer_job = exp_perf_test_job(extra_vars) # Switching back to the original producer job
     consumer_job = exp_consumer_job(extra_vars)
 
     producer_job.create()
@@ -96,6 +97,76 @@ def deploy_hammer_with_consumer(extra_vars) -> tuple[Job, Job]:
         if cleanup_jobs:
             producer_job.delete(propagation_policy="Foreground")
             consumer_job.delete(propagation_policy="Foreground")
+
+def exp_perf_test_job(extra_vars) -> Job:
+    # TODO: Merge this with normal job
+    extra_vars = Box(extra_vars)
+    exp_params = extra_vars.exp_params
+    load = exp_params.load / exp_params.producer_instances
+    total_messages = load * exp_params.durationSeconds
+    producer_instances = exp_params.producer_instances
+    start_timestamp = int(time.time()) + 20  # 20 seconds in the future
+    if load == 1 * 10**9:
+        throughput = -1
+    else:
+        throughput = int(load)
+
+    return Job(
+        dict(
+            apiVersion="batch/v1",
+            kind="Job",
+            metadata={"name": "kafka-producer-perf-test", "namespace": "default"},
+            spec={
+                "parallelism": producer_instances,
+                "completions": producer_instances,
+                "backoffLimit": 0,
+                # "ttlSecondsAfterFinished": 100,
+                "template": {
+                    "metadata": {"labels": {"app": "kafka-producer-perf-test"}},
+                    "spec": {
+                        "restartPolicy": "Never",
+                        "terminationGracePeriodSeconds": 0,
+                        "nodeSelector": {"node.kubernetes.io/worker": "true"},
+                        "containers": [
+                            {
+                                "name": "kafka-producer-perf-test",
+                                "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/cp-kafka:7.7.0",
+                                "imagePullPolicy": "IfNotPresent",
+                                "resources": {
+                                    "requests": {
+                                        "cpu": "2000m",
+                                        "memory": "2Gi"
+                                    },
+                                    "limits": {
+                                        "cpu": "2000m",
+                                        "memory": "2Gi"
+                                    }
+                                },
+                                "command": [
+                                    "/bin/sh",
+                                    "-c",
+                                    f"""
+cat << 'EOF' > /tmp/synchronized_kafka_perf_test.sh
+{producer_script}
+EOF
+chmod +x /tmp/synchronized_kafka_perf_test.sh
+/tmp/synchronized_kafka_perf_test.sh \
+    --topic input \
+    --num-records {int(total_messages)} \
+    --record-size {exp_params.messageSize} \
+    --throughput {throughput} \
+    --producer-props bootstrap.servers={exp_params.kafka_bootstrap_servers} \
+    --durationSeconds {exp_params.durationSeconds} \
+    --start-timestamp {start_timestamp}
+                                    """,
+                                ],
+                            }
+                        ],
+                    },
+                },
+            },
+        )
+    )
 
 
 

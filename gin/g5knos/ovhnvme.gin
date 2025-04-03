@@ -1,0 +1,3 @@
+greenflow.g5knos.G5KNixOSPlatform.get_conf.site = "roubaix"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.cluster = "ovhnvme"
+greenflow.g5knos.G5KNixOSPlatform.get_conf.queue = "default"
