@@ -5,8 +5,8 @@ set positional-arguments
 ingest *args:
     #!/usr/bin/env bash
     if ! python entrypoint.py ingest "$@"; then
-    just send --priority max "Ingest failed with args: $@"
-    exit 1
+        just send --priority max "Ingest failed with args: $@"
+        exit 1
     fi
 
 send *args:

@@ -95,5 +95,6 @@ def get_observed_throughput_of_last_experiment(
         return observed_throughput
 
     except KeyError:
-        print("No data found for the latest experiment")
+        logging.error("No data found for the latest experiment")
+        logging.error("Query used was %s", query)
         raise

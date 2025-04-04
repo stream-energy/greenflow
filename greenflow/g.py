@@ -1,4 +1,5 @@
 from functools import cached_property
+import logging
 
 import pendulum
 import transaction
@@ -81,6 +82,7 @@ class _g:
         exp_name = factors()["exp_name"]
 
         e = Experiment(exp_name=exp_name, experiment_description=experiment_description)
+        logging.warning(f"Starting experiment {e.started_ts}")
         self.root.current_experiment = e
         transaction.commit()
 
