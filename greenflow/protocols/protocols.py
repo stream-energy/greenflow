@@ -290,7 +290,7 @@ def scaling_behaviour(exp_description) -> None:
             producerInstances=8 * workers,
         )
         with kafka_context():
-            for messageSize in [1024, 4096, 16384]:
+            for messageSize in [4096]:
                 rebind_parameters(messageSize=messageSize)
                 for _ in range(rep):
                     stress_test(
@@ -309,7 +309,7 @@ def scaling_behaviour(exp_description) -> None:
             producerInstances=8 * workers,
         )
         with redpanda_context():
-            for messageSize in [1024, 4096, 16384]:
+            for messageSize in [4096]:
                 rebind_parameters(messageSize=messageSize)
                 for _ in range(rep):
                     stress_test(
