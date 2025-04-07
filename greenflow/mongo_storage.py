@@ -262,6 +262,7 @@ class ExpStorage:
         self.client = MongoClient(url)
         self.db = self.client[db_name]
         self.collection: Collection[ExperimentDoc] = self.db.experiments
+        self.results_collection: Collection[ExperimentDoc] = self.db.results
 
         # Update indexes for common queries
         self.collection.create_index("exp_name")

@@ -80,13 +80,39 @@ def full_analytical_pipeline_nocache(
             # limit=1,
         ).to_list()
 
-        listExperiment = [Experiment.from_doc(exp) for exp in matching_experiments]
-        filtered_experiments = [exp.to_dict() for exp in listExperiment]
+        # List to store enriched experiments
+        enriched_experiments = []
 
-        df = pd.DataFrame(filtered_experiments).set_index("exp_id")
-        redpanda_kafka_data = enrich_dataframe(df)
-        # redpanda_kafka_data = df
+        for exp_doc in matching_experiments:
+            exp_id = exp_doc["exp_id"]
+
+            # Check if enriched results already exist for this experiment
+            existing_result = storage.results_collection.find_one({"exp_id": exp_id})
+
+            if existing_result:
+                # Use the existing enriched data
+                enriched_experiments.append(existing_result)
+            else:
+                # Enrich the experiment data
+                experiment = Experiment.from_doc(exp_doc)
+                exp_dict = experiment.to_dict()
+                df = pd.DataFrame([exp_dict]).set_index("exp_id")
+                enriched_df = enrich_dataframe(df)
+
+                # Convert the enriched dataframe back to a dictionary
+                enriched_data = enriched_df.reset_index().iloc[0].to_dict()
+
+                # Store the enriched data in the results collection
+                storage.results_collection.insert_one(enriched_data)
+
+                enriched_experiments.append(enriched_data)
+
+        # Convert the list of enriched experiments to a dataframe
+        redpanda_kafka_data = pd.DataFrame(enriched_experiments).set_index("exp_id")
+
         return redpanda_kafka_data
+        # listExperiment = [Experiment.from_doc(exp) for exp in matching_experiments]
+        # filtered_experiments = [exp.to_dict() for exp in listExperiment]
 
 
 @cache.pyarrow_cache
