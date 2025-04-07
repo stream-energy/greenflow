@@ -2,7 +2,7 @@ import logging
 import traceback
 
 
-def memory_cpu_impact_10_10_120(exp_description):
+def memory_cpu_impact_10_10_60(exp_description):
     from greenflow.exp_ng.hammer import hammer
     from greenflow.exp_ng.exp_ng import killexp
     from greenflow.playbook import exp
@@ -20,7 +20,7 @@ def memory_cpu_impact_10_10_120(exp_description):
     cpus = [1, 2, 4, 6, 8]
     load_gin(exp_name)
     rebind_parameters(
-        consumerInstances=10, producerInstances=10, partitions=120, brokerReplicas=3
+        consumerInstances=0, producerInstances=10, partitions=60, brokerReplicas=3, messageSize=4096
     )
 
     for mem in mems:
@@ -48,7 +48,7 @@ def memory_cpu_impact_10_10_120(exp_description):
     exp_name = "ingest-redpanda"
     load_gin(exp_name)
     rebind_parameters(
-        consumerInstances=10, producerInstances=10, partitions=120, brokerReplicas=3
+        consumerInstances=0, producerInstances=10, partitions=60, brokerReplicas=3, messageSize=4096
     )
 
     # Helper function to convert memory string to GiB number
@@ -103,7 +103,11 @@ def memory_cpu_impact_1_1_1(exp_description):
     cpus = [1, 2, 4, 6, 8]
     load_gin(exp_name)
     rebind_parameters(
-        consumerInstances=1, producerInstances=1, partitions=1, brokerReplicas=1
+        consumerInstances=1,
+        producerInstances=1,
+        partitions=1,
+        brokerReplicas=1,
+        messageSize=4096,
     )
 
     for _ in range(3):

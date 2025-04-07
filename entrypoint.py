@@ -136,7 +136,7 @@ def _ingest_set(exp_description):
     from greenflow.protocols import (
         safety_curve,
         scaling_behaviour,
-        memory_cpu_impact_10_10_120,
+        memory_cpu_impact_10_10_60,
         memory_cpu_impact_1_1_1,
         proportionality,
         smoketest,
@@ -154,7 +154,7 @@ def _ingest_set(exp_description):
         safety_curve(exp_description)
     elif "type=memImpact" in exp_description:
         # memory_cpu_impact_1_1_1(exp_description)
-        memory_cpu_impact_10_10_120(exp_description)
+        memory_cpu_impact_10_10_60(exp_description)
     elif "type=proportionality" in exp_description:
         proportionality(exp_description)
     elif "type=smoketest" in exp_description:
