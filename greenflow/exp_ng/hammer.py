@@ -221,16 +221,16 @@ def exp_hammer_job(extra_vars) -> Job:
                                 "name": "kafka-producer-perf-test",
                                 "image": "registry.gitlab.inria.fr/gkovilkk/greenflow/throughput",
                                 "imagePullPolicy": "Always",
-                                "resources": {
-                                    "requests": {
-                                        "cpu": "4",
-                                        "memory": "4Gi"
-                                    },
-                                    "limits": {
-                                        "cpu": "4",
-                                        "memory": "4Gi"
-                                    }
-                                },
+                                # "resources": {
+                                #     "requests": {
+                                #         "cpu": "4",
+                                #         "memory": "4Gi"
+                                #     },
+                                #     "limits": {
+                                #         "cpu": "4",
+                                #         "memory": "4Gi"
+                                #     }
+                                # },
                                 "env": [
                                     {
                                         "name": "THROUGHPUT_BROKERS",

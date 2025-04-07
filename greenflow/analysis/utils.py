@@ -42,11 +42,11 @@ def full_analytical_pipeline_nocache(
     **kwargs,
 ):
     import greenflow
+
     if not cutoff_begin:
         cutoff_begin = pendulum.now().subtract(years=1).to_iso8601_string()
     if not cutoff_end:
         cutoff_end = pendulum.now().to_iso8601_string()
-
 
     if greenflow.g.g.storage_type == "tinydb":
         experiments = get_experiments()
@@ -80,35 +80,76 @@ def full_analytical_pipeline_nocache(
             # limit=1,
         ).to_list()
 
-        # List to store enriched experiments
-        enriched_experiments = []
+        # Get all _ids from matching experiments
+        all_ids = [exp_doc["_id"] for exp_doc in matching_experiments]
 
-        for exp_doc in matching_experiments:
-            exp_id = exp_doc["exp_id"]
+        # Perform a batch query to get _ids that already have enriched results
+        existing_results = storage.results_collection.find(
+            {"_id": {"$in": all_ids}}, {"_id": 1}  # Project only the _id field
+        ).to_list(None)
 
-            # Check if enriched results already exist for this experiment
-            existing_result = storage.results_collection.find_one({"exp_id": exp_id})
+        # Extract the _ids of experiments that already have enriched results
+        enriched_ids = {result["_id"] for result in existing_results}
 
-            if existing_result:
-                # Use the existing enriched data
-                enriched_experiments.append(existing_result)
-            else:
-                # Enrich the experiment data
-                experiment = Experiment.from_doc(exp_doc)
-                exp_dict = experiment.to_dict()
-                df = pd.DataFrame([exp_dict]).set_index("exp_id")
-                enriched_df = enrich_dataframe(df)
+        # Identify experiments that need to be enriched
+        ids_to_enrich = set(all_ids) - enriched_ids
 
-                # Convert the enriched dataframe back to a dictionary
-                enriched_data = enriched_df.reset_index().iloc[0].to_dict()
+        # Filter experiments to enrich
+        experiments_to_enrich = [
+            exp_doc
+            for exp_doc in matching_experiments
+            if exp_doc["_id"] in ids_to_enrich
+        ]
 
-                # Store the enriched data in the results collection
-                storage.results_collection.insert_one(enriched_data)
+        # List to store all enriched experiments (existing and newly enriched)
+        all_enriched_experiments = []
 
-                enriched_experiments.append(enriched_data)
+        # Retrieve existing enriched results
+        existing_enriched_results = storage.results_collection.find(
+            {"_id": {"$in": list(enriched_ids)}}
+        ).to_list(None)
 
-        # Convert the list of enriched experiments to a dataframe
-        redpanda_kafka_data = pd.DataFrame(enriched_experiments).set_index("exp_id")
+        # Add existing enriched results to the list
+        all_enriched_experiments.extend(existing_enriched_results)
+
+        # Enrich and store new results
+        for exp_doc in experiments_to_enrich:
+            exp_id = exp_doc["_id"]
+
+            # Enrich the experiment data
+            experiment = Experiment.from_doc(exp_doc)
+            exp_dict = experiment.to_dict()
+            df = pd.DataFrame([exp_dict])
+            df["_id"] = exp_id  # Include the _id field
+            df.set_index("_id", inplace=True)
+            enriched_df = enrich_dataframe(df)
+
+            # Convert the enriched dataframe back to a dictionary
+            enriched_data = enriched_df.reset_index().iloc[0].to_dict()
+
+            # Ensure that the _id field is correctly set
+            enriched_data["_id"] = exp_id
+
+            # Handle non-serializable data (convert ObjectId to string if necessary)
+            enriched_data_serializable = ensure_serializable(enriched_data)
+
+            # Remove _id from the update data since it's immutable
+            if '_id' in enriched_data_serializable:
+                del enriched_data_serializable['_id']
+
+            # Use update_one with upsert=True instead of insert_one
+            storage.results_collection.update_one(
+                {"_id": exp_id},  # filter
+                {"$set": enriched_data_serializable},  # update (without _id field)
+                upsert=True  # create if doesn't exist
+            )
+
+            # Add to the list of all enriched experiments
+            all_enriched_experiments.append(enriched_data)
+
+        # Convert the list of all enriched experiments to a dataframe
+        redpanda_kafka_data = pd.DataFrame(all_enriched_experiments)
+        redpanda_kafka_data.set_index("_id", inplace=True)
 
         return redpanda_kafka_data
         # listExperiment = [Experiment.from_doc(exp) for exp in matching_experiments]
@@ -253,21 +294,6 @@ def calculate_disk_utilization(row: pd.Series):
 # 100 - (avg by (node) (irate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)
 
 
-def calculate_throughput_MBps(row: pd.Series):
-    """
-    Calculate the throughput in megabytes per second (MBps).
-    """
-    messageSize_bytes = row.get("messageSize", 0)
-    observed_throughput_messages = row.get("observed_throughput", 0)
-
-    mbps = (
-        observed_throughput_messages * messageSize_bytes / 1024 / 1024
-    )  # Convert bytes to MBps
-
-    row["throughput_MBps"] = mbps
-    row["adjusted_network_throughput"] = row["throughput_MBps"] * 1.45 
-    return row
-
 
 def create_qgrid_widget(df: pd.DataFrame):
     import qgridnext as qgrid
@@ -305,6 +331,21 @@ def calculate_observed_throughput(row: pd.Series):
 
     row["observed_throughput"] = observed_throughput
 
+    return row
+
+def calculate_throughput_MBps(row: pd.Series):
+    """
+    Calculate the throughput in megabytes per second (MBps).
+    """
+    messageSize_bytes = row.get("messageSize", 0)
+    observed_throughput_messages = row.get("observed_throughput", 0)
+
+    mbps = (
+        observed_throughput_messages * messageSize_bytes / 1024 / 1024
+    )  # Convert bytes to MBps
+
+    row["throughput_MBps"] = mbps
+    row["adjusted_network_throughput"] = row["throughput_MBps"] * 1.45
     return row
 
 
@@ -489,3 +530,25 @@ def safe_calculate(row, calculation):
         print(row.to_dict())
         # Return the original row unchanged
         return row
+
+
+def ensure_serializable(data):
+    """Ensure that all data is serializable before storing in MongoDB."""
+    import json
+    from bson import ObjectId
+
+    def convert_value(value):
+        if isinstance(value, ObjectId):
+            return str(value)
+        elif isinstance(value, float) and (pd.isna(value) or pd.isnull(value)):
+            return None
+        elif isinstance(value, (pd.Timestamp, pendulum.DateTime)):
+            return value.isoformat()
+        elif isinstance(value, dict):
+            return ensure_serializable(value)
+        elif isinstance(value, list):
+            return [convert_value(v) for v in value]
+        else:
+            return value
+
+    return {k: convert_value(v) for k, v in data.items()}
