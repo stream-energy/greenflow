@@ -156,22 +156,23 @@ def full_analytical_pipeline_nocache(
         # filtered_experiments = [exp.to_dict() for exp in listExperiment]
 
 
-@cache.pyarrow_cache
-def full_analytical_pipeline(
-    *,
-    cutoff_begin,
-    cutoff_end,
-    cluster=None,
-    type=None,
-    **kwargs,
-):
-    return full_analytical_pipeline_nocache(
-        cutoff_begin=cutoff_begin,
-        cutoff_end=cutoff_end,
-        cluster=cluster,
-        type=type,
-        **kwargs,
-    )
+# @cache.pyarrow_cache
+# def full_analytical_pipeline(
+#     *,
+#     cutoff_begin,
+#     cutoff_end,
+#     cluster=None,
+#     type=None,
+#     **kwargs,
+# ):
+#     return full_analytical_pipeline_nocache(
+#         cutoff_begin=cutoff_begin,
+#         cutoff_end=cutoff_end,
+#         cluster=cluster,
+#         type=type,
+#         **kwargs,
+#     )
+full_analytical_pipeline = full_analytical_pipeline_nocache
 
 
 def get_time_range(row: pd.Series, buffer_minutes: int = 1):

@@ -292,10 +292,11 @@ def send_notification(text, priority="low"):
 
 
 @click.command("send")
-@click.argument("text", type=str, default="Hello")
+@click.argument("text", nargs = -1, type=str, default="Hello")
 @click.option("--priority", type=str, default="low")
 def send(text, priority="low"):
-    requests.post(ntfy_url, headers={"priority": priority}, data=text, timeout=10)
+    message = " ".join(text)
+    requests.post(ntfy_url, headers={"priority": priority}, data=message, timeout=10)
 
 
 @click.command("i")
