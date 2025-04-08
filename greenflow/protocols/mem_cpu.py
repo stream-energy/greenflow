@@ -20,35 +20,43 @@ def memory_cpu_impact_10_10_60(exp_description):
     cpus = [1, 2, 4, 6, 8]
     load_gin(exp_name)
     rebind_parameters(
-        consumerInstances=0, producerInstances=10, partitions=60, brokerReplicas=3, messageSize=4096
+        consumerInstances=0,
+        producerInstances=10,
+        partitions=60,
+        brokerReplicas=3,
+        messageSize=4096,
     )
 
     for mem in mems:
         for cpu in cpus:
-            for _ in range(3):
-                try:
-                    rebind_parameters(brokerMem=mem, brokerCpu=cpu)
-                    with kafka_context():
+            try:
+                rebind_parameters(brokerMem=mem, brokerCpu=cpu)
+                with kafka_context():
+                    for _ in range(3):
                         hammer(exp_description)
-                except Exception as e:
-                    logging.error(
-                        f"Error in Kafka experiment with mem={mem}, cpu={cpu}: {str(e)}"
-                    )
-                    traceback.print_exc()
-                    send_notification(
-                        f"Error in Kafka experiment with mem={mem}, cpu={cpu}: {str(e)}"
-                    )
-                    try:
-                        killexp()  # Clean up
-                    except Exception as cleanup_error:
-                        logging.error(f"Error during cleanup: {str(cleanup_error)}")
-                    continue  # Move to next iteration
+            except Exception as e:
+                logging.error(
+                    f"Error in Kafka experiment with mem={mem}, cpu={cpu}: {str(e)}"
+                )
+                traceback.print_exc()
+                send_notification(
+                    f"Error in Kafka experiment with mem={mem}, cpu={cpu}: {str(e)}"
+                )
+                try:
+                    killexp()  # Clean up
+                except Exception as cleanup_error:
+                    logging.error(f"Error during cleanup: {str(cleanup_error)}")
+                continue  # Move to next iteration
 
     # Redpanda experiments
     exp_name = "ingest-redpanda"
     load_gin(exp_name)
     rebind_parameters(
-        consumerInstances=0, producerInstances=10, partitions=60, brokerReplicas=3, messageSize=4096
+        consumerInstances=0,
+        producerInstances=10,
+        partitions=60,
+        brokerReplicas=3,
+        messageSize=4096,
     )
 
     # Helper function to convert memory string to GiB number
@@ -58,28 +66,27 @@ def memory_cpu_impact_10_10_60(exp_description):
     for mem in mems:
         mem_gib = mem_to_gib(mem)
         for cpu in cpus:
-            for _ in range(3):
+            try:
                 # Skip if memory per core is less than 1GiB
                 if mem_gib / cpu < 1:
                     logging.info(
                         f"Skipping configuration mem={mem}, cpu={cpu} due to insufficient memory per core"
                     )
                     continue
-
-                try:
-                    rebind_parameters(brokerMem=mem, brokerCpu=cpu)
-                    with redpanda_context():
+                rebind_parameters(brokerMem=mem, brokerCpu=cpu)
+                with redpanda_context():
+                    for _ in range(3):
                         hammer(exp_description)
-                except Exception as e:
-                    logging.error(
-                        f"Error in Redpanda experiment with mem={mem}, cpu={cpu}: {str(e)}"
-                    )
-                    traceback.print_exc()
-                    try:
-                        killexp()  # Clean up
-                    except Exception as cleanup_error:
-                        logging.error(f"Error during cleanup: {str(cleanup_error)}")
-                    continue  # Move to next iteration
+            except Exception as e:
+                logging.error(
+                    f"Error in Redpanda experiment with mem={mem}, cpu={cpu}: {str(e)}"
+                )
+                traceback.print_exc()
+                try:
+                    killexp()  # Clean up
+                except Exception as cleanup_error:
+                    logging.error(f"Error during cleanup: {str(cleanup_error)}")
+                continue  # Move to next iteration
 
     send_notification("Experiment complete. On to the next.")
 
