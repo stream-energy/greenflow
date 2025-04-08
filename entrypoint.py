@@ -292,7 +292,7 @@ def send_notification(text, priority="low"):
 
 
 @click.command("send")
-@click.argument("text", nargs = -1, type=str, default="Hello")
+@click.argument("text", nargs = -1, type=str)
 @click.option("--priority", type=str, default="low")
 def send(text, priority="low"):
     message = " ".join(text)
