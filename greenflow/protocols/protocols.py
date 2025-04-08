@@ -200,69 +200,37 @@ def run_single_hammer(exp_name, *, exp_description, **params):
 
 def partitioning(exp_description) -> None:
     partitions = [
-        # 1,
-        # 3,
-        # 9,
-        48,
+        1,
+        3,
+        9,
+        18,
+        30,
         60,
-        # 300,
-        # 600,
-        # 900,
-        # 1500,
+        120,
+        300,
+        600,
+        900,
+        1500,
         3000,
     ]
-    exp_name = "ingest-kafka"
-    load_gin(exp_name)
-    rep = 3
-    with kafka_context():
-        for partition in partitions:
-            for _ in range(rep):
-                rebind_parameters(
-                    partitions=partition,
-                    consumerInstances=0,
-                    producerInstances=16,
-                )
-                stress_test(
-                    target_load=1 * 10**9,
-                    exp_description=exp_description,
-                )
-    # with kafka_context():
-    #     for partition in partitions:
-    #         for _ in range(rep):
-    #             rebind_parameters(
-    #                 partitions=partition,
-    #                 consumerInstances=0,
-    #                 producerInstances=32,
-    #             )
-    #             stress_test(
-    #                 target_load=1 * 10**9,
-    #                 exp_description=exp_description,
-    #             )
-    # with kafka_context():
-    #     for partition in partitions:
-    #         for _ in range(rep):
-    #             rebind_parameters(
-    #                 partitions=partition,
-    #                 consumerInstances=0,
-    #                 producerInstances=64,
-    #             )
-    #             stress_test(
-    #                 target_load=1 * 10**9,
-    #                 exp_description=exp_description,
-    #             )
+    workers = get_workers()
 
-    # exp_name = "ingest-redpanda"
-    # load_gin(exp_name)
-    # with redpanda_context():
-    #     for partition in partitions:
-    #         for _ in range(rep):
-    #             rebind_parameters(
-    #                 partitions=partition, consumerInstances=0, producerInstances=10
-    #             )
-    #             stress_test(
-    #                 target_load=1 * 10**9,
-    #                 exp_description=exp_description,
-    #             )
+    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+        ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+        load_gin(exp_name)
+
+        rebind_parameters(
+            consumerInstances=0,
+            producerInstances=workers * 8,
+        )
+        with ctx_manager():
+            for partition in partitions:
+                rebind_parameters(partitions=partition)
+                for _ in range(3):
+                    stress_test(
+                        target_load=1 * 10**9,
+                        exp_description=exp_description,
+                    )
 
     send_notification("Experiment complete. On to the next.")
 
@@ -271,13 +239,8 @@ def scaling_behaviour(exp_description) -> None:
     rep = 3
     mult = 20
     brokerReplicaList = list(range(3, 11))
-    from ..g import g
 
-    workers = len(
-        Box(
-            g.root.current_deployment.metadata
-        ).ansible_inventory.all.children.worker.hosts
-    )
+    workers = get_workers()
 
     exp_name = "ingest-kafka"
     load_gin(exp_name)
@@ -318,6 +281,18 @@ def scaling_behaviour(exp_description) -> None:
                     )
 
     send_notification("Experiment complete. On to the next.")
+
+
+def get_workers():
+    from ..g import g
+
+    workers = len(
+        Box(
+            g.root.current_deployment.metadata
+        ).ansible_inventory.all.children.worker.hosts
+    )
+
+    return workers
 
 
 def proportionality(exp_description) -> None:
