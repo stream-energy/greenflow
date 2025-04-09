@@ -4,6 +4,7 @@ set positional-arguments
 
 ingest *args:
     #!/usr/bin/env bash
+    git pull || exit 1
     if ! python entrypoint.py ingest "$@"; then
         just send --priority max "Ingest failed with args: $@"
         exit 1
@@ -24,6 +25,7 @@ test_message_delivery:
 
 setup *args:
     #!/usr/bin/env bash
+    git pull || exit 1
     if ! python entrypoint.py setup "$@"; then
         just send --priority max "Setup failed with args: $@"
         exit 1
@@ -31,6 +33,7 @@ setup *args:
 
 srun *args:
     #!/usr/bin/env bash
+    git pull || exit 1
     if ! python entrypoint.py srun "$@"; then
         just send --priority max "Setup failed with args: $@"
         exit 1
