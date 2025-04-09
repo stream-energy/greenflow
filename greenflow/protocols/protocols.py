@@ -222,6 +222,7 @@ def partitioning(exp_description) -> None:
         rebind_parameters(
             consumerInstances=0,
             producerInstances=workers * 8,
+            messageSize=4096,
         )
         with ctx_manager():
             for partition in partitions:
