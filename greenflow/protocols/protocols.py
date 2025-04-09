@@ -315,7 +315,7 @@ def proportionality(exp_description) -> None:
                     brokerReplicas=replica,
                     partitions=replica * mult,
                     messageSize=4096,
-                    # consumerInstances=10,
+                    consumerInstances=0,
                     producerInstances=16,
                 )
                 with ctx_manager():
