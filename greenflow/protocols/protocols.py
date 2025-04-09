@@ -301,6 +301,7 @@ def proportionality(exp_description) -> None:
     test_duration = 100  # seconds for non-idle tests
     broker_replicas = [3, 4, 5, 6, 7, 8]
     rep = 1
+    mult = 20
 
     for exp_name in ["ingest-kafka", "ingest-redpanda"]:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
@@ -309,33 +310,33 @@ def proportionality(exp_description) -> None:
         from ..g import g
 
         for replica in broker_replicas:
-            for multiplier in [10]:
-                for _ in range(rep):
-                    rebind_parameters(
-                        brokerReplicas=replica,
-                        partitions=replica * multiplier,
-                        consumerInstances=10,
-                        producerInstances=10,
+            for _ in range(rep):
+                rebind_parameters(
+                    brokerReplicas=replica,
+                    partitions=replica * mult,
+                    messageSize=4096,
+                    # consumerInstances=10,
+                    producerInstances=16,
+                )
+                with ctx_manager():
+                    # rebind_parameters(durationSeconds=300)
+                    # max_throughput = stress_test(
+                    #     target_load=0,  # Idle load to find idle power
+                    #     exp_description=exp_description,
+                    # )
+                    # Find maximum throughput with hammer method
+                    rebind_parameters(durationSeconds=test_duration)
+                    max_throughput = stress_test(
+                        target_load=1 * 10**9,  # High initial load to find limits
+                        exp_description=exp_description,
                     )
-                    with ctx_manager():
-                        # rebind_parameters(durationSeconds=300)
-                        # max_throughput = stress_test(
-                        #     target_load=0,  # Idle load to find idle power
-                        #     exp_description=exp_description,
-                        # )
-                        # Find maximum throughput with hammer method
-                        rebind_parameters(durationSeconds=test_duration)
-                        max_throughput = stress_test(
-                            target_load=1 * 10**9,  # High initial load to find limits
+
+                    # Proportionality tests at 10% intervals
+                    for percentage in range(10, 101, 10):
+                        load_factor = percentage / 100.0
+                        stress_test(
+                            target_load=max_throughput * load_factor,
                             exp_description=exp_description,
                         )
-
-                        # Proportionality tests at 10% intervals
-                        for percentage in range(10, 101, 10):
-                            load_factor = percentage / 100.0
-                            stress_test(
-                                target_load=max_throughput * load_factor,
-                                exp_description=exp_description,
-                            )
 
     send_notification("Proportionality experiments complete.")

@@ -167,7 +167,6 @@ def _ingest_set(exp_description):
         system(exp_description)
 
 
-
 @click.command("srun")
 @click.argument("cluster", type=str)
 @click.option("--workers", type=int, default=1)
@@ -292,7 +291,7 @@ def send_notification(text, priority="low"):
 
 
 @click.command("send")
-@click.argument("text", nargs = -1, type=str)
+@click.argument("text", nargs=-1, type=str)
 @click.option("--priority", type=str, default="low")
 def send(text, priority="low"):
     message = " ".join(text)
