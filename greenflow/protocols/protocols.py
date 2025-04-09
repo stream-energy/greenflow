@@ -160,7 +160,7 @@ def safety_curve(exp_description) -> None:
 
     exp_name = "ingest-kafka"
     load_gin("ingest-kafka")
-    rebind_parameters(consumerInstances=0, producerInstances=4, partitions=60)
+    rebind_parameters(consumerInstances=0, producerInstances=16, partitions=60, messageSize=4096)
 
     # Message sizes up to 1MB (with
     messageSizes = [2**i for i in range(5, 21)]
