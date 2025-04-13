@@ -38,7 +38,7 @@ def idle(exp_description) -> None:
 def baseline(exp_description) -> None:
     exp_names = [
         "ingest-kafka",
-        # "ingest-redpanda",
+        "ingest-redpanda",
     ]
     rep = 3
     for exp_name in exp_names:
