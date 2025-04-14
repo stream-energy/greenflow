@@ -154,13 +154,34 @@ def system(exp_description) -> None:
     send_notification("Smoketest complete.")
 
 
-def safety_curve(exp_description) -> None:
+def demonstrate_binary_search(exp_description) -> None:
     from greenflow.playbook import exp
-    from greenflow.adaptive import threshold_hammer
+    from greenflow.adaptive import threshold_hammer, threshold
 
     exp_name = "ingest-kafka"
     load_gin("ingest-kafka")
-    rebind_parameters(consumerInstances=0, producerInstances=16, partitions=60, messageSize=4096)
+    rebind_parameters(consumerInstances=0, producerInstances=8, partitions=60, messageSize=4096)
+
+    # Message sizes up to 1MB (with
+    messageSizes = [2**i for i in range(5, 21)]
+
+    for _ in range(3):
+        with kafka_context():
+            for messageSize in messageSizes:
+                rebind_parameters(messageSize=messageSize)
+                stress_test(
+                    target_load=1 * 10**9,
+                    exp_description=exp_description,
+                )
+    send_notification("Experiment complete. On to the next.")
+
+def safety_curve(exp_description) -> None:
+    from greenflow.playbook import exp
+    from greenflow.adaptive import threshold_hammer, threshold
+
+    exp_name = "ingest-kafka"
+    load_gin("ingest-kafka")
+    rebind_parameters(consumerInstances=0, producerInstances=8, partitions=60, messageSize=4096)
 
     # Message sizes up to 1MB (with
     messageSizes = [2**i for i in range(5, 21)]

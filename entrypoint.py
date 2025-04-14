@@ -134,7 +134,7 @@ def ingest_set(cluster, exp_description, **kwargs):
 
 def _ingest_set(exp_description):
     from greenflow.protocols import (
-        safety_curve,
+        demonstrate_binary_search,
         scaling_behaviour,
         memory_cpu_impact_10_10_60,
         memory_cpu_impact_1_1_1,
@@ -144,12 +144,15 @@ def _ingest_set(exp_description):
         idle,
         system,
         baseline,
+        safety_curve
     )
 
     if "type=scalingBehaviour" in exp_description:
         scaling_behaviour(exp_description)
     elif "type=baseline" in exp_description:
         baseline(exp_description)
+    elif "type=demonstrate" in exp_description:
+        demonstrate_binary_search(exp_description)
     elif "type=safetyCurve" in exp_description:
         safety_curve(exp_description)
     elif "type=memImpact" in exp_description:
