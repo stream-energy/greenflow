@@ -85,7 +85,7 @@ def get_observed_throughput_of_last_experiment(
         max_watermark = data["value"].max()
         duration = (stopped_ts - started_ts).total_seconds()
         try:
-            duration = latest_exp.experiment_metadata.factors.exp_params.durationSeconds
+            duration = latest_exp.durationSeconds
         except KeyError:
             pass
 
