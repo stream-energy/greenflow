@@ -1,4 +1,5 @@
 import contextlib
+import time
 from typing import Callable, NamedTuple, Any
 import pendulum
 import os
@@ -146,7 +147,7 @@ def execute(initial_params: dict[str, Any]) -> History:
 
 def experiment(state: State) -> Result:
     from greenflow.exp_ng.exp_ng import exp
-    from greenflow.analysis.tiny import get_observed_throughput_of_last_experiment
+    from greenflow.analysis import get_observed_throughput_of_last_experiment
     from entrypoint import rebind_parameters
 
     params = state.params
@@ -169,6 +170,7 @@ def experiment(state: State) -> Result:
     exp(
         experiment_description=params["exp_description"],
     )
+    time.sleep(15)
     throughput = get_observed_throughput_of_last_experiment(
         minimum_current_ts=start_time
     )
