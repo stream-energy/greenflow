@@ -165,14 +165,7 @@ def demonstrate_binary_search(exp_description) -> None:
     # Message sizes up to 1MB (with
     messageSizes = [2**i for i in range(5, 21)]
 
-    for _ in range(3):
-        with kafka_context():
-            for messageSize in messageSizes:
-                rebind_parameters(messageSize=messageSize)
-                stress_test(
-                    target_load=1 * 10**9,
-                    exp_description=exp_description,
-                )
+    threshold("ingest-kafka", messageSizes, exp_description=exp_description)
     send_notification("Experiment complete. On to the next.")
 
 def safety_curve(exp_description) -> None:
