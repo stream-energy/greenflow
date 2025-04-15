@@ -48,6 +48,21 @@ def baseline(exp_description) -> None:
 
         from ..g import g
 
+        rebind_parameters(brokerReplicas=1)
+        with ctx_manager():
+            for _ in range(rep):
+                rebind_parameters(
+                    partitions=20,
+                    consumerInstances=0,
+                    producerInstances=8,
+                    replicationFactor=1,
+                )
+                stress_test(
+                    target_load=10**9,
+                    exp_description=exp_description,
+                )
+
+        rebind_parameters(brokerReplicas=3)
         with ctx_manager():
             for _ in range(rep):
                 rebind_parameters(
@@ -183,7 +198,6 @@ def demonstrate_binary_search(exp_description) -> None:
     with kafka_context():
         threshold("ingest-kafka", exp_description, messageSizes)
 
-    threshold("ingest-kafka", exp_description, messageSizes)
     send_notification("Experiment complete. On to the next.")
 
 
