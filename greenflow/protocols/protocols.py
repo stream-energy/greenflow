@@ -44,6 +44,7 @@ def baseline(exp_description) -> None:
     for exp_name in exp_names:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
+        rebind_parameters(messageSize=4096)
 
         from ..g import g
 
