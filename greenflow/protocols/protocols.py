@@ -160,14 +160,29 @@ def demonstrate_binary_search(exp_description) -> None:
 
     exp_name = "ingest-kafka"
     load_gin("ingest-kafka")
-    rebind_parameters(
-        consumerInstances=0, producerInstances=8, partitions=60, messageSize=4096
-    )
+    rebind_parameters(consumerInstances=0, producerInstances=8, partitions=60)
+    messageSizes = [
+        10,
+        50,
+        100,
+        500,
+        1000,
+        2000,
+        3000,
+        4000,
+        5000,
+        6000,
+        7000,
+        8000,
+        9000,
+        10000,
+    ]
 
     # Message sizes up to 1MB (with
-    messageSizes = [2**i for i in range(5, 21)]
     with kafka_context():
         threshold("ingest-kafka", exp_description, messageSizes)
+
+    threshold("ingest-kafka", exp_description, messageSizes)
     send_notification("Experiment complete. On to the next.")
 
 

@@ -506,7 +506,7 @@ def enrich_dataframe(df):
         # calculate_throughput_per_watt,
         calculate_energy_cost,
         calculate_network_saturation,
-        # calculate_throughput_gap,
+        calculate_throughput_gap,
         # convert_broker_cpu,
     ]
 

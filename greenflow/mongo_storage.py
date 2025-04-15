@@ -214,7 +214,7 @@ class Experiment(Persistent):
             "replicationFactor",
             "producer_instances",
             "consumer_instances",
-            "type"
+            "type",
         ]
 
         result = {
