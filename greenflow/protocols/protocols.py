@@ -12,6 +12,7 @@ from entrypoint import (
 )
 import traceback
 import logging
+from time import sleep
 
 from greenflow.exp_ng.prometheus import reinit_prometheus, scale_prometheus
 from ..state import get_deployment_state_vars, get_experiment_state_vars
@@ -348,11 +349,22 @@ def get_workers():
 def proportionality(exp_description) -> None:
     # Common parameters
     test_duration = 100  # seconds for non-idle tests
-    broker_replicas = [3, 4, 5, 6, 7, 8]
+    broker_replicas = [3]
     rep = 1
     mult = 20
+    baseline = {
+        "ovhnvme": {
+            "ingest-kafka": 610.57,
+            "ingest-redpanda": 928.68,
+        },
+    }
+    baselineOVH = 610.57 # 610.57 MB/s
+    mst = 610.57 * 1024 * 1024
 
-    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+    # messageRate based on 4096B message size
+    messageRate = mst / 4096
+
+    for (exp_name, baseline) in baseline["ovhnvme"].items():
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
 
@@ -360,28 +372,31 @@ def proportionality(exp_description) -> None:
 
         for replica in broker_replicas:
             for _ in range(rep):
-                rebind_parameters(
-                    brokerReplicas=replica,
-                    partitions=replica * mult,
-                    messageSize=4096,
-                    consumerInstances=0,
-                    producerInstances=16,
-                )
+                # rebind_parameters(
+                #     brokerReplicas=replica,
+                #     partitions=replica * mult,
+                #     messageSize=4096,
+                #     consumerInstances=0,
+                #     producerInstances=16,
+                # )
                 with ctx_manager():
-                    # rebind_parameters(durationSeconds=300)
-                    # max_throughput = stress_test(
-                    #     target_load=0,  # Idle load to find idle power
-                    #     exp_description=exp_description,
-                    # )
-                    # Find maximum throughput with hammer method
-                    rebind_parameters(durationSeconds=test_duration)
+                    max_throughput = baseline
+                    time.sleep(30)
+
+                    rebind_parameters(durationSeconds=300)
                     max_throughput = stress_test(
-                        target_load=1 * 10**9,  # High initial load to find limits
+                        target_load=0,  # Idle load to find idle power
                         exp_description=exp_description,
                     )
+                #     # Find maximum throughput with hammer method
+                #     rebind_parameters(durationSeconds=test_duration)
+                #     max_throughput = stress_test(
+                #         target_load=1 * 10**9,  # High initial load to find limits
+                #         exp_description=exp_description,
+                #     )
 
                     # Proportionality tests at 10% intervals
-                    for percentage in range(10, 101, 10):
+                    for percentage in range(10, 100, 10):
                         load_factor = percentage / 100.0
                         stress_test(
                             target_load=max_throughput * load_factor,
