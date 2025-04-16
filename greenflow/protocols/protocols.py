@@ -371,6 +371,9 @@ def proportionality(exp_description) -> None:
 
         for replica in broker_replicas:
             for _ in range(rep):
+                rebind_parameters(
+                    partitions=replica * mult,
+                )
                 # rebind_parameters(
                 #     brokerReplicas=replica,
                 #     partitions=replica * mult,
