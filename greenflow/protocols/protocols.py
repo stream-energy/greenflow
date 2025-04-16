@@ -354,17 +354,13 @@ def proportionality(exp_description) -> None:
     mult = 20
     baseline = {
         "ovhnvme": {
-            "ingest-kafka": 610.57,
-            "ingest-redpanda": 928.68,
+            "ingest-kafka": 156306.43,
+            "ingest-redpanda": 237742.98,
         },
     }
     baselineOVH = 610.57  # 610.57 MB/s
 
     for exp_name, baseline in baseline["ovhnvme"].items():
-        mst = baseline * 1024 * 1024
-
-        # messageRate based on 4096B message size
-        messageRate = mst / 4096
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
         rebind_parameters(
@@ -395,7 +391,7 @@ def proportionality(exp_description) -> None:
                     for percentage in range(10, 101, 10):
                         load_factor = percentage / 100.0
                         stress_test(
-                            target_load=messageRate * load_factor,
+                            target_load=baseline * load_factor,
                             exp_description=exp_description,
                         )
                         time.sleep(60)
