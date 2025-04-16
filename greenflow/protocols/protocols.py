@@ -359,12 +359,12 @@ def proportionality(exp_description) -> None:
         },
     }
     baselineOVH = 610.57 # 610.57 MB/s
-    mst = 610.57 * 1024 * 1024
-
-    # messageRate based on 4096B message size
-    messageRate = mst / 4096
 
     for (exp_name, baseline) in baseline["ovhnvme"].items():
+        mst = baseline * 1024 * 1024
+
+        # messageRate based on 4096B message size
+        messageRate = mst / 4096
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
 
@@ -380,27 +380,21 @@ def proportionality(exp_description) -> None:
                 #     producerInstances=16,
                 # )
                 with ctx_manager():
-                    max_throughput = baseline
-                    time.sleep(30)
+                    sleep(30)
 
                     rebind_parameters(durationSeconds=300)
-                    max_throughput = stress_test(
+                    stress_test(
                         target_load=0,  # Idle load to find idle power
                         exp_description=exp_description,
                     )
-                #     # Find maximum throughput with hammer method
-                #     rebind_parameters(durationSeconds=test_duration)
-                #     max_throughput = stress_test(
-                #         target_load=1 * 10**9,  # High initial load to find limits
-                #         exp_description=exp_description,
-                #     )
 
                     # Proportionality tests at 10% intervals
-                    for percentage in range(10, 100, 10):
+                    for percentage in range(10, 101, 10):
                         load_factor = percentage / 100.0
                         stress_test(
-                            target_load=max_throughput * load_factor,
+                            target_load=messageRate * load_factor,
                             exp_description=exp_description,
                         )
+                        time.sleep(60)
 
     send_notification("Proportionality experiments complete.")
