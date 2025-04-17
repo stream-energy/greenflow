@@ -2,7 +2,7 @@ broker_cpu/macro.value = 8
 
 greenflow.factors.exp_params.durationSeconds = 100
 greenflow.factors.exp_params.producer_instances = 8
-greenflow.factors.exp_params.consumer_instances = 1
+greenflow.factors.exp_params.consumer_instances = 0
 greenflow.factors.exp_params.kafka_bootstrap_servers = "theodolite-kafka-kafka-bootstrap:9092"
 greenflow.factors.exp_params.load = 50000
 greenflow.factors.exp_params.replicationFactor = 3

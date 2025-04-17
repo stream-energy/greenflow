@@ -156,9 +156,9 @@ def system(exp_description) -> None:
         load_gin(exp_name)
 
         rebind_parameters(
-            partitions=600,
-            producerInstances=10,
-            consumerInstances=10,
+            partitions=60,
+            producerInstances=8,
+            consumerInstances=0,
         )
         for _ in range(rep):
             with ctx_manager():
@@ -202,30 +202,6 @@ def demonstrate_binary_search(exp_description) -> None:
     send_notification("Experiment complete. On to the next.")
 
 
-def safety_curve(exp_description) -> None:
-    from greenflow.playbook import exp
-    from greenflow.adaptive import threshold_hammer, threshold
-
-    exp_name = "ingest-kafka"
-    load_gin("ingest-kafka")
-    rebind_parameters(
-        consumerInstances=0, producerInstances=8, partitions=60, messageSize=4096
-    )
-
-    # Message sizes up to 1MB (with
-    messageSizes = [2**i for i in range(5, 21)]
-
-    for _ in range(3):
-        with kafka_context():
-            for messageSize in messageSizes:
-                rebind_parameters(messageSize=messageSize)
-                stress_test(
-                    target_load=1 * 10**9,
-                    exp_description=exp_description,
-                )
-    send_notification("Experiment complete. On to the next.")
-
-
 def run_single_hammer(exp_name, *, exp_description, **params):
     ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
     params = Box(params)
@@ -246,6 +222,33 @@ def run_single_hammer(exp_name, *, exp_description, **params):
             killexp()  # Clean up
         except Exception as cleanup_error:
             logging.error(f"Error during cleanup: {str(cleanup_error)}")
+
+
+def safety_curve(exp_description) -> None:
+    rep = 3
+    messageSizes = [2**i for i in range(5, 21)]
+
+    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+        ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+        load_gin(exp_name)
+
+        rebind_parameters(
+            partitions=60,
+            producerInstances=8,
+            consumerInstances=0,
+        )
+
+        # Message sizes up to 1MB (with
+        with ctx_manager():
+            for _ in range(rep):
+                for messageSize in messageSizes:
+                    rebind_parameters(messageSize=messageSize)
+                    stress_test(
+                        target_load=1 * 10**9,
+                        exp_description=exp_description,
+                    )
+
+    send_notification("Experiment complete. On to the next.")
 
 
 def partitioning(exp_description) -> None:
