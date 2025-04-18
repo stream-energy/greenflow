@@ -155,7 +155,8 @@ chmod +x /tmp/synchronized_kafka_perf_test.sh
     --num-records {int(total_messages)} \
     --record-size {exp_params.messageSize} \
     --throughput {throughput} \
-    --producer-props "bootstrap.servers={exp_params.kafka_bootstrap_servers} batch.size=32768" \
+    --bootstrap-servers {exp_params.kafka_bootstrap_servers} \
+    --producer-props "batch.size=32768" \
     --durationSeconds {exp_params.durationSeconds} \
     --start-timestamp {start_timestamp}
                                     """,

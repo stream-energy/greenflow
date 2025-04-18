@@ -24,6 +24,10 @@ parse_args() {
                 RECORD_SIZE="$2"
                 shift 2
                 ;;
+            --bootstrap-servers)
+                BOOTSTRAP_SERVERS="$2"
+                shift 2
+                ;;
             --producer-props)
                 PRODUCER_PROPS="$2"
                 shift 2
@@ -51,9 +55,9 @@ parse_args "$@"
 DURATION_SECONDS=$((DURATION_SECONDS + 5))
 
 # Validate required parameters
-if [[ -z "$TOPIC" || -z "$NUM_RECORDS" || -z "$RECORD_SIZE" || -z "$PRODUCER_PROPS" || -z "$START_TIMESTAMP" || -z "$DURATION_SECONDS" ]]; then
+if [[ -z "$TOPIC" || -z "$NUM_RECORDS" || -z "$RECORD_SIZE" || -z "$BOOTSTRAP_SERVERS" || -z "$START_TIMESTAMP" || -z "$DURATION_SECONDS" ]]; then
     echo "Missing required parameters. Usage:"
-    echo "./synchronized_kafka_perf_test.sh --topic <topic> --num-records <num> --record-size <size> --producer-props <props> --start-timestamp <unix_timestamp> --durationSeconds <seconds>"
+    echo "./synchronized_kafka_perf_test.sh --topic <topic> --num-records <num> --record-size <size> --bootstrap-servers <servers> --producer-props <props> --start-timestamp <unix_timestamp> --durationSeconds <seconds>"
     exit 1
 fi
 
@@ -72,13 +76,21 @@ fi
 ACTUAL_START_TIME=$(date +%s)
 echo "Test started at: $(date -d @$ACTUAL_START_TIME)"
 
+# Prepare producer properties
+PRODUCER_CONFIG="bootstrap.servers=$BOOTSTRAP_SERVERS"
+
+# Add additional producer properties if provided
+if [[ ! -z "$PRODUCER_PROPS" ]]; then
+    PRODUCER_CONFIG="$PRODUCER_CONFIG $PRODUCER_PROPS"
+fi
+
 # Run the Kafka producer performance test in the background
 kafka-producer-perf-test \
     --topic "$TOPIC" \
     --num-records "$NUM_RECORDS" \
     --record-size "$RECORD_SIZE" \
     --throughput "$THROUGHPUT" \
-    --producer-props "$PRODUCER_PROPS" \
+    --producer-props $PRODUCER_CONFIG \
     --print-metrics &
 
 PERF_TEST_PID=$!
