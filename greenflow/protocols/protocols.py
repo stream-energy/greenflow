@@ -159,6 +159,7 @@ def system(exp_description) -> None:
             partitions=60,
             producerInstances=8,
             consumerInstances=0,
+            messageSize=4096,
         )
         for _ in range(rep):
             with ctx_manager():
