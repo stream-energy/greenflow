@@ -361,10 +361,13 @@ def proportionality(exp_description) -> None:
             "ingest-kafka": 156306.43,
             "ingest-redpanda": 237742.98,
         },
+        "grappe": {
+            "ingest-kafka": 120700,
+            "ingest-redpanda": 110794,
+        },
     }
-    baselineOVH = 610.57  # 610.57 MB/s
 
-    for exp_name, baseline in baseline["ovhnvme"].items():
+    for exp_name, baseline in baseline["grappe"].items():
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
         rebind_parameters(
