@@ -245,6 +245,7 @@ class Experiment(Persistent):
             filtered_params["num_broker_nodes"] = len(
                 self.experiment_metadata.deployment_metadata.ansible_inventory.all.children.broker.hosts
             )
+            filtered_params["broker_nodes_list"] = ",".join([k[0] for k in self.experiment_metadata.deployment_metadata.ansible_inventory.all.children.broker.hosts.items()])
             filtered_params["num_worker_nodes"] = len(
                 self.experiment_metadata.deployment_metadata.ansible_inventory.all.children.worker.hosts
             )

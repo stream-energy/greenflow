@@ -134,14 +134,14 @@ def full_analytical_pipeline_nocache(
             enriched_data_serializable = ensure_serializable(enriched_data)
 
             # Remove _id from the update data since it's immutable
-            if '_id' in enriched_data_serializable:
-                del enriched_data_serializable['_id']
+            if "_id" in enriched_data_serializable:
+                del enriched_data_serializable["_id"]
 
             # Use update_one with upsert=True instead of insert_one
             storage.results_collection.update_one(
                 {"_id": exp_id},  # filter
                 {"$set": enriched_data_serializable},  # update (without _id field)
-                upsert=True  # create if doesn't exist
+                upsert=True,  # create if doesn't exist
             )
 
             # Add to the list of all enriched experiments
@@ -295,7 +295,6 @@ def calculate_disk_utilization(row: pd.Series):
 # 100 - (avg by (node) (irate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)
 
 
-
 def create_qgrid_widget(df: pd.DataFrame):
     import qgridnext as qgrid
 
@@ -333,6 +332,7 @@ def calculate_observed_throughput(row: pd.Series):
     row["observed_throughput"] = observed_throughput
 
     return row
+
 
 def calculate_throughput_MBps(row: pd.Series):
     """
@@ -434,6 +434,7 @@ def calculate_average_power(row: pd.Series):
         # Calculate the average power consumption
         average_power = data["value"].mean()
         row["average_power"] = average_power
+        row["average_unit_power"] = average_power / row["broker_replicas"]
     else:
         row["average_power"] = 0
 
