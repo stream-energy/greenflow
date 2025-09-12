@@ -148,6 +148,34 @@ def smoketest(exp_description) -> None:
             print("Observed max throughput: ", max_throughput)
     send_notification("Smoketest complete.")
 
+def latency(exp_description) -> None:
+    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+        ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+        load_gin(exp_name)
+
+        from ..g import g
+
+        replica = 3
+        multiplier = 1
+        repeats = 3
+
+        rebind_parameters(
+            brokerReplicas=replica,
+            partitions=replica * multiplier,
+            # consumerInstances=10,
+            producerInstances=10,
+            messageSize=256,
+        )
+        with ctx_manager():
+            for i in range(repeats):
+                rebind_parameters(durationSeconds=300)
+                max_throughput = stress_test(
+                    target_load=00000,
+                    exp_description=exp_description,
+                )
+                print("Observed max throughput: ", max_throughput)
+    send_notification("Smoketest complete.")
+
 
 def system(exp_description) -> None:
     rep = 3
@@ -367,7 +395,7 @@ def proportionality(exp_description) -> None:
         },
     }
 
-    for exp_name, baseline in baseline["grappe"].items():
+    for exp_name, baseline in baseline["ovhnvme"].items():
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
         rebind_parameters(
@@ -398,7 +426,7 @@ def proportionality(exp_description) -> None:
                     # )
 
                     # Proportionality tests at 10% intervals
-                    for percentage in range(10, 101, 10):
+                    for percentage in range(1, 11, 1):
                         load_factor = percentage / 100.0
                         stress_test(
                             target_load=baseline * load_factor,

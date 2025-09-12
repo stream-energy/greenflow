@@ -140,11 +140,12 @@ def _ingest_set(exp_description):
         memory_cpu_impact_1_1_1,
         proportionality,
         smoketest,
+        latency,
         partitioning,
         idle,
         system,
         baseline,
-        safety_curve
+        safety_curve,
     )
 
     if "type=scalingBehaviour" in exp_description:
@@ -162,6 +163,8 @@ def _ingest_set(exp_description):
         proportionality(exp_description)
     elif "type=smoketest" in exp_description:
         smoketest(exp_description)
+    elif "type=latency" in exp_description:
+        latency(exp_description)
     elif "type=partitioning" in exp_description:
         partitioning(exp_description)
     elif "type=idle" in exp_description:

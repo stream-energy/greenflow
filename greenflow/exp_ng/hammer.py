@@ -151,7 +151,7 @@ cat << 'EOF' > /tmp/synchronized_kafka_perf_test.sh
 EOF
 chmod +x /tmp/synchronized_kafka_perf_test.sh
 /tmp/synchronized_kafka_perf_test.sh \
-    --topic input \
+    --topic kminion-end-to-end \
     --num-records {int(total_messages)} \
     --record-size {exp_params.messageSize} \
     --throughput {throughput} \
