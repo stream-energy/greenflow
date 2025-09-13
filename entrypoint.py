@@ -101,18 +101,19 @@ def load_gin(exp_name="ingest-redpanda", cluster="grappe", test=False):
 
 def rebind_parameters(**kwargs):
     parameter_mapping = {
-        "load": "greenflow.factors.exp_params.load",
-        "producerInstances": "greenflow.factors.exp_params.producer_instances",
+        "bootstrap_servers": "greenflow.factors.kafka_bootstrap_servers",
+        "brokerCpu": "broker_cpu/macro.value",
+        "brokerMem": "greenflow.factors.exp_params.broker_mem",
+        "brokerReplicas": "greenflow.factors.exp_params.broker_replicas",
         "consumerInstances": "greenflow.factors.exp_params.consumer_instances",
+        "durationSeconds": "greenflow.factors.exp_params.durationSeconds",
+        "load": "greenflow.factors.exp_params.load",
         "messageSize": "greenflow.factors.exp_params.messageSize",
         "partitions": "greenflow.factors.exp_params.partitions",
-        "bootstrap_servers": "greenflow.factors.kafka_bootstrap_servers",
+        "producerInstances": "greenflow.factors.exp_params.producer_instances",
         "redpanda_write_caching": "greenflow.factors.exp_params.redpanda_write_caching",
-        "durationSeconds": "greenflow.factors.exp_params.durationSeconds",
-        "brokerCpu": "broker_cpu/macro.value",
-        "brokerReplicas": "greenflow.factors.exp_params.broker_replicas",
-        "brokerMem": "greenflow.factors.exp_params.broker_mem",
         "replicationFactor": "greenflow.factors.exp_params.replicationFactor",
+        "topic_name": "greenflow.factors.exp_params.topic_name",
     }
 
     succeeded_rebindings = {}

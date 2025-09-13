@@ -105,6 +105,7 @@ def exp_perf_test_job(extra_vars) -> Job:
     load = exp_params.load / exp_params.producer_instances
     total_messages = load * exp_params.durationSeconds
     producer_instances = exp_params.producer_instances
+    topic_name = exp_params.topic_name
     start_timestamp = int(time.time()) + 20  # 20 seconds in the future
     if load == 1 * 10**9:
         throughput = -1
@@ -151,7 +152,7 @@ cat << 'EOF' > /tmp/synchronized_kafka_perf_test.sh
 EOF
 chmod +x /tmp/synchronized_kafka_perf_test.sh
 /tmp/synchronized_kafka_perf_test.sh \
-    --topic kminion-end-to-end \
+    --topic {topic_name} \
     --num-records {int(total_messages)} \
     --record-size {exp_params.messageSize} \
     --throughput {throughput} \

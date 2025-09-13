@@ -159,6 +159,9 @@ def latency(exp_description) -> None:
         multiplier = 1
         repeats = 3
 
+        # Hypothesis is that the message size doesn't matter too much
+        # For latency, so I'm going to just fix it at 128 bytes
+        # Re-examine this assumption later if results are not as expected
         rebind_parameters(
             brokerReplicas=replica,
             partitions=replica * multiplier,
@@ -167,11 +170,13 @@ def latency(exp_description) -> None:
             messageSize=128,
         )
         with ctx_manager():
+            rebind_parameters(topic_name="input")
             max_throughput = stress_test(
                 target_load=1 * 10**9,
                 exp_description=exp_description,
             )
-            latency_target = max_throughput * 0.8
+            latency_target = max_throughput * 0.6
+            rebind_parameters(topic_name="kminion-end-to-end")
             for i in range(repeats):
                 max_throughput = stress_test(
                     target_load=latency_target,
