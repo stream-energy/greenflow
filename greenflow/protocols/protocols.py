@@ -164,17 +164,20 @@ def latency(exp_description) -> None:
             partitions=replica * multiplier,
             # consumerInstances=10,
             producerInstances=10,
-            messageSize=256,
+            messageSize=128,
         )
         with ctx_manager():
+            max_throughput = stress_test(
+                target_load=1 * 10**9,
+                exp_description=exp_description,
+            )
+            latency_target = max_throughput * 0.8
             for i in range(repeats):
-                rebind_parameters(durationSeconds=300)
                 max_throughput = stress_test(
-                    target_load=00000,
+                    target_load=latency_target,
                     exp_description=exp_description,
                 )
-                print("Observed max throughput: ", max_throughput)
-    send_notification("Smoketest complete.")
+    send_notification("Latency experiments complete.")
 
 
 def system(exp_description) -> None:
@@ -347,6 +350,7 @@ def scaling_behaviour(exp_description) -> None:
     exp_name = "ingest-redpanda"
     load_gin(exp_name)
     rebind_parameters(consumerInstances=0)
+    brokerReplicaList = list(range(3, 11))
 
     for replicas in brokerReplicaList:
         rebind_parameters(
