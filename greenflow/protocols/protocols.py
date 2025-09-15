@@ -149,7 +149,11 @@ def smoketest(exp_description) -> None:
     send_notification("Smoketest complete.")
 
 def latency(exp_description) -> None:
-    for exp_name in ["ingest-kafka", "ingest-redpanda"]:
+    exp_names = [
+        "ingest-kafka",
+        "ingest-redpanda",
+    ]
+    for exp_name in exp_names:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
 
@@ -159,15 +163,15 @@ def latency(exp_description) -> None:
         multiplier = 1
         repeats = 3
 
-        # Hypothesis is that the message size doesn't matter too much
-        # For latency, so I'm going to just fix it at 128 bytes
-        # Re-examine this assumption later if results are not as expected
+        # Message size does have a significant impact on latency
+        # 
+        load = 362710
         rebind_parameters(
             brokerReplicas=replica,
             partitions=replica * multiplier,
             # consumerInstances=10,
             producerInstances=10,
-            messageSize=128,
+            messageSize=512,
         )
         with ctx_manager():
             rebind_parameters(topic_name="input")
@@ -175,7 +179,8 @@ def latency(exp_description) -> None:
                 target_load=1 * 10**9,
                 exp_description=exp_description,
             )
-            latency_target = max_throughput * 0.6
+            latency_target = max_throughput * 0.3
+            latency_target = 362710
             rebind_parameters(topic_name="kminion-end-to-end")
             for i in range(repeats):
                 max_throughput = stress_test(
