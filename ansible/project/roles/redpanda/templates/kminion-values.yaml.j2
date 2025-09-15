@@ -193,6 +193,11 @@ kminion:
       endToEnd:
         enabled: true
         probeInterval: 500ms # how often to send end-to-end test messages
+        topicManagement:
+          enabled: true
+          reconciliationInterval: 30s
+          replicationFactor: 3
+          # partitionsPerBroker: 300
     kafka:
       brokers:
         - "redpanda.redpanda.svc.cluster.local:9092"

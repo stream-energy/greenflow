@@ -44,6 +44,8 @@ kminion:
         topicManagement:
           enabled: true
           reconciliationInterval: 30s
+          replicationFactor: 3
+          # partitionsPerBroker: 300
     kafka:
       brokers:
         - "theodolite-kafka-kafka-bootstrap.default.svc.cluster.local:9092"
