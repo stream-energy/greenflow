@@ -163,28 +163,30 @@ def latency(exp_description) -> None:
         multiplier = 1
         repeats = 3
 
-        # Message size does have a significant impact on latency
-        # 
-        load = 362710
+        # Hypothesis is that the message size doesn't matter too much
+        # For latency, so I'm going to just fix it at 128 bytes
+        # Re-examine this assumption later if results are not as expected
+        load = 100000
         rebind_parameters(
             brokerReplicas=replica,
-            partitions=replica * multiplier,
+            partitions=1,
+            # partitions=replica * multiplier,
+            durationSeconds=300,
             # consumerInstances=10,
             producerInstances=10,
             messageSize=512,
         )
         with ctx_manager():
-            rebind_parameters(topic_name="input")
-            max_throughput = stress_test(
-                target_load=1 * 10**9,
-                exp_description=exp_description,
-            )
-            latency_target = max_throughput * 0.3
-            latency_target = 362710
+            # rebind_parameters(topic_name="input")
+            # max_throughput = stress_test(
+            #     target_load=1 * 10**9,
+            #     exp_description=exp_description,
+            # )
+            # latency_target = max_throughput * 0.3
             rebind_parameters(topic_name="kminion-end-to-end")
             for i in range(repeats):
                 max_throughput = stress_test(
-                    target_load=latency_target,
+                    target_load=load,
                     exp_description=exp_description,
                 )
     send_notification("Latency experiments complete.")
@@ -406,6 +408,10 @@ def proportionality(exp_description) -> None:
         "grappe": {
             "ingest-kafka": 120700,
             "ingest-redpanda": 110794,
+        },
+        "taurus": {
+            "ingest-kafka": 18559.73,
+            "ingest-redpanda": 6747.87,
         },
     }
 
