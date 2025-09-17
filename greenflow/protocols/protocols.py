@@ -153,40 +153,48 @@ def latency(exp_description) -> None:
         "ingest-kafka",
         "ingest-redpanda",
     ]
+    # Run both systems, find the min max throughput for each
+    max_throughputs = []
     for exp_name in exp_names:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
 
         from ..g import g
 
-        replica = 3
-        multiplier = 1
-        repeats = 3
-
-        # Hypothesis is that the message size doesn't matter too much
-        # For latency, so I'm going to just fix it at 128 bytes
-        # Re-examine this assumption later if results are not as expected
-        load = 100000
         rebind_parameters(
             brokerReplicas=replica,
             partitions=1,
-            # partitions=replica * multiplier,
-            durationSeconds=300,
-            # consumerInstances=10,
             producerInstances=10,
-            messageSize=512,
+            messageSize=128,
         )
         with ctx_manager():
-            # rebind_parameters(topic_name="input")
-            # max_throughput = stress_test(
-            #     target_load=1 * 10**9,
-            #     exp_description=exp_description,
-            # )
-            # latency_target = max_throughput * 0.3
+            max_throughput = stress_test(
+                target_load=1 * 10**9,  # High initial load to find limits
+                exp_description=exp_description,
+            )
+            print("Observed max throughput: ", max_throughput)
+            max_throughputs.append(max_throughput)
+
+    min_max_throughput = min(max_throughputs)
+    target_latency_load = min_max_throughput * 0.3
+    for exp_name in exp_names:
+        ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
+        load_gin(exp_name)
+
+        from ..g import g
+        repeats = 3
+
+        rebind_parameters(
+            partitions=1,
+            durationSeconds=300,
+            producerInstances=10,
+            messageSize=128,
+        )
+        with ctx_manager():
             rebind_parameters(topic_name="kminion-end-to-end")
             for i in range(repeats):
                 max_throughput = stress_test(
-                    target_load=load,
+                    target_load=target_latency_load,
                     exp_description=exp_description,
                 )
     send_notification("Latency experiments complete.")

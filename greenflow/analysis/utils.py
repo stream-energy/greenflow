@@ -33,7 +33,7 @@ def get_observed_throughput_of_last_experiment(
         return get_observed_throughput_of_last_experiment(minimum_current_ts)
 
 
-def full_analytical_pipeline_nocache(
+def full_analytical_pipeline(
     *,
     cutoff_begin=None,
     cutoff_end=None,
@@ -154,25 +154,6 @@ def full_analytical_pipeline_nocache(
         return redpanda_kafka_data
         # listExperiment = [Experiment.from_doc(exp) for exp in matching_experiments]
         # filtered_experiments = [exp.to_dict() for exp in listExperiment]
-
-
-# @cache.pyarrow_cache
-# def full_analytical_pipeline(
-#     *,
-#     cutoff_begin,
-#     cutoff_end,
-#     cluster=None,
-#     type=None,
-#     **kwargs,
-# ):
-#     return full_analytical_pipeline_nocache(
-#         cutoff_begin=cutoff_begin,
-#         cutoff_end=cutoff_end,
-#         cluster=cluster,
-#         type=type,
-#         **kwargs,
-#     )
-full_analytical_pipeline = full_analytical_pipeline_nocache
 
 
 def get_time_range(row: pd.Series, buffer_minutes: int = 1):
@@ -370,12 +351,13 @@ def calculate_throughput_gap(row: pd.Series):
 def calculate_latency(row: pd.Series):
     started_ts, stopped_ts = get_time_range(row)
 
-    query = f'histogram_quantile(0.99, sum(rate(kminion_end_to_end_produce_latency_seconds_bucket{{namespace="{"redpanda" if "redpanda" in row["exp_name"] else "default"}", experiment_started_ts="{row["started_ts"]}"}})) by (le))'
+    query = f'histogram_quantile(0.99, sum(rate(kminion_end_to_end_roundtrip_latency_seconds_bucket{{namespace="{"redpanda" if "redpanda" in row["exp_name"] else "default"}", experiment_started_ts="{row["started_ts"]}"}})) by (le))'
     try:
-        data = prom.get_metric_range_data(
+        data = prom.custom_query_range(
             query,
             start_time=started_ts.subtract(minutes=5),
             end_time=stopped_ts.add(minutes=5),
+            step="5s", 
         )
         data = MetricRangeDataFrame(data)
     except KeyError:
