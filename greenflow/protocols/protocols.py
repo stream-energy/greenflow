@@ -165,7 +165,7 @@ def latency(exp_description) -> None:
             brokerReplicas=3,
             partitions=1,
             producerInstances=10,
-            messageSize=128,
+            messageSize=1024,
         )
         with ctx_manager():
             max_throughput = stress_test(
@@ -177,6 +177,7 @@ def latency(exp_description) -> None:
 
     min_max_throughput = min(max_throughputs)
     target_latency_load = min_max_throughput * 0.3
+    # target_latency_load = 74820
     for exp_name in exp_names:
         ctx_manager = kafka_context if exp_name == "ingest-kafka" else redpanda_context
         load_gin(exp_name)
@@ -188,7 +189,8 @@ def latency(exp_description) -> None:
             partitions=1,
             durationSeconds=300,
             producerInstances=10,
-            messageSize=128,
+            # messageSize=128,
+            messageSize=1024,
         )
         with ctx_manager():
             rebind_parameters(topic_name="kminion-end-to-end")
