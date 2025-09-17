@@ -162,7 +162,7 @@ def latency(exp_description) -> None:
         from ..g import g
 
         rebind_parameters(
-            brokerReplicas=replica,
+            brokerReplicas=3,
             partitions=1,
             producerInstances=10,
             messageSize=128,
