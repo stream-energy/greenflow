@@ -50,6 +50,7 @@ redpanda_test = "redpanda_test"
 kminion = "kminion"
 base = "base"
 blowaway = "blowaway"
+aws_deploy_k3s = "blowaway"
 
 
 def p(playbook_name_without_yaml):
@@ -69,6 +70,9 @@ def deploy_k3s():
 def deploy_nos_k3s():
     _playbook("nos_deploy_k3s.yaml", get_deployment_state_vars() | get_experiment_state_vars() | factors())
 
+
+def deploy_aws_k3s():
+    _playbook("aws_deploy_k3s.yaml", get_deployment_state_vars() | get_experiment_state_vars() | factors())
 
 def run_playbook(playbook_name):
     extra_vars = get_deployment_state_vars() | factors()

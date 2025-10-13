@@ -44,6 +44,7 @@
             kube3d
             atuin
             kafkactl
+            pulumi
             # redpanda-client
             fish
             (wrapHelm kubernetes-helm {

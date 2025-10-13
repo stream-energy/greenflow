@@ -1,3 +1,169 @@
+# ./justfile
+
+# Helper to validate arch
+_validate_arch arch:
+    #!/usr/bin/env bash
+    case "{{arch}}" in
+        x86_64|arm64)
+            ;;
+        *)
+            echo "Error: Invalid architecture '{{arch}}'. Must be 'x86_64' or 'arm64'."
+            exit 1
+            ;;
+    esac
+
+# Full pipeline from build to AMI registration
+aws-all bucket-name arch:
+    #!/usr/bin/env bash
+    set -e
+    just _validate_arch {{arch}}
+    just aws-build {{arch}}
+    just aws-upload {{bucket-name}} {{arch}}
+
+aws-build arch:
+    #!/usr/bin/env bash
+    set -e
+    set -x
+    just _validate_arch {{arch}}
+
+    NIX_ARCH=""
+    if [ "{{arch}}" == "x86_64" ]; then
+        NIX_ARCH="x86_64-linux"
+    else
+        NIX_ARCH="aarch64-linux"
+    fi
+
+    echo "Building AWS AMI for ${NIX_ARCH}..."
+    nix build ".#nixosConfigurations.aws-base-${NIX_ARCH}.config.formats.amazon"
+    
+    echo "Build complete! Image at: ./result/"
+    ls -lh ./result/
+
+aws-upload bucket-name arch region="eu-west-1":
+    #!/usr/bin/env bash
+    set -e
+    set -x
+    just _validate_arch {{arch}}
+
+    BUCKET_NAME="{{bucket-name}}"
+    REGION="{{region}}"
+    IMAGE_NAME="nixos-{{arch}}-$(date +%Y%m%d-%H%M%S)"
+    
+    VHD_FILE=$(find -L ./result/ -name "*.vhd" -type f | head -n1)
+    
+    echo "Uploading ${VHD_FILE} to s3://${BUCKET_NAME}/${IMAGE_NAME}.vhd"
+    aws s3 cp ${VHD_FILE} s3://${BUCKET_NAME}/${IMAGE_NAME}.vhd --region ${REGION}
+    
+    cat > /tmp/containers.json <<EOF
+    {
+      "Description": "NixOS Custom AMI (${IMAGE_NAME})",
+      "Format": "vhd",
+      "UserBucket": {
+        "S3Bucket": "${BUCKET_NAME}",
+        "S3Key": "${IMAGE_NAME}.vhd"
+      }
+    }
+    EOF
+    
+    IMPORT_TASK_ID=$(aws ec2 import-snapshot \
+      --region ${REGION} \
+      --description "NixOS Custom Image ${IMAGE_NAME}" \
+      --disk-container file:///tmp/containers.json \
+      --query 'ImportTaskId' \
+      --output text)
+    
+    echo "Import Task ID: ${IMPORT_TASK_ID}"
+    echo "Monitoring import... this will take several minutes."
+
+    aws ec2 wait snapshot-imported --import-task-ids ${IMPORT_TASK_ID} --region ${REGION}
+    echo "Snapshot import complete!"
+
+    # Now, register the AMI
+    just aws-register ${IMPORT_TASK_ID} {{arch}} ${REGION}
+
+aws-register import-task-id arch region="eu-west-1":
+    #!/usr/bin/env bash
+    set -e
+    set -x
+    just _validate_arch {{arch}}
+
+    SNAPSHOT_ID=$(aws ec2 describe-import-snapshot-tasks \
+      --region {{region}} \
+      --import-task-ids {{import-task-id}} \
+      --query 'ImportSnapshotTasks[0].SnapshotTaskDetail.SnapshotId' \
+      --output text)
+    
+    AMI_NAME="nixos-{{arch}}-$(date +%Y%m%d-%H%M%S)"
+    
+    AMI_ID=$(aws ec2 register-image \
+      --region {{region}} \
+      --name ${AMI_NAME} \
+      --description "Custom NixOS {{arch}} AMI with K3s" \
+      --architecture {{arch}} \
+      --root-device-name /dev/xvda \
+      --block-device-mappings "[{\"DeviceName\":\"/dev/xvda\",\"Ebs\":{\"SnapshotId\":\"${SNAPSHOT_ID}\",\"VolumeType\":\"gp3\",\"DeleteOnTermination\":true}}]" \
+      --virtualization-type hvm \
+      --ena-support \
+      --query 'ImageId' \
+      --output text)
+    
+    echo ""
+    echo "✓ AMI Created Successfully!"
+    echo "  AMI ID: ${AMI_ID}"
+    echo "  Region: {{region}}"
+    echo "  Name:   ${AMI_NAME}"
+    echo "  Arch:   {{arch}}"
+
+localstack-img:
+    #!/usr/bin/env bash
+    set -e
+    set -x
+
+    # --- Configuration ---
+    NIX_CONFIG="localstack-base"
+    AMI_NAME="nixos-base-image"
+    AMI_ID="ami-nixosbase01"
+    # This is the temporary tag we will import as.
+    BASE_IMAGE_TAG="nixos-localstack-base:latest"
+    # This is the final tag LocalStack recognizes.
+    FINAL_TAG="localstack-ec2/${AMI_NAME}:${AMI_ID}"
+
+    RESULT_PATH="/tmp/nixos-docker-tarball/"
+
+    # 1. Build the system tarball.
+    #    The `docker-image.nix` module configures this specific output.
+    echo "Building NixOS system tarball for Docker..."
+    nix build ".#nixosConfigurations.${NIX_CONFIG}.config.formats.docker" --impure -o "${RESULT_PATH}"
+
+    # 2. Find the output tarball. There should be only one.
+    TARBALL_PATH=$(find "${RESULT_PATH}" -name '*.tar.xz')
+    if [ -z "$TARBALL_PATH" ]; then
+        echo "Error: Could not find built .tar.xz in ${RESULT_PATH}/tarball"
+        exit 1
+    fi
+    echo "Found tarball at: ${TARBALL_PATH}"
+
+    # 3. Import the tarball into Docker.
+    #    'docker import' reads a filesystem tarball, not a 'docker save' tarball.
+    echo "Importing tarball into Docker as ${BASE_IMAGE_TAG}..."
+    docker import "${TARBALL_PATH}" "${BASE_IMAGE_TAG}"
+
+    # 4. Tag the imported image with the special LocalStack format.
+    echo "Tagging image as ${FINAL_TAG} for LocalStack..."
+    docker tag "${BASE_IMAGE_TAG}" "${FINAL_TAG}"
+
+    # 5. Clean up the result symlink.
+    rm "${RESULT_PATH}"
+
+    echo ""
+    echo "✅ Image ready for LocalStack!"
+    echo "---"
+    echo "To verify, run:"
+    echo "  awslocal ec2 describe-images --filters Name=image-id,Values=${AMI_ID}"
+    echo ""
+    echo "To launch an instance (which will run systemd via /init), run:"
+    echo "  awslocal ec2 run-instances --image-id ${AMI_ID} --instance-type t2.micro"
+
 img $site $user: 
     #!/usr/bin/env bash
     set -e
@@ -191,3 +357,96 @@ host *args:
             usage
             ;;
     esac
+
+# Setup AWS vmimport role (one-time setup per AWS account)
+aws-setup-vmimport bucket-name region="eu-west-1":
+    #!/usr/bin/env bash
+    set -e
+    set -x
+    
+    BUCKET_NAME="{{bucket-name}}"
+    REGION="{{region}}"
+    
+    echo "Setting up vmimport IAM role for AWS VM Import/Export..."
+    
+    # Create trust policy
+    cat > /tmp/trust-policy.json <<EOF
+    {
+       "Version": "2012-10-17",
+       "Statement": [
+          {
+             "Effect": "Allow",
+             "Principal": { "Service": "vmie.amazonaws.com" },
+             "Action": "sts:AssumeRole",
+             "Condition": {
+                "StringEquals":{
+                   "sts:Externalid": "vmimport"
+                }
+             }
+          }
+       ]
+    }
+    EOF
+    
+    # Create the IAM role
+    echo "Creating vmimport role..."
+    if aws iam get-role --role-name vmimport 2>/dev/null; then
+        echo "Role vmimport already exists, skipping creation..."
+    else
+        aws iam create-role \
+            --role-name vmimport \
+            --assume-role-policy-document file:///tmp/trust-policy.json
+        echo "✓ Role created"
+    fi
+    
+    # Create role policy
+    cat > /tmp/role-policy.json <<EOF
+    {
+       "Version":"2012-10-17",
+       "Statement":[
+          {
+             "Effect": "Allow",
+             "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket" 
+             ],
+             "Resource": [
+                "arn:aws:s3:::${BUCKET_NAME}",
+                "arn:aws:s3:::${BUCKET_NAME}/*"
+             ]
+          },
+          {
+             "Effect": "Allow",
+             "Action": [
+                "ec2:ModifySnapshotAttribute",
+                "ec2:CopySnapshot",
+                "ec2:RegisterImage",
+                "ec2:Describe*"
+             ],
+             "Resource": "*"
+          }
+       ]
+    }
+    EOF
+    
+    # Attach the policy to the role
+    echo "Attaching policy to vmimport role..."
+    aws iam put-role-policy \
+        --role-name vmimport \
+        --policy-name vmimport \
+        --policy-document file:///tmp/role-policy.json
+    echo "✓ Policy attached"
+    
+    # Verify the role
+    echo "Verifying role..."
+    aws iam get-role --role-name vmimport --query 'Role.RoleName' --output text
+    
+    # Clean up temp files
+    rm /tmp/trust-policy.json /tmp/role-policy.json
+    
+    echo ""
+    echo "✓ vmimport role setup complete!"
+    echo "  You can now run: just aws-upload {{bucket-name}} <arch>"
+
+

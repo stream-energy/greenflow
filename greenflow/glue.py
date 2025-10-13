@@ -43,12 +43,28 @@ def patch_global_g(deployment_type, storage_type="mongo"):
 
 def setup_gin_config(g, exp_name, config_files):
     import gin
+    import os
+    
+    gin_path = f"{g.gitroot}/gin"
+    
+    # Debug: verify the path exists
+    if not os.path.exists(gin_path):
+        raise ValueError(f"Gin config directory does not exist: {gin_path}")
+    
+    # Clear and set search paths explicitly
+
+    
+    # Debug: print what we're about to parse
+    # print(f"Gin search paths: {gin.config._CONFIG_FILE_SEARCH_PATHS}")
+    # print(f"Config files to parse: {config_files}")
 
     with gin.unlock_config():
+        gin.add_config_file_search_path(gin_path)
         gin.parse_config_files_and_bindings(
             [f"{g.gitroot}/gin/{file}" for file in config_files],
             [],
         )
+
 
 
 @contextmanager

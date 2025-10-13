@@ -3,6 +3,7 @@
 import gin
 import yaml
 
+from .aws import AwsPlatform
 from .g5k import G5KPlatform
 from .g5knos import G5KNixOSPlatform
 from .vmon import *

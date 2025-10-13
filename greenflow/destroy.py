@@ -8,6 +8,8 @@ import pendulum
 
 import gin
 
+
+from .aws import AwsPlatform
 from .factors import factors
 from .g5k import G5KPlatform
 from .g5knos import G5KNixOSPlatform
@@ -59,6 +61,10 @@ def destroy(*, platform=gin.REQUIRED):
             pre_destroy()
             p.teardown()
             post_destroy()
+        case AwsPlatform():
+            pre_destroy()
+            p.teardown()
+            post_destroy()
 
 
 @gin.configurable
@@ -68,4 +74,6 @@ def killjob(*, platform=gin.REQUIRED):
         case G5KPlatform():
             p.teardown()
         case G5KNixOSPlatform():
+            p.teardown()
+        case AwsPlatform():
             p.teardown()

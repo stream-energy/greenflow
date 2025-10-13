@@ -1,20 +1,4 @@
-broker_cpu/macro.value = 8
+# include '/ingest_base.gin'
 
-greenflow.factors.exp_params.broker_cpu = %broker_cpu
-greenflow.factors.exp_params.broker_io_threads = %broker_cpu
-greenflow.factors.exp_params.broker_mem = "16Gi"
-greenflow.factors.exp_params.broker_network_threads = %broker_cpu
-greenflow.factors.exp_params.broker_replica_fetchers = %broker_cpu
-greenflow.factors.exp_params.broker_replicas = 3
-greenflow.factors.exp_params.consumer_instances = 0
-greenflow.factors.exp_params.durationSeconds = 100
 greenflow.factors.exp_params.kafka_bootstrap_servers = "theodolite-kafka-kafka-bootstrap:9092"
-greenflow.factors.exp_params.load = 50000
-greenflow.factors.exp_params.messageSize = 4096
-greenflow.factors.exp_params.partitions = 1
-greenflow.factors.exp_params.producer_instances = 8
-greenflow.factors.exp_params.redpanda_write_caching = True
-greenflow.factors.exp_params.replicationFactor = 3
-greenflow.factors.exp_params.topic_name = "input"
-greenflow.factors.exp_params.warmupSeconds = 0
 greenflow.factors.factors.exp_name = "ingest-kafka"

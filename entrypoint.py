@@ -79,19 +79,21 @@ def load_gin(exp_name="ingest-redpanda", cluster="grappe", test=False):
     else:
         g = patch_global_g("production")
         config_files = [
-            "vmon-defaults.gin",
-            "g5knos/defaults.gin",
+            # "vmon-defaults.gin",
+            "aws/defaults.gin",
+            # "g5knos/defaults.gin",
             # "g5k/paravance.gin",
             # "g5k/parasilo.gin",
             # "g5k/paradoxe.gin",
             # "g5k/montcalm.gin",
             # "g5k/chirop.gin",
             # "g5k/neowise.gin",
-            f"g5knos/{cluster}.gin",
+            # f"g5knos/{cluster}.gin",
             # "g5k/ecotype.gin",
             # "g5k/gros.gin",
             # "g5k/grappe.gin",
             # "g5k/chiclet.gin",
+            f"ingest_base.gin",
             f"{exp_name}.gin",
         ]
 
@@ -177,40 +179,46 @@ def _ingest_set(exp_description):
 
 @click.command("srun")
 @click.argument("cluster", type=str)
-@click.option("--workers", type=int, default=1)
-@click.option("--brokers", type=int, default=3)
+@click.option("--num_worker", type=int, default=1)
+@click.option("--num_broker", type=int, default=3)
 @click.argument("exp_description", type=str)
-def setup_and_run(cluster, workers, brokers, exp_description):
-    _setup(cluster, workers, brokers)
+def setup_and_run(cluster, num_worker, num_broker, exp_description):
+    _setup(cluster, num_worker, num_broker)
     exp_description = f"cluster={cluster} " + exp_description
     _ingest_set(exp_description)
 
 
 @click.command("setup")
-@click.argument("cluster", type=str)
-@click.option("--workers", type=int, default=1)
-@click.option("--brokers", type=int, default=3)
-def setup(cluster, workers, brokers):
-    _setup(cluster, workers, brokers)
+@click.argument("cluster", type=str, default="grappe")
+@click.option("--num_worker", type=int, default=1)
+@click.option("--num_broker", type=int, default=3)
+def setup(cluster, num_worker, num_broker):
+    _setup(cluster, num_worker, num_broker)
 
 
-def _setup(cluster, workers, brokers):
+def _setup(cluster, num_worker, num_broker):
     load_gin(exp_name="ingest-kafka", cluster=cluster)
 
     from greenflow import provision
 
-    if workers is not None:
+    if num_worker is not None:
         with gin.unlock_config():
-            gin.bind_parameter("greenflow.g5k.G5KPlatform.get_conf.num_worker", workers)
+            logging.warning(f"Setting num_worker to {num_worker}")
+            gin.bind_parameter("greenflow.g5k.G5KPlatform.get_conf.num_worker", num_worker)
             gin.bind_parameter(
-                "greenflow.g5knos.G5KNixOSPlatform.get_conf.num_worker", workers
+                "greenflow.g5knos.G5KNixOSPlatform.get_conf.num_worker", num_worker
             )
-    if brokers is not None:
+            gin.bind_parameter("greenflow.aws.AwsPlatform.get_conf.num_worker", num_worker)
+            gin.bind_parameter("greenflow.factors.exp_params.num_worker", num_worker)
+    if num_broker is not None:
         with gin.unlock_config():
-            gin.bind_parameter("greenflow.g5k.G5KPlatform.get_conf.num_broker", brokers)
+            logging.warning(f"Setting num_broker to {num_broker}")
+            gin.bind_parameter("greenflow.g5k.G5KPlatform.get_conf.num_broker", num_broker)
             gin.bind_parameter(
-                "greenflow.g5knos.G5KNixOSPlatform.get_conf.num_broker", brokers
+                "greenflow.g5knos.G5KNixOSPlatform.get_conf.num_broker", num_broker
             )
+            gin.bind_parameter("greenflow.aws.AwsPlatform.get_conf.num_broker", num_broker)
+            gin.bind_parameter("greenflow.factors.exp_params.num_broker", num_broker)
     try:
         provision.provision()
         # deploy_k3s()

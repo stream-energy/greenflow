@@ -1,0 +1,63 @@
+{
+  inputs,
+  lib,
+  pkgs,
+  config,
+  ezModules,
+  ...
+}: let
+  name = "{{ inventory_hostname.split('.')[0] }}";
+  networking = {
+    hostName = name;
+    nameservers = ["1.1.1.1" "8.8.8.8"];
+    search = [];
+    domain = "";
+  };
+  {% if role != 'control' -%}
+    {% set control_host = groups['control'] | first %}
+    serverAddr = "https://{{ hostvars[control_host]['private_ip'] }}:6443";
+  {%- endif %}
+in {
+  imports = [
+    ezModules.k3s-overlay
+    ezModules.aws-base
+  ];
+
+  networking = networking;
+
+  lollypops.deployment.ssh = {
+    host = "{{ inventory_hostname }}";
+    user = "root";
+  };
+
+  services.k3s = {
+    {% if role == 'control' -%}
+      enable = true;
+      token = "Swoosh-Unhealthy-Capillary9";
+      role = "server";
+      extraFlags = lib.concatStringsSep " " [
+        "--disable traefik"
+        "--tls-san {{ private_ip }}"
+        "--tls-san {{ ansible_host }}"
+        "--tls-san {{ inventory_hostname }}"
+        "--node-name=${name}"
+        # "--docker"
+        "--kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%"
+      ];
+    {%- else -%}
+      enable = true;
+      token = "Swoosh-Unhealthy-Capillary9";
+      role = "agent";
+      serverAddr = serverAddr;
+      extraFlags = lib.concatStringsSep " " [
+        {% if role == 'broker' -%}
+          "--node-label=node.kubernetes.io/broker=true"
+        {%- elif role == 'worker' -%}
+          "--node-label=node.kubernetes.io/worker=true"
+        {%- endif %}
+        "--node-name=${name}"
+        "--kubelet-arg=eviction-hard=nodefs.available<1%,imagefs.available<1%,nodefs.inodesFree<1%"
+      ];
+    {%- endif %}
+  };
+}

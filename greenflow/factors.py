@@ -35,6 +35,9 @@ def exp_params(
     replicationFactor: int = gin.REQUIRED,
     topic_name: str = gin.REQUIRED,
     warmupSeconds: int = gin.REQUIRED,
+    num_broker: int = gin.REQUIRED,
+    num_worker: int = gin.REQUIRED,
+    instance_type: str = gin.REQUIRED,
 ):
     return {
         "broker_cpu": broker_cpu,
@@ -54,4 +57,7 @@ def exp_params(
         "replicationFactor": replicationFactor,
         "topic_name": topic_name,
         "warmupSeconds": warmupSeconds,
+        "num_broker": num_broker,
+        "num_worker": num_worker,
+        "instance_type": instance_type,
     }

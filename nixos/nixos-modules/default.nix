@@ -8,6 +8,7 @@
     # ../common
     inputs.lollypops.nixosModules.lollypops
     inputs.disko.nixosModules.disko
+    inputs.nix-index-database.nixosModules.nix-index
   ];
   lollypops.deployment = {
     config-dir = "/etc/lollypops";
@@ -15,6 +16,8 @@
     deploy-method = "archive";
   };
   # services.dbus.enable = false;
+  powerManagement.cpuFreqGovernor = "performance";
+  programs.nix-index-database.comma.enable = true;
 
   #TODO: Add ulimits infinite files
   # security.pam.loginLimits = [
@@ -57,12 +60,9 @@
   #   };
   # };
   services = {
-    vnstat.enable = true;
-    eternal-terminal.enable = true;
-    logind.lidSwitch = "ignore";
     openssh = {
       enable = true;
-      settings.PermitRootLogin = "yes";
+      # settings.PermitRootLogin = "yes";
     };
   };
   # services.restic.backups = {
@@ -89,7 +89,14 @@
     openssh
     k3s
     kubectl
+    coreutils
+    bashInteractive
+    cacert
+    vim
+    nix
+    python3Minimal
   ];
+  environment.pathsToLink = ["/bin"];
 
   # environment.etc."ssh/authorized_keys".source = ../authorized_keys;
   users.users = {
