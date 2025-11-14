@@ -135,12 +135,12 @@ def exp_perf_test_job(extra_vars) -> Job:
                                 "imagePullPolicy": "IfNotPresent",
                                 "resources": {
                                     "requests": {
-                                        "cpu": "2000m",
-                                        "memory": "2Gi"
+                                        # "cpu": "1000m",
+                                        "memory": "128M"
                                     },
                                     "limits": {
-                                        "cpu": "2000m",
-                                        "memory": "2Gi"
+                                        # "cpu": "1000m",
+                                        "memory": "128M"
                                     }
                                 },
                                 "command": [

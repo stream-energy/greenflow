@@ -12,6 +12,9 @@ from pulumi_aws import ec2
 
 import gin
 
+from .factors import factors
+from .g import g
+
 from .platform import Platform
 
 
@@ -32,7 +35,7 @@ class AwsPlatform(Platform):
         project: str = gin.REQUIRED,
     ):
         return {
-            "instance_type": instance_type,
+            "instance_type": factors()["exp_params"]["instance_type"],
             "region": region,
             "cluster": cluster,
             "num_control": num_control,
@@ -57,7 +60,9 @@ class AwsPlatform(Platform):
         num_control = conf["num_control"]
         num_worker = conf["num_worker"]
         num_broker = conf["num_broker"]
-        instance_type = conf["instance_type"]
+        control_instance_type = conf["control_instance_type"]
+        worker_instance_type = conf.get("worker_instance_type", control_instance_type)
+        broker_instance_type = conf.get("broker_instance_type", control_instance_type)
 
         def pulumi_program():
             try:
@@ -133,7 +138,7 @@ class AwsPlatform(Platform):
             for i in range(num_control):
                 instance = ec2.Instance(
                     f"control-{i}",
-                    instance_type=instance_type,
+                    instance_type=control_instance_type,
                     vpc_security_group_ids=[k3s_cluster_sg.id],
                     ami=ami.id,
                     key_name=aws_key_pair.key_name,
@@ -148,13 +153,14 @@ class AwsPlatform(Platform):
                         "public_ip": instance.public_ip,
                         "private_ip": instance.private_ip,
                         "public_dns": instance.public_dns,
+                        "instance_type": instance.instance_type,
                     }
                 )
 
             for i in range(num_worker):
                 instance = ec2.Instance(
                     f"worker-{i}",
-                    instance_type=instance_type,
+                    instance_type=worker_instance_type,
                     vpc_security_group_ids=[k3s_cluster_sg.id],
                     ami=ami.id,
                     key_name=aws_key_pair.key_name,
@@ -169,13 +175,14 @@ class AwsPlatform(Platform):
                         "public_ip": instance.public_ip,
                         "private_ip": instance.private_ip,
                         "public_dns": instance.public_dns,
+                        "instance_type": instance.instance_type,
                     }
                 )
 
             for i in range(num_broker):
                 instance = ec2.Instance(
                     f"broker-{i}",
-                    instance_type=instance_type,
+                    instance_type=broker_instance_type,
                     vpc_security_group_ids=[k3s_cluster_sg.id],
                     ami=ami.id,
                     key_name=aws_key_pair.key_name,
@@ -190,6 +197,7 @@ class AwsPlatform(Platform):
                         "public_ip": instance.public_ip,
                         "private_ip": instance.private_ip,
                         "public_dns": instance.public_dns,
+                        "instance_type": instance.instance_type,
                     }
                 )
 

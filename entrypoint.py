@@ -81,6 +81,7 @@ def load_gin(exp_name="ingest-redpanda", cluster="grappe", test=False):
         config_files = [
             # "vmon-defaults.gin",
             "aws/defaults.gin",
+            "aws/t3.small.gin",
             # "g5knos/defaults.gin",
             # "g5k/paravance.gin",
             # "g5k/parasilo.gin",
@@ -223,7 +224,7 @@ def _setup(cluster, num_worker, num_broker):
         provision.provision()
         # deploy_k3s()
         p(prometheus)
-        p(scaphandre)
+        # p(scaphandre)
         p(strimzi)
         # Warm-up Kafka and Redpanda in the first time setup
         # with kafka_context():

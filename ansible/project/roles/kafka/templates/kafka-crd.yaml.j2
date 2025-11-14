@@ -9,10 +9,10 @@ spec:
 {% if deployment_type == "production" %}
     resources:
       requests:
-        memory: "30Gi"
+        memory: "{{exp_params.broker_mem}}"
         cpu: "{{exp_params.broker_cpu}}"
       limits:
-        memory: "30Gi"
+        memory: "{{exp_params.broker_mem}}"
         cpu: "{{exp_params.broker_cpu}}"
 {% elif deployment_type == "test" %}
     resources: {}

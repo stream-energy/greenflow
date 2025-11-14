@@ -2,7 +2,6 @@ greenflow.provision.provision.platform = @greenflow.aws.AwsPlatform
 greenflow.destroy.destroy.platform = @greenflow.aws.AwsPlatform
 greenflow.destroy.killjob.platform = @greenflow.aws.AwsPlatform
 
-greenflow.aws.AwsPlatform.get_conf.instance_type = "m7i-flex.large"
 greenflow.aws.AwsPlatform.get_conf.region = "eu-west-1"
 greenflow.aws.AwsPlatform.get_conf.cluster = "default"
 greenflow.aws.AwsPlatform.get_conf.num_control = 1
@@ -11,3 +10,7 @@ greenflow.aws.AwsPlatform.get_conf.num_broker = 1
 greenflow.aws.AwsPlatform.get_conf.walltime = "01:00:00"
 greenflow.aws.AwsPlatform.get_conf.queue = "default"
 greenflow.aws.AwsPlatform.get_conf.project = "greenflow"
+
+greenflow.factors.exp_params.instance_type = "t3.small"
+greenflow.factors.exp_params.num_broker = 3
+greenflow.factors.exp_params.num_worker = 1
